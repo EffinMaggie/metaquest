@@ -28,10 +28,6 @@
 #include <iostream>
 #include <string>
 
-#include <ef.gy/geometry.h>
-#include <ef.gy/voronoi.h>
-#include <ef.gy/svg.h>
-
 using namespace efgy;
 using namespace std;
 
