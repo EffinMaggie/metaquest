@@ -4,3 +4,4 @@ test-*
 !test-*.h
 documentation
 metaquest
+arena
