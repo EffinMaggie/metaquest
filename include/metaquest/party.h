@@ -25,15 +25,15 @@
  * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
-#include <iostream>
+#if !defined(METAQUEST_PARTY_H)
+#define METAQUEST_PARTY_H
 
-#include <metaquest/party.h>
+#include <metaquest/character.h>
 
-int main(int argc, const char **argv)
+namespace metaquest
 {
-    metaquest::character<> C;
+    template<typename T = long>
+    using party = std::vector<character<T> >;
+};
 
-    std::cerr << C["frob"] << "\n";
-
-    return 0;
-}
+#endif

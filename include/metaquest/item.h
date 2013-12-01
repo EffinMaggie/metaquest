@@ -25,15 +25,38 @@
  * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
-#include <iostream>
+#if !defined(METAQUEST_ITEM_H)
+#define METAQUEST_ITEM_H
 
-#include <metaquest/party.h>
+#include <string>
+#include <map>
+#include <functional>
 
-int main(int argc, const char **argv)
+namespace metaquest
 {
-    metaquest::character<> C;
+    template<typename T = long>
+    class item
+    {
+        public:
+            std::string name;
 
-    std::cerr << C["frob"] << "\n";
+            T operator [] (const std::string &s)
+            {
+                std::function<T()> &f = function[s];
+                if (f == nullptr)
+                {
+                    return attribute[s];
+                }
+                else
+                {
+                    return f();
+                }
+            }
 
-    return 0;
-}
+        protected:
+            std::map<std::string,std::function<T()> > function;
+            std::map<std::string,T> attribute;
+    };
+};
+
+#endif

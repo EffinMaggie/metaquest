@@ -25,15 +25,26 @@
  * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
-#include <iostream>
+#if !defined(METAQUEST_CHARACTER_H)
+#define METAQUEST_CHARACTER_H
 
-#include <metaquest/party.h>
+#include <metaquest/item.h>
 
-int main(int argc, const char **argv)
+#include <vector>
+
+namespace metaquest
 {
-    metaquest::character<> C;
+    template<typename T = long>
+    class character : public item<T>
+    {
+        public:
+            using item<T>::name;
+            using item<T>::operator[];
 
-    std::cerr << C["frob"] << "\n";
+        protected:
+            std::vector<item<T> > equipment;
+            std::vector<item<T> > inventory;
+    };
+};
 
-    return 0;
-}
+#endif

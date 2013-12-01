@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/topologic
- * \see Project Source Code: http://git.becquerel.org/jyujin/topologic.git
+ * \see Project Documentation: http://ef.gy/documentation/metaquest
+ * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
 #if !defined(METAQUEST_VERSION_H)
