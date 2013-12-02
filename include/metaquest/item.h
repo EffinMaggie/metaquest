@@ -28,34 +28,16 @@
 #if !defined(METAQUEST_ITEM_H)
 #define METAQUEST_ITEM_H
 
-#include <string>
-#include <map>
-#include <functional>
+#include <metaquest/object.h>
 
 namespace metaquest
 {
     template<typename T = long>
-    class item
+    class item : public object<T>
     {
         public:
-            std::string name;
-
-            T operator [] (const std::string &s)
-            {
-                std::function<T()> &f = function[s];
-                if (f == nullptr)
-                {
-                    return attribute[s];
-                }
-                else
-                {
-                    return f();
-                }
-            }
-
-        protected:
-            std::map<std::string,std::function<T()> > function;
-            std::map<std::string,T> attribute;
+            using object<T>::name;
+            using object<T>::operator[];
     };
 };
 

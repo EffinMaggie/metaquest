@@ -25,42 +25,37 @@
  * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
-#if !defined(METAQUEST_CHARACTER_H)
-#define METAQUEST_CHARACTER_H
+#if !defined(METAQUEST_OBJECT_H)
+#define METAQUEST_OBJECT_H
 
-#include <metaquest/item.h>
-
-#include <vector>
+#include <string>
+#include <map>
+#include <functional>
 
 namespace metaquest
 {
     template<typename T = long>
-    class character : public object<T>
+    class object
     {
         public:
-            using object<T>::name;
-            using object<T>::operator[];
+            std::string name;
 
-            std::string type;
-
-            bool operator () (const std::string &skill, const T &modifier)
+            T operator [] (const std::string &s)
             {
-                return false;
-            }
-
-            bool operator () (const std::string &skill, character &target)
-            {
-                return false;
-            }
-
-            bool operator () (const std::string &skill, std::vector<character> &target)
-            {
-                return false;
+                std::function<T()> &f = function[s];
+                if (f == nullptr)
+                {
+                    return attribute[s];
+                }
+                else
+                {
+                    return f();
+                }
             }
 
         protected:
-            std::vector<item<T> > equipment;
-            std::vector<item<T> > inventory;
+            std::map<std::string,std::function<T()> > function;
+            std::map<std::string,T> attribute;
     };
 };
 

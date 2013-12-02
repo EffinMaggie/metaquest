@@ -32,6 +32,8 @@
 
 namespace metaquest
 {
+    template<typename T = long>
+    using party = std::vector<character<T> >;
 };
 
 #endif
