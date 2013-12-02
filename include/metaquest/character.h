@@ -34,12 +34,35 @@
 
 namespace metaquest
 {
+    template<typename T>
+    class character;
+
+    template<typename T = long>
+    using party = std::vector<character<T> >;
+
     template<typename T = long>
     class character : public item<T>
     {
         public:
             using item<T>::name;
             using item<T>::operator[];
+
+            bool operator () (const std::string &skill)
+            {
+                return false;
+            }
+
+            bool operator () (const std::string &skill, character &target)
+            {
+                party<T> targetParty(1);
+                targetParty[0] = target;
+                return (*this)(skill, targetParty);
+            }
+
+            bool operator () (const std::string &skill, party<T> &target)
+            {
+                return false;
+            }
 
         protected:
             std::vector<item<T> > equipment;
