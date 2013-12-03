@@ -27,6 +27,7 @@
 
 #include <iostream>
 
+#include <ef.gy/vt100.h>
 #include <metaquest/party.h>
 
 int main(int argc, const char **argv)
