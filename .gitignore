@@ -6,3 +6,6 @@ documentation
 metaquest
 arena
 !include/metaquest
+data/census
+include/data
+include/ef.gy

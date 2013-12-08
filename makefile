@@ -13,10 +13,12 @@ EMXX:=em++
 PKGCONFIG:=pkg-config
 INSTALL:=install
 XSLTPROC:=xsltproc
+CURL:=curl
 
 LIBRARIES:=
 
 DEBUG:=false
+MAXLINES:=5000
 
 PCCFLAGS:=$(shell $(PKGCONFIG) --cflags $(LIBRARIES) 2>/dev/null)
 PCLDFLAGS:=$(shell $(PKGCONFIG) --libs $(LIBRARIES) 2>/dev/null)
@@ -35,6 +37,8 @@ IGNOREBINARIES:=
 IBINARIES:=$(addprefix $(BINDIR)/,$(filter-out $(IGNOREBINARIES) test-case-%,$(BINARIES)))
 IINCLUDES:=$(addprefix $(INCLUDEDIR)/metaquest/,$(notdir $(wildcard include/metaquest/*.h)))
 IMANPAGES:=$(addprefix $(MANDIR)/man1/,$(notdir $(wildcard src/*.1)))
+
+DATAHEADERS:=include/data/female.first.h include/data/male.first.h include/data/all.last.h
 
 # don't delete intermediary files
 .SECONDARY:
@@ -84,7 +88,7 @@ $(MANDIR)/man1/%.1: src/%.1
 	rm -f $@ && $(SQLITE3) $@ < $<
 
 # pattern rules for C++ code
-%: src/%.cpp include/*/*.h
+%: src/%.cpp include/*/*.h $(DATAHEADERS)
 	$(CXX) -std=c++0x -Iinclude/ $(CXXFLAGS) $(PCCFLAGS) $< $(LDFLAGS) $(PCLDFLAGS) -o $@ && ($(DEBUG) || strip -x $@)
 
 test-case-%: src/test-case/%.cpp include/*/*.h
@@ -92,3 +96,20 @@ test-case-%: src/test-case/%.cpp include/*/*.h
 
 %.js: src/%.cpp include/*/*.h
 	$(EMXX) -std=c++0x -Iinclude/ -D NOLIBRARIES $(EMXXFLAGS) $< $(LDFLAGS) -o $@
+
+# gather source data
+data/census/dist.%: data/census/dist.%.census.gov
+	cat $^ | cut -d ' ' -f 1 | head -n $(MAXLINES) - > $@
+
+data/census/dist.%.census.gov:
+	mkdir -p $(dir $@) || true
+	$(CURL) 'http://www.census.gov/genealogy/www/data/1990surnames/dist.$*' > $@
+
+include/data/%.h: data/census/dist.%
+	mkdir -p $(dir $@) || true
+	echo '#include <array>' > $@
+	echo 'namespace data {' >> $@
+	echo "    static const constexpr std::array<const char*,$$(wc -l $^ | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') = {{" >> $@
+	sed 's/^.*$$/        "\0",/' < $^ >> $@
+	echo '    }};' >> $@
+	echo '};' >> $@

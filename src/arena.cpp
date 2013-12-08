@@ -28,10 +28,33 @@
 #include <iostream>
 
 #include <ef.gy/vt100.h>
+#include <ef.gy/markov.h>
 #include <metaquest/party.h>
+
+#include <data/female.first.h>
+#include <data/male.first.h>
+#include <data/all.last.h>
+
+using namespace efgy;
 
 int main(int argc, const char **argv)
 {
+    typename markov::chain<char,3>::random PRNG(1);
+    markov::chain<char,3> mc(PRNG);
+
+    for (const char *s : data::female_first)
+    {
+        std::string str = s;
+        mc << typename markov::chain<char,3>::input(str.begin(), str.end());
+    }
+
+    typename markov::chain<char,3>::output out;
+    for (unsigned int i = 0; i < 100; i++)
+    {
+        mc >> out;
+        std::cerr << std::string(out.begin(), out.end()) << "\n";
+    }
+
     metaquest::character<> C;
 
     std::cerr << C["frob"] << "\n";
