@@ -35,24 +35,39 @@
 #include <data/male.first.h>
 #include <data/all.last.h>
 
+#include <cctype>
+
 using namespace efgy;
 
 int main(int argc, const char **argv)
 {
-    typename markov::chain<char,3>::random PRNG(1);
-    markov::chain<char,3> mc(PRNG);
+    typename markov::chain<char,3>::random PRNG(1337);
+    markov::chain<char,3> mcFemale(PRNG, data::female_first);
+    markov::chain<char,3> mcMale(PRNG, data::male_first);
+    markov::chain<char,3> mcLast(PRNG, data::all_last);
 
-    for (const char *s : data::female_first)
-    {
-        std::string str = s;
-        mc << typename markov::chain<char,3>::input(str.begin(), str.end());
-    }
-
-    typename markov::chain<char,3>::output out;
     for (unsigned int i = 0; i < 100; i++)
     {
-        mc >> out;
-        std::cerr << std::string(out.begin(), out.end()) << "\n";
+        std::string first, last;
+        switch (PRNG() % 2)
+        {
+            case 0: mcFemale >> first; break;
+            case 1: mcMale   >> first; break;
+        }
+        mcLast >> last;
+        std::transform
+            (first.begin()+1, first.end(), first.begin()+1,
+             [] (char a) -> char
+             {
+                return std::tolower(a);
+             });
+        std::transform
+            (last.begin()+1,  last.end(),  last.begin()+1,
+             [] (char a) -> char
+             {
+                return std::tolower(a);
+             });
+        std::cerr << first << " " << last << "\n";
     }
 
     metaquest::character<> C;
