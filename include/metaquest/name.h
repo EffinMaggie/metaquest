@@ -25,56 +25,35 @@
  * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
-#include <iostream>
+#if !defined(METAQUEST_NAME_H)
+#define METAQUEST_NAME_H
 
-#include <ef.gy/vt100.h>
 #include <ef.gy/markov.h>
-#include <metaquest/party.h>
 
-#include <data/female.first.h>
-#include <data/male.first.h>
-#include <data/all.last.h>
-
-#include <cctype>
-
-#include <metaquest/name.h>
-
-using namespace efgy;
-
-int main(int argc, const char **argv)
+namespace metaquest
 {
-    typename markov::chain<char,3>::random PRNG(1337);
-    markov::chain<char,3> mcFemale(PRNG, data::female_first);
-    markov::chain<char,3> mcMale(PRNG, data::male_first);
-    markov::chain<char,3> mcLast(PRNG, data::all_last);
-
-    for (unsigned int i = 0; i < 100; i++)
+    template<typename T = char, typename generator = efgy::markov::chain<T,3> >
+    class name
     {
-        std::string first, last;
-        switch (PRNG() % 2)
-        {
-            case 0: mcFemale >> first; break;
-            case 1: mcMale   >> first; break;
-        }
-        mcLast >> last;
-        std::transform
-            (first.begin()+1, first.end(), first.begin()+1,
-             [] (char a) -> char
-             {
-                return std::tolower(a);
-             });
-        std::transform
-            (last.begin()+1,  last.end(),  last.begin()+1,
-             [] (char a) -> char
-             {
-                return std::tolower(a);
-             });
-        std::cerr << first << " " << last << "\n";
-    }
+        public:
+            enum type
+            {
+                givenName,
+                familyName,
+                nickName,
+                callSign,
+                otherName
+            };
 
-    metaquest::character<> C;
+            name(generator &pGenerator, const enum type &pType)
+                : type(pType)
+                {
+                    pGenerator >> value;
+                }
 
-    std::cerr << C["frob"] << "\n";
+            std::basic_string<T> value;
+            const enum type type;
+    };
+};
 
-    return 0;
-}
+#endif
