@@ -45,11 +45,15 @@ namespace metaquest
                 otherName
             };
 
-            name(generator &pGenerator, const enum type &pType)
+            name(generator &pGenerator, const enum type &pType = otherName)
                 : type(pType)
                 {
                     pGenerator >> value;
                 }
+
+            name(std::basic_string<T> pValue, const enum type &pType = otherName)
+                : value(pValue), type(pType)
+                {}
 
             std::basic_string<T> value;
             const enum type type;
