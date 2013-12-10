@@ -58,6 +58,31 @@ namespace metaquest
             std::basic_string<T> value;
             const enum type type;
     };
+
+    template<typename T = char, typename generator = efgy::markov::chain<T,3> >
+    class properName : public std::vector<name<T,generator> >
+    {
+        public:
+            std::basic_string<T> full(void)
+            {
+                return "unknown";
+            }
+
+            std::basic_string<T> display(void)
+            {
+                for (const name<T,generator> &n : *this)
+                {
+                    switch (n.type)
+                    {
+                        case name<T,generator>::givenName: return n.value;
+                        case name<T,generator>::callSign:  return n.value;
+                        default: break;
+                    }
+                }
+
+                return full();
+            }
+    };
 };
 
 #endif
