@@ -31,10 +31,6 @@
 #include <ef.gy/markov.h>
 #include <metaquest/party.h>
 
-#include <data/female.first.h>
-#include <data/male.first.h>
-#include <data/all.last.h>
-
 #include <cctype>
 
 #include <metaquest/name.h>
@@ -53,6 +49,9 @@ int main(int argc, const char **argv)
 
     for (unsigned int i = 0; i < 100; i++)
     {
+        metaquest::name::american::proper<> name;
+        std::cerr << name.full() << "\n";
+        /*
         std::string first, last;
         switch (PRNG() % 2)
         {
@@ -61,6 +60,7 @@ int main(int argc, const char **argv)
         }
         mcLast >> last;
         output.write(first, 0, i, 37);
+        */
         /*
         std::transform
             (first.begin()+1, first.end(), first.begin()+1,

@@ -28,6 +28,8 @@
 #if !defined(METAQUEST_OBJECT_H)
 #define METAQUEST_OBJECT_H
 
+#include <metaquest/name.h>
+
 #include <string>
 #include <map>
 #include <functional>
@@ -38,7 +40,7 @@ namespace metaquest
     class object
     {
         public:
-            std::string name;
+            name::proper<T> name;
 
             T operator [] (const std::string &s)
             {
