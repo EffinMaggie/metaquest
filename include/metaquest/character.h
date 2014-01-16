@@ -1,4 +1,7 @@
 /**\file
+ * \brief Characters
+ *
+ * This file implements the basic "characters" that do things in the game.
  *
  * \copyright
  * Copyright (c) 2013, Magnus Achim Deininger <magnus@ef.gy>
@@ -34,32 +37,59 @@
 
 namespace metaquest
 {
+    /**\brief A character
+     *
+     * Characters, here, are basically objects that can use skills. So that's
+     * pretty much how they're defined.
+     *
+     * \tparam T Base type for attributes. Integers are probably a good choice,
+     *           at least for J-RPGs and tabletops.
+     */
     template<typename T = long>
     class character : public object<T>
     {
         public:
-            using object<T>::name;
-            using object<T>::operator[];
-
-            std::string type;
-
-            bool operator () (const std::string &skill, const T &modifier)
+            /**\brief Use global skill
+             *
+             * Uses a skill with a global effect.
+             *
+             * \param[in] skill The skill to use.
+             *
+             * \returns 'True' if the skill was used successfully, 'false' if it
+             *          failed.
+             */
+            bool operator () (const std::string &skill)
             {
                 return false;
             }
 
-            bool operator () (const std::string &skill, character &target)
-            {
-                return false;
-            }
-
+            /**\brief Use targeted skill
+             *
+             * Uses a skill that targets one or more other characters.
+             *
+             * \param[in] skill  The skill to use.
+             * \param[in] target The skill's target.
+             *
+             * \returns 'True' if the skill was used successfully, 'false' if it
+             *          failed.
+             */
             bool operator () (const std::string &skill, std::vector<character> &target)
             {
                 return false;
             }
 
         protected:
+            /**\brief List of equipped items
+             *
+             * The list of items that a character currently has equipped.
+             */
             std::vector<item<T> > equipment;
+            /**\brief List of inventory items
+             *
+             * The list of items that a character currently has in their
+             * inventory. These items are not equipped and should not have any
+             * effect on the character's stats.
+             */
             std::vector<item<T> > inventory;
     };
 };

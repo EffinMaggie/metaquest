@@ -1,4 +1,8 @@
 /**\file
+ * \brief Items
+ *
+ * Items, the spice of any game. This header defines the basic interface for the
+ * lot of them.
  *
  * \copyright
  * Copyright (c) 2013, Magnus Achim Deininger <magnus@ef.gy>
@@ -32,12 +36,18 @@
 
 namespace metaquest
 {
+    /**\brief An item
+     *
+     * Defines the basic interface that any item follows - turns out items are
+     * your standard type of object. Who'da thunk?
+     *
+     * \tparam T Base type for attributes. Integers are probably a good choice,
+     *           at least for J-RPGs and tabletops.
+     */
     template<typename T = long>
     class item : public object<T>
     {
         public:
-            using object<T>::name;
-            using object<T>::operator[];
     };
 };
 

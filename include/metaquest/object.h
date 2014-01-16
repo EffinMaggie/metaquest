@@ -1,4 +1,8 @@
 /**\file
+ * \brief Objects
+ *
+ * Everything in the game is an object. This header defines the base class for
+ * these objects.
  *
  * \copyright
  * Copyright (c) 2013, Magnus Achim Deininger <magnus@ef.gy>
@@ -36,12 +40,35 @@
 
 namespace metaquest
 {
+    /**\brief A game object
+     *
+     * The base class for items, characters, etc. Provides common properties,
+     * such as a name, rules and attributes.
+     *
+     * \tparam T Base type for attributes. Integers are probably a good choice,
+     *           at least for J-RPGs and tabletops.
+     */
     template<typename T = long>
     class object
     {
         public:
+            /**\brief Object name
+             *
+             * Everything needs a name. Since everything in the game is an
+             * object, this is that name.
+             */
             name::proper<T> name;
 
+            /**\brief Access attribute
+             *
+             * Provides a simple way to access attributes. Attributes may either
+             * be members of the 'attribute' map, or they can be calculated on
+             * the fly using a member of the 'function' map.
+             *
+             * \param[in] s The attribute you'd like to access.
+             *
+             * \returns The attribute you tried to access.
+             */
             T operator [] (const std::string &s)
             {
                 std::function<T()> &f = function[s];
@@ -56,7 +83,17 @@ namespace metaquest
             }
 
         protected:
+            /**\brief Attribute generation functions
+             *
+             * Maps attribute names to thunks which can generate an attribute on
+             * the fly, e.g. for derived attributes in RPGs.
+             */
             std::map<std::string,std::function<T()> > function;
+
+            /**\brief Basic attributes
+             *
+             * Maps basic attributes to their proper values.
+             */
             std::map<std::string,T> attribute;
     };
 };

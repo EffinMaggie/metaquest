@@ -1,4 +1,13 @@
 /**\file
+ * \brief Metaquest: Arena
+ *
+ * This is the 'arena' programme of the metaquest project. The idea of the game
+ * is to have the combat portions of contemporary J-RPGs all mashed up into a
+ * separate game, so you can pit your favourite characters of different games
+ * against each other. Large amounts of win should ensue.
+ *
+ * The game is currently far from complete, so writing documentation for the
+ * code feels kind of awkward.
  *
  * \copyright
  * Copyright (c) 2013, Magnus Achim Deininger <magnus@ef.gy>
@@ -28,12 +37,18 @@
 #include <iostream>
 
 #include <ef.gy/vt100.h>
-#include <ef.gy/markov.h>
 #include <metaquest/party.h>
 
 using namespace efgy;
 
-int main(int argc, const char **argv)
+/**\brief Metaquest: Arena main function
+ *
+ * This is the main function for the 'arena' programme. It is currently far from
+ * complete.
+ *
+ * \returns 0 on success, something else otherwise.
+ */
+int main(int, const char **)
 {
     terminal::vt100<> output;
     typename markov::chain<char,3>::random PRNG(1337);

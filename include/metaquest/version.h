@@ -1,4 +1,7 @@
 /**\file
+ * \brief Metaquest core version number
+ *
+ * This header contains the version number of the metaquest headers.
  *
  * \copyright
  * Copyright (c) 2013, Magnus Achim Deininger <magnus@ef.gy>
@@ -28,8 +31,17 @@
 #if !defined(METAQUEST_VERSION_H)
 #define METAQUEST_VERSION_H
 
+/**\brief Metaquest base name space
+ *
+ * Everything related to metaquest is contained in this namespace.
+ */
 namespace metaquest
 {
+    /**\brief Metaquest version
+     *
+     * This is the version number of the metaquest library. It's a single
+     * integer - how unusual ;).
+     */
     static const unsigned int version = 1;
 };
 

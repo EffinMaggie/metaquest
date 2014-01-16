@@ -1,4 +1,8 @@
 /**\file
+ * \brief Parties
+ *
+ * Groups of characters are called 'parties'. This file contains things related
+ * to this concept.
  *
  * \copyright
  * Copyright (c) 2013, Magnus Achim Deininger <magnus@ef.gy>
@@ -32,6 +36,15 @@
 
 namespace metaquest
 {
+    /**\brief A party
+     *
+     * This type represents a group of characters, referred to as a 'party'. The
+     * type is based on std::vector as opposed to std::set because in some
+     * contexts (menu, etc.) the order might actually be relevant.
+     *
+     * \tparam T Base type for attributes. Integers are probably a good choice,
+     *           at least for J-RPGs and tabletops.
+     */
     template<typename T = long>
     using party = std::vector<character<T> >;
 };
