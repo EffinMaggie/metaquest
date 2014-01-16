@@ -33,8 +33,6 @@
 
 #include <cctype>
 
-#include <metaquest/name.h>
-
 using namespace efgy;
 
 int main(int argc, const char **argv)
