@@ -31,8 +31,6 @@
 #include <ef.gy/markov.h>
 #include <metaquest/party.h>
 
-#include <cctype>
-
 using namespace efgy;
 
 int main(int argc, const char **argv)
@@ -49,31 +47,6 @@ int main(int argc, const char **argv)
     {
         metaquest::name::american::proper<> name;
         std::cerr << name.full() << "\n";
-        /*
-        std::string first, last;
-        switch (PRNG() % 2)
-        {
-            case 0: mcFemale >> first; break;
-            case 1: mcMale   >> first; break;
-        }
-        mcLast >> last;
-        output.write(first, 0, i, 37);
-        */
-        /*
-        std::transform
-            (first.begin()+1, first.end(), first.begin()+1,
-             [] (char a) -> char
-             {
-                return std::tolower(a);
-             });
-        std::transform
-            (last.begin()+1,  last.end(),  last.begin()+1,
-             [] (char a) -> char
-             {
-                return std::tolower(a);
-             });
-        std::cerr << first << " " << last << "\n";
-        */
     }
 
     output.flush();
