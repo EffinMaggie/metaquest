@@ -1,8 +1,8 @@
 /**\file
- * \brief Items
+ * \brief S[ia]mple Rules
  *
- * Items, the spice of any game. This header defines the basic interface for the
- * lot of them.
+ * Contains a very simple rule set that should serve as a template for more
+ * complicated rule sets.
  *
  * \copyright
  * Copyright (c) 2013-2014, Magnus Achim Deininger <magnus@ef.gy>
@@ -29,25 +29,33 @@
  * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
-#if !defined(METAQUEST_ITEM_H)
-#define METAQUEST_ITEM_H
+#if !defined(METAQUEST_RULES_SIMPLE_H)
+#define METAQUEST_RULES_SIMPLE_H
 
-#include <metaquest/object.h>
+#include <metaquest/character.h>
 
 namespace metaquest
 {
-    /**\brief An item
-     *
-     * Defines the basic interface that any item follows - turns out items are
-     * your standard type of object. Who'da thunk?
-     *
-     * \tparam T Base type for attributes. Integers are probably a good choice,
-     *           at least for J-RPGs and tabletops.
-     */
-    template<typename T = long>
-    class item : public object<T>
+    namespace rules
     {
-        public:
+        namespace simple
+        {
+            class character : public metaquest::character<long>
+            {
+                public:
+                    typedef metaquest::character<long> parent;
+
+                    character()
+                        : parent()
+                        {
+                            attribute["Attack"]     = 1;
+                            attribute["Experience"] = 0;
+                        }
+
+                protected:
+                    using parent::attribute;
+            };
+        };
     };
 };
 

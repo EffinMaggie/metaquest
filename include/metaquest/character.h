@@ -4,7 +4,7 @@
  * This file implements the basic "characters" that do things in the game.
  *
  * \copyright
- * Copyright (c) 2013, Magnus Achim Deininger <magnus@ef.gy>
+ * Copyright (c) 2013-2014, Magnus Achim Deininger <magnus@ef.gy>
  * \copyright
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,6 +84,7 @@ namespace metaquest
              * The list of items that a character currently has equipped.
              */
             std::vector<item<T> > equipment;
+
             /**\brief List of inventory items
              *
              * The list of items that a character currently has in their
