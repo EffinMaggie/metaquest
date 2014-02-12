@@ -52,17 +52,13 @@ using namespace efgy;
 int main(int, const char **)
 {
     terminal::vt100<> output;
-    typename markov::chain<char,3>::random PRNG(1337);
-    markov::chain<char,3> mcFemale(PRNG, data::female_first);
-    markov::chain<char,3> mcMale(PRNG, data::male_first);
-    markov::chain<char,3> mcLast(PRNG, data::all_last);
 
     output.resize(output.getOSDimensions());
 
     for (unsigned int i = 0; i < 100; i++)
     {
-        metaquest::name::american::proper<> name;
-        std::cerr << name.full() << "\n";
+        metaquest::rules::simple::character character;
+        std::cerr << character.name.full() << " [" << character.name.display() << "]\n";
     }
 
     output.flush();

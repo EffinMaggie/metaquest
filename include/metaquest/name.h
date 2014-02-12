@@ -128,7 +128,7 @@ namespace metaquest
                  * This stores the type of the name. Passed to the constructor
                  * upon initialising a new instance of the class.
                  */
-                const enum type type;
+                enum type type;
         };
 
         /**\brief A proper name
@@ -347,14 +347,14 @@ namespace metaquest
                             do
                             {
                                 given<T,generator> f(female, length);
-                                parent::push_back (f.value);
+                                parent::push_back (f);
                             }
                             while ((PRNG() % 10) == 0);
 
                             do
                             {
                                 family<T,generator> l(length);
-                                parent::push_back (l.value);
+                                parent::push_back (l);
                             }
                             while ((PRNG() % 10) == 0);
                         }

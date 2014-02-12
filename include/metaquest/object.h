@@ -48,7 +48,7 @@ namespace metaquest
      * \tparam T Base type for attributes. Integers are probably a good choice,
      *           at least for J-RPGs and tabletops.
      */
-    template<typename T = long>
+    template<typename T = long, typename C = char>
     class object
     {
         public:
@@ -57,7 +57,7 @@ namespace metaquest
              * Everything needs a name. Since everything in the game is an
              * object, this is that name.
              */
-            name::proper<T> name;
+            name::proper<C> name;
 
             /**\brief Access attribute
              *

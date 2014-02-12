@@ -45,10 +45,16 @@ namespace metaquest
                 public:
                     typedef metaquest::character<long> parent;
 
+                    using parent::name;
+
                     character()
                         : parent()
                         {
+                            metaquest::name::american::proper<> cname;
+                            name = cname;
+
                             attribute["Attack"]     = 1;
+                            attribute["Defence"]    = 1;
                             attribute["Experience"] = 0;
                         }
 
