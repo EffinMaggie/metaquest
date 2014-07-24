@@ -99,7 +99,7 @@ test-case-%: src/test-case/%.cpp include/*/*.h
 
 # gather source data
 data/census/dist.%: data/census/dist.%.census.gov
-	cat $^ | cut -d ' ' -f 1 | head -n $(MAXLINES) - > $@
+	cat $^ | cut -d ' ' -f 1 | head -n $(MAXLINES) > $@
 
 data/census/dist.%.census.gov:
 	mkdir -p $(dir $@) || true
@@ -109,7 +109,7 @@ include/data/%.h: data/census/dist.%
 	mkdir -p $(dir $@) || true
 	echo '#include <array>' > $@
 	echo 'namespace data {' >> $@
-	echo "    static const constexpr std::array<const char*,$$(wc -l $^ | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') = {{" >> $@
-	sed 's/^.*$$/        "\0",/' < $^ >> $@
+	echo "    static const constexpr std::array<const char*,$$(wc -l $^ | sed 's/^ *//' | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') = {{" >> $@
+	sed 's/\(.*\)/        "\1",/' < $^ >> $@
 	echo '    }};' >> $@
 	echo '};' >> $@
