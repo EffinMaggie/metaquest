@@ -73,7 +73,7 @@ namespace metaquest
              * \returns 'True' if the skill was used successfully, 'false' if it
              *          failed.
              */
-            bool operator () (const std::string &skill, std::vector<character> &target)
+            bool operator () (const std::string &skill, std::vector<character*> &target)
             {
                 return false;
             }
