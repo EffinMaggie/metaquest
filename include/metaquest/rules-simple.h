@@ -57,25 +57,31 @@ namespace metaquest
                             attribute["Defence"]    = 1;
                             attribute["Experience"] = 0;
 
-                            function["HP/Total"] = [this]() -> long {
-                                return attribute["Experience"] * 2 + 5;
-                            };
-
-                            function["Alive"] = [this]() -> long {
-                                std::cerr << name.display() << attribute["HP/Current"];
-                                return attribute["HP/Current"] > 0;
-                            };
+                            setFunctions();
 
                             attribute["HP/Current"] = (*this)["HP/Total"];
                         }
 
-                    bool operator() (const std::string &skill, std::vector<character*> &target)
+                    character(const character &b)
+                        : parent()
+                        {
+                            attribute = b.attribute;
+                            setFunctions();
+                        }
+
+                    character &operator = (const character &b)
+                    {
+                        attribute = b.attribute;
+                        return *this;
+                    }
+
+                    bool operator() (const std::string &skill, std::vector<character> &target)
                     {
                         if (skill == "Attack") {
-                            for (auto *t : target) {
-                                t->attribute["HP/Current"] -= attribute["Attack"];
-                                if (!(*t)["Alive"]) {
-                                    attribute["Experience"] += t->attribute["Experience"]/2 + 1;
+                            for (auto &t : target) {
+                                t.attribute["HP/Current"] -= attribute["Attack"];
+                                if (!t["Alive"]) {
+                                    attribute["Experience"] += t.attribute["Experience"]/2 + 1;
                                 }
                             }
                             return true;
@@ -86,6 +92,17 @@ namespace metaquest
 
                 protected:
                     using parent::attribute;
+
+                    void setFunctions(void)
+                    {
+                        function["HP/Total"] = [this]() -> long {
+                            return attribute["Experience"] * 2 + 5;
+                        };
+
+                        function["Alive"] = [this]() -> long {
+                            return attribute["HP/Current"] > 0;
+                        };
+                    }
             };
         };
     };

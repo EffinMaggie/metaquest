@@ -56,28 +56,28 @@ int main(int, const char **)
     output.resize(output.getOSDimensions());
 
     metaquest::rules::simple::character character;
-    std::vector<metaquest::rules::simple::character*> party;
+    std::vector<metaquest::rules::simple::character> party;
 
-    party.push_back(&character);
+    party.push_back(character);
 
     std::cerr << character.name.full() << " [" << character.name.display() << "]\n";
 
     for (unsigned int i = 0; i < 100; i++)
     {
         metaquest::rules::simple::character character;
-        std::vector<metaquest::rules::simple::character*> hostiles;
-        hostiles.push_back(&character);
+        std::vector<metaquest::rules::simple::character> hostiles;
+        hostiles.push_back(character);
 
         std::cerr << character.name.full() << " [" << character.name.display() << "]\n";
 
         std::cerr << character["Attack"] << "\n";
         std::cerr << character["HP/Current"] << "\n";
 
-        while ((*hostiles[0])["Alive"])
+        while (hostiles[0]["Alive"])
         {
-            std::cerr << (*hostiles[0])["HP/Current"] << "/" << (*hostiles[0])["HP/Total"] << "\n";
-            std::cerr << (*party[0])("Attack", hostiles) << "\n";
-            std::cerr << (*hostiles[0])["Alive"] << "\n";
+            std::cerr << hostiles[0]["HP/Current"] << "/" << hostiles[0]["HP/Total"] << "\n";
+            std::cerr << party[0]("Attack", hostiles) << "\n";
+            std::cerr << hostiles[0]["Alive"] << "\n";
         }
     }
 
