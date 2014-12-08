@@ -75,10 +75,11 @@ namespace metaquest
                         return *this;
                     }
 
-                    bool operator() (const std::string &skill, std::vector<character> &target)
+                    bool operator() (const std::string &skill, std::vector<character*> &target)
                     {
                         if (skill == "Attack") {
-                            for (auto &t : target) {
+                            for (auto &tp : target) {
+                                auto &t = *tp;
                                 t.attribute["HP/Current"] -= attribute["Attack"];
                                 if (!t["Alive"]) {
                                     attribute["Experience"] += t.attribute["Experience"]/2 + 1;

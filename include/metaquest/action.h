@@ -40,11 +40,30 @@ namespace metaquest
     class action : public object<T>
     {
         public:
-            typedef metaquest::character<long> parent;
+            typedef metaquest::object<T> parent;
 
-            action(void)
+            action(vool pVisible)
+                : parent(),
+                  visible(pVisisble)
                 {
                 }
+
+            enum scope
+            {
+                self,
+                ally,
+                enemy,
+                party,
+                enemies,
+                everyone
+            };
+
+            bool operator () (std::vector<object<T>*> &target)
+            {
+                return false;
+            }
+
+            const bool visible;
 
         protected:
             using parent::function;

@@ -76,7 +76,12 @@ int main(int, const char **)
         while (hostiles[0]["Alive"])
         {
             std::cerr << hostiles[0]["HP/Current"] << "/" << hostiles[0]["HP/Total"] << "\n";
-            std::cerr << party[0]("Attack", hostiles) << "\n";
+            std::vector<metaquest::rules::simple::character*> targets;
+            for (auto &h : hostiles)
+            {
+                targets.push_back(&h);
+            }
+            std::cerr << party[0]("Attack", targets) << "\n";
             std::cerr << hostiles[0]["Alive"] << "\n";
         }
     }

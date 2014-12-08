@@ -73,7 +73,7 @@ namespace metaquest
              * \returns 'True' if the skill was used successfully, 'false' if it
              *          failed.
              */
-            bool operator () (const std::string &skill, std::vector<character> &target)
+            bool operator () (const std::string &skill, std::vector<character*> &target)
             {
                 return false;
             }
@@ -83,7 +83,7 @@ namespace metaquest
              *
              * The list of items that a character currently has equipped.
              */
-            std::vector<item<T> > equipment;
+            std::vector<item<T>> equipment;
 
             /**\brief List of inventory items
              *
@@ -91,7 +91,7 @@ namespace metaquest
              * inventory. These items are not equipped and should not have any
              * effect on the character's stats.
              */
-            std::vector<item<T> > inventory;
+            std::vector<item<T>> inventory;
     };
 };
 
