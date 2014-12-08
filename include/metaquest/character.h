@@ -78,7 +78,6 @@ namespace metaquest
                 return false;
             }
 
-        protected:
             /**\brief List of equipped items
              *
              * The list of items that a character currently has equipped.

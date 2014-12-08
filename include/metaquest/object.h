@@ -52,6 +52,8 @@ namespace metaquest
     class object
     {
         public:
+            typedef T base;
+
             /**\brief Object name
              *
              * Everything needs a name. Since everything in the game is an
@@ -82,13 +84,12 @@ namespace metaquest
                 }
             }
 
-        protected:
             /**\brief Attribute generation functions
              *
              * Maps attribute names to thunks which can generate an attribute on
              * the fly, e.g. for derived attributes in RPGs.
              */
-            std::map<std::string,std::function<T()> > function;
+            std::map<std::string,std::function<T()>> function;
 
             /**\brief Basic attributes
              *

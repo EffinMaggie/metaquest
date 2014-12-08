@@ -41,12 +41,23 @@ namespace metaquest
      * This type represents a group of characters, referred to as a 'party'. The
      * type is based on std::vector as opposed to std::set because in some
      * contexts (menu, etc.) the order might actually be relevant.
-     *
-     * \tparam T Base type for attributes. Integers are probably a good choice,
-     *           at least for J-RPGs and tabletops.
      */
-    template<typename T = long>
-    using party = std::vector<character<T> >;
+    template<typename C>
+    using party = std::vector<C>;
+
+    template<typename C>
+    party<C> generate(unsigned int members)
+    {
+        party<C> p;
+
+        for (unsigned int i = 0; i < members; i++)
+        {
+            C c;
+            p.push_back(c);
+        }
+
+        return p;
+    }
 };
 
 #endif

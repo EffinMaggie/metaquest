@@ -65,6 +65,7 @@ namespace metaquest
                     character(const character &b)
                         : parent()
                         {
+                            name = b.name;
                             attribute = b.attribute;
                             setFunctions();
                         }
@@ -75,7 +76,7 @@ namespace metaquest
                         return *this;
                     }
 
-                    bool operator() (const std::string &skill, std::vector<character*> &target)
+                    bool operator() (const std::string &skill, std::vector<parent*> &target)
                     {
                         if (skill == "Attack") {
                             for (auto &tp : target) {
@@ -91,9 +92,9 @@ namespace metaquest
                         return false;
                     }
 
-                protected:
                     using parent::attribute;
 
+                protected:
                     void setFunctions(void)
                     {
                         function["HP/Total"] = [this]() -> long {
