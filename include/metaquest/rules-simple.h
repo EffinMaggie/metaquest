@@ -40,6 +40,16 @@ namespace metaquest
     {
         namespace simple
         {
+            static long isAlive(object<long> &t)
+            {
+                return t.attribute["HP/Current"] > 0;
+            }
+
+            static long getHPTotal(object<long> &t)
+            {
+                return t.attribute["Experience"] * 2 + 5;
+            }
+
             class character : public metaquest::character<long>
             {
                 public:
@@ -57,13 +67,8 @@ namespace metaquest
                             attribute["Defence"]    = 1;
                             attribute["Experience"] = 0;
 
-                            function["HP/Total"] = [](metaquest::object<long> &t) -> long {
-                                return t.attribute["Experience"] * 2 + 5;
-                            };
-
-                            function["Alive"] = [](metaquest::object<long> &t) -> long {
-                                return t.attribute["HP/Current"] > 0;
-                            };
+                            function["HP/Total"] = getHPTotal;
+                            function["Alive"] = isAlive;
 
                             attribute["HP/Current"] = (*this)["HP/Total"];
                         }
