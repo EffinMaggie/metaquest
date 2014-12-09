@@ -57,24 +57,16 @@ namespace metaquest
                             attribute["Defence"]    = 1;
                             attribute["Experience"] = 0;
 
-                            setFunctions();
+                            function["HP/Total"] = [](metaquest::object<long> &t) -> long {
+                                return t.attribute["Experience"] * 2 + 5;
+                            };
+
+                            function["Alive"] = [](metaquest::object<long> &t) -> long {
+                                return t.attribute["HP/Current"] > 0;
+                            };
 
                             attribute["HP/Current"] = (*this)["HP/Total"];
                         }
-
-                    character(const character &b)
-                        : parent()
-                        {
-                            name = b.name;
-                            attribute = b.attribute;
-                            setFunctions();
-                        }
-
-                    character &operator = (const character &b)
-                    {
-                        attribute = b.attribute;
-                        return *this;
-                    }
 
                     bool operator() (const std::string &skill, std::vector<parent*> &target)
                     {
@@ -93,18 +85,6 @@ namespace metaquest
                     }
 
                     using parent::attribute;
-
-                protected:
-                    void setFunctions(void)
-                    {
-                        function["HP/Total"] = [this]() -> long {
-                            return attribute["Experience"] * 2 + 5;
-                        };
-
-                        function["Alive"] = [this]() -> long {
-                            return attribute["HP/Current"] > 0;
-                        };
-                    }
             };
         };
     };

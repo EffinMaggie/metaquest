@@ -73,14 +73,14 @@ namespace metaquest
              */
             T operator [] (const std::string &s)
             {
-                std::function<T()> &f = function[s];
+                std::function<T(object&)> &f = function[s];
                 if (f == nullptr)
                 {
                     return attribute[s];
                 }
                 else
                 {
-                    return f();
+                    return f(*this);
                 }
             }
 
@@ -89,7 +89,7 @@ namespace metaquest
              * Maps attribute names to thunks which can generate an attribute on
              * the fly, e.g. for derived attributes in RPGs.
              */
-            std::map<std::string,std::function<T()>> function;
+            std::map<std::string,std::function<T(object&)>> function;
 
             /**\brief Basic attributes
              *

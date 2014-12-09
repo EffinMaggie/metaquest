@@ -58,7 +58,7 @@ namespace metaquest
                 everyone
             };
 
-            bool operator () (std::vector<object<T>*> &target)
+            bool operator () (std::vector<object<T>*> &source, std::vector<object<T>*> &target)
             {
                 return false;
             }
