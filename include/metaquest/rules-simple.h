@@ -33,6 +33,7 @@
 #define METAQUEST_RULES_SIMPLE_H
 
 #include <metaquest/character.h>
+#include <random>
 
 namespace metaquest
 {
@@ -50,24 +51,57 @@ namespace metaquest
                 return t.attribute["Experience"] * 2 + 5;
             }
 
+            static int roll (int num, int sides = 6)
+            {
+                static std::mt19937 rng;
+
+                int res = 0;
+                for (int i = 0; i < num; i++)
+                {
+                    res += 1 + rng() % sides;
+                }
+                return res;
+            }
+
+            static bool attack (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+            {
+                for (auto &sp : source)
+                {
+                    auto &s = *sp;
+                    for (auto &tp : target)
+                    {
+                        auto &t = *tp;
+
+                        std::cout << s.name.display() << " attacks " << t.name.display() << "\n";
+
+                        int dmg = roll(s["Attack"]);
+                        int def = roll(s["Defence"]);
+                        int admg = dmg - def;
+
+                        if (admg > 0)
+                        {
+                            std::cout << s.name.display() << " hits for " << admg << " (" << dmg << ") points of damage\n";
+
+                            t.attribute["HP/Current"] -= admg;
+                            if (!t["Alive"])
+                            {
+                                s.attribute["Experience"] += t.attribute["Experience"]/2 + 1;
+                            }
+                        }
+                        else
+                        {
+                            std::cout << s.name.display() << " misses\n";
+                        }
+                    }
+                }
+                return true;
+            }
+
             class doAttack : public action<long>
             {
                 public:
-                    static bool run (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
-                    {
-                        std::cerr << source[0]->name.full() << "\n";
-                        for (auto &tp : target) {
-                            auto &t = *tp;
-                            t.attribute["HP/Current"] -= source[0]->attribute["Attack"];
-                            if (!t["Alive"]) {
-                                source[0]->attribute["Experience"] += t.attribute["Experience"]/2 + 1;
-                            }
-                        }
-                        return true;
-                    }
-
                     doAttack()
-                        : action<long>(true, run)
+                        : action<long>(true, attack)
                         {}
 
             };

@@ -74,7 +74,10 @@ int main(int, const char **)
             std::vector<metaquest::character<>*> targets;
             for (auto &h : hostiles)
             {
-                targets.push_back(&h);
+                if (h["Alive"])
+                {
+                    targets.push_back(&h);
+                }
             }
             std::cerr << party[0]("Attack", targets) << "\n";
             std::cerr << hostiles[0]["Alive"] << "\n";
