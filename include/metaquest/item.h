@@ -32,7 +32,7 @@
 #if !defined(METAQUEST_ITEM_H)
 #define METAQUEST_ITEM_H
 
-#include <metaquest/object.h>
+#include <metaquest/action.h>
 
 namespace metaquest
 {
@@ -48,6 +48,14 @@ namespace metaquest
     class item : public object<T>
     {
         public:
+            typedef metaquest::object<T> parent;
+
+            item(const action<T> &pApply)
+                : parent(),
+                  apply(pApply)
+                {}
+
+            action<T> apply;
     };
 };
 
