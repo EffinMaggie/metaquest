@@ -50,6 +50,28 @@ namespace metaquest
                 return t.attribute["Experience"] * 2 + 5;
             }
 
+            class doAttack : public action<long>
+            {
+                public:
+                    static bool run (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+                    {
+                        std::cerr << source[0]->name.full() << "\n";
+                        for (auto &tp : target) {
+                            auto &t = *tp;
+                            t.attribute["HP/Current"] -= source[0]->attribute["Attack"];
+                            if (!t["Alive"]) {
+                                source[0]->attribute["Experience"] += t.attribute["Experience"]/2 + 1;
+                            }
+                        }
+                        return true;
+                    }
+
+                    doAttack()
+                        : action<long>(true, run)
+                        {}
+
+            };
+
             class character : public metaquest::character<long>
             {
                 public:
@@ -67,29 +89,13 @@ namespace metaquest
                             attribute["Defence"]    = 1;
                             attribute["Experience"] = 0;
 
-                            function["HP/Total"] = getHPTotal;
-                            function["Alive"] = isAlive;
+                            function["HP/Total"]    = getHPTotal;
+                            function["Alive"]       = isAlive;
 
                             attribute["HP/Current"] = (*this)["HP/Total"];
+
+                            actions["Attack"] = doAttack();
                         }
-
-                    bool operator() (const std::string &skill, std::vector<parent*> &target)
-                    {
-                        if (skill == "Attack") {
-                            for (auto &tp : target) {
-                                auto &t = *tp;
-                                t.attribute["HP/Current"] -= attribute["Attack"];
-                                if (!t["Alive"]) {
-                                    attribute["Experience"] += t.attribute["Experience"]/2 + 1;
-                                }
-                            }
-                            return true;
-                        }
-
-                        return false;
-                    }
-
-                    using parent::attribute;
             };
         };
     };

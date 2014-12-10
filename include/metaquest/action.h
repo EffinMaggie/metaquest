@@ -42,9 +42,11 @@ namespace metaquest
         public:
             typedef metaquest::object<T> parent;
 
-            action(vool pVisible)
+            action(bool pVisible = false,
+                   std::function<bool(std::vector<object<T>*> &source, std::vector<object<T>*> &target)> pApply = nullptr)
                 : parent(),
-                  visible(pVisisble)
+                  visible(pVisible),
+                  apply(pApply)
                 {
                 }
 
@@ -60,14 +62,16 @@ namespace metaquest
 
             bool operator () (std::vector<object<T>*> &source, std::vector<object<T>*> &target)
             {
+                if (apply != nullptr)
+                {
+                    return apply(source, target);
+                }
+
                 return false;
             }
 
-            const bool visible;
-
-        protected:
-            using parent::function;
-            using parent::attribute;
+            bool visible;
+            std::function<bool(std::vector<object<T>*> &source, std::vector<object<T>*> &target)> apply;
     };
 };
 

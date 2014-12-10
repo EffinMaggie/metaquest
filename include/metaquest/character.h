@@ -32,6 +32,7 @@
 #define METAQUEST_CHARACTER_H
 
 #include <metaquest/item.h>
+#include <metaquest/action.h>
 
 #include <vector>
 
@@ -73,8 +74,24 @@ namespace metaquest
              * \returns 'True' if the skill was used successfully, 'false' if it
              *          failed.
              */
-            bool operator () (const std::string &skill, std::vector<character*> &target)
+            bool operator () (const std::string &skill, std::vector<character*> &pTarget)
             {
+                auto action = actions.find(skill);
+                if (action != actions.end())
+                {
+                    std::vector<object<T>*> source, target;
+                    source.push_back(this);
+
+                    for (auto &t : pTarget)
+                    {
+                        target.push_back(t);
+                    }
+
+                    action->second(source, target);
+
+                    return true;
+                }
+                    
                 return false;
             }
 
@@ -91,6 +108,8 @@ namespace metaquest
              * effect on the character's stats.
              */
             std::vector<item<T>> inventory;
+
+            std::map<std::string,action<T>> actions;
     };
 };
 
