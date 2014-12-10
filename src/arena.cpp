@@ -87,7 +87,6 @@ int main(int, const char **)
             }
 
             std::cerr << party[0]("Attack", targets) << "\n";
-            std::cerr << hostiles[0]["Alive"] << "\n";
         }
     }
 
