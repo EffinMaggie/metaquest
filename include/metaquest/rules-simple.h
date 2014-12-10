@@ -63,8 +63,9 @@ namespace metaquest
                 return res;
             }
 
-            static bool attack (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+            static std::string attack (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
             {
+                std::stringstream os("");
                 for (auto &sp : source)
                 {
                     auto &s = *sp;
@@ -72,7 +73,7 @@ namespace metaquest
                     {
                         auto &t = *tp;
 
-                        std::cout << s.name.display() << " attacks " << t.name.display() << "\n";
+                        os << s.name.display() << " attacks " << t.name.display() << "\n";
 
                         int dmg = roll(s["Attack"]);
                         int def = roll(s["Defence"]);
@@ -80,7 +81,7 @@ namespace metaquest
 
                         if (admg > 0)
                         {
-                            std::cout << s.name.display() << " hits for " << admg << " (" << dmg << ") points of damage\n";
+                            os << s.name.display() << " hits for " << admg << " (" << dmg << ") points of damage\n";
 
                             t.attribute["HP/Current"] -= admg;
                             if (!t["Alive"])
@@ -90,11 +91,11 @@ namespace metaquest
                         }
                         else
                         {
-                            std::cout << s.name.display() << " misses\n";
+                            os << s.name.display() << " misses\n";
                         }
                     }
                 }
-                return true;
+                return os.str();
             }
 
             class doAttack : public action<long>

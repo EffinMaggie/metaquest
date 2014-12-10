@@ -68,10 +68,11 @@ int main(int, const char **)
         std::cerr << hostiles[0]["Attack"] << "\n";
         std::cerr << hostiles[0]["HP/Current"] << "\n";
 
-        while (hostiles[0]["Alive"])
+        while (true)
         {
             std::cerr << hostiles[0]["HP/Current"] << "/" << hostiles[0]["HP/Total"] << "\n";
             std::vector<metaquest::character<>*> targets;
+
             for (auto &h : hostiles)
             {
                 if (h["Alive"])
@@ -79,6 +80,12 @@ int main(int, const char **)
                     targets.push_back(&h);
                 }
             }
+
+            if (targets.size() == 0)
+            {
+                break;
+            }
+
             std::cerr << party[0]("Attack", targets) << "\n";
             std::cerr << hostiles[0]["Alive"] << "\n";
         }
@@ -86,9 +93,6 @@ int main(int, const char **)
 
     output.flush();
 
-    metaquest::character<> C;
-
-    std::cerr << C["frob"] << "\n";
     std::cerr << "\u261e" << "\n";
 
     return 0;

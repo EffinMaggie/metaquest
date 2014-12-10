@@ -74,7 +74,7 @@ namespace metaquest
              * \returns 'True' if the skill was used successfully, 'false' if it
              *          failed.
              */
-            bool operator () (const std::string &skill, std::vector<character*> &pTarget)
+            std::string operator () (const std::string &skill, std::vector<character*> &pTarget)
             {
                 auto action = actions.find(skill);
                 if (action != actions.end())
@@ -87,12 +87,10 @@ namespace metaquest
                         target.push_back(t);
                     }
 
-                    action->second(source, target);
-
-                    return true;
+                    return action->second(source, target);
                 }
-                    
-                return false;
+                
+                return object<T>::name.display() + " looks bewildered\n";
             }
 
             /**\brief List of equipped items
