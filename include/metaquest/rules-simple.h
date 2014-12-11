@@ -98,15 +98,6 @@ namespace metaquest
                 return os.str();
             }
 
-            class doAttack : public action<long>
-            {
-                public:
-                    doAttack()
-                        : action<long>(true, attack)
-                        {}
-
-            };
-
             class character : public metaquest::character<long>
             {
                 public:
@@ -129,7 +120,7 @@ namespace metaquest
 
                             attribute["HP/Current"] = (*this)["HP/Total"];
 
-                            actions["Attack"] = doAttack();
+                            parent::bind("Attack", true, attack);
                         }
             };
         };

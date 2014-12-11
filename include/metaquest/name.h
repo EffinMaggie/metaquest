@@ -142,7 +142,7 @@ namespace metaquest
          *                   variant of efgy::markov::chain.
          */
         template<typename T = char, typename generator = efgy::markov::chain<T,3> >
-        class proper : public std::vector<name<T,generator> >
+        class proper : public std::vector<name<T,generator>>
         {
             public:
                 /**\brief Query the full name
@@ -190,6 +190,21 @@ namespace metaquest
 
                     return full();
                 }
+        };
+
+        template<typename T = char, typename generator = efgy::markov::chain<T,3> >
+        class simple : public proper<T,generator>
+        {
+            public:
+                typedef proper<T,generator> parent;
+
+                using parent::push_back;
+
+                simple(const std::string &pName)
+                    : parent()
+                    {
+                        push_back(pName);
+                    }
         };
 
         /**\brief American names

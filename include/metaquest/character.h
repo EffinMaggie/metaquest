@@ -108,6 +108,14 @@ namespace metaquest
             std::vector<item<T>> inventory;
 
             std::map<std::string,action<T>> actions;
+
+            action<T> &bind (const std::string &name, bool isVisible, std::function<std::string(std::vector<object<T>*> &source, std::vector<object<T>*> &target)> pApply)
+            {
+                action<T> action(isVisible, pApply);
+                action.name = metaquest::name::simple<>(name);
+                actions[name] = action;
+                return actions[name];
+            }
     };
 };
 
