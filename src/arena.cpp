@@ -42,25 +42,27 @@
 
 using namespace efgy;
 
-template<typename T, typename U>
+template<typename U>
 void drawBar(terminal::terminal<U> &term,
-             const T &x, const T &y, const T &width, const T &min, const T &max,
-             const T &full = '#', const T &left = '[', const T &right = ']',
+             const ssize_t &x, const ssize_t &y,
+             const std::size_t &width,
+             const ssize_t &min, const ssize_t &max,
+             const U &full = '#', const U &left = '[', const U &right = ']',
              const int &foregroundColour = 7,
              const int &backgroundColour = 0)
 {
     const auto dim = term.size();
     const double perc = double(min)/double(max);
-    const T fullchars = perc > 0 ? (width-2) * perc : 0;
+    const std::size_t fullchars = perc > 0 ? (width-2) * perc : 0;
 
-    const T ry = (y >= 0) ? y : (dim[1] + y);
-    T rx = (x >= 0) ? x : (dim[0] + x);
+    const std::size_t ry = (y >= 0) ? y : (dim[1] + y);
+    std::size_t rx = (x >= 0) ? x : (dim[0] + x);
 
     term.target[ry][rx].content = left;
     term.target[ry][rx].foregroundColour = foregroundColour;
     term.target[ry][rx].backgroundColour = backgroundColour;
     rx++;
-    for (T i = 0; i < (width - 2); i++, rx++)
+    for (std::size_t i = 0; i < (width - 2); i++, rx++)
     {
         term.target[ry][rx].content = (i < fullchars) ? full : ' ';
         term.target[ry][rx].foregroundColour = foregroundColour;
@@ -69,6 +71,34 @@ void drawBar(terminal::terminal<U> &term,
     term.target[ry][rx].content = right;
     term.target[ry][rx].foregroundColour = foregroundColour;
     term.target[ry][rx].backgroundColour = backgroundColour;
+}
+
+template<typename U, typename C>
+void write(terminal::terminal<U> &term,
+           const ssize_t &x, const ssize_t &y,
+           const std::size_t &width,
+           const std::basic_string<C> &str,
+           const int &foregroundColour = 7,
+           const int &backgroundColour = 0)
+{
+    const auto dim = term.size();
+
+    const std::size_t ry = (y >= 0) ? y : (dim[1] + y);
+    std::size_t rx = (x >= 0) ? x : (dim[0] + x);
+
+    std::size_t i = 0;
+    for (const auto &c : str)
+    {
+        if (i > width)
+        {
+            break;
+        }
+        term.target[ry][rx].content = c;
+        term.target[ry][rx].foregroundColour = foregroundColour;
+        term.target[ry][rx].backgroundColour = backgroundColour;
+        i++;
+        rx++;
+    }
 }
 
 /**\brief Metaquest: Arena main function
@@ -109,7 +139,8 @@ int main(int, const char **)
                     targets.push_back(&h);
                 }
 
-                drawBar<long>(output, -50, i, 50, h["HP/Current"], h["HP/Total"]);
+                drawBar(output, -50, i, 50, h["HP/Current"], h["HP/Total"]);
+                write(output, 1, i, 20, h.name.display());
                 i++;
             }
 
@@ -117,6 +148,7 @@ int main(int, const char **)
             for (auto &p : party)
             {
                 drawBar<long>(output, -50, i, 50, p["HP/Current"], p["HP/Total"]);
+                write(output, 1, i, 20, p.name.display());
                 i--;
             }
 
