@@ -86,18 +86,11 @@ void write(terminal::terminal<U> &term,
     const std::size_t ry = (y >= 0) ? y : (dim[1] + y);
     std::size_t rx = (x >= 0) ? x : (dim[0] + x);
 
-    std::size_t i = 0;
-    for (const auto &c : str)
+    for (std::size_t i = 0; i < width; i++, rx++)
     {
-        if (i > width)
-        {
-            break;
-        }
-        term.target[ry][rx].content = c;
+        term.target[ry][rx].content = (i < str.size()) ? str[i] : ' ';
         term.target[ry][rx].foregroundColour = foregroundColour;
         term.target[ry][rx].backgroundColour = backgroundColour;
-        i++;
-        rx++;
     }
 }
 
@@ -140,7 +133,7 @@ int main(int, const char **)
                 }
 
                 drawBar(output, -50, i, 50, h["HP/Current"], h["HP/Total"]);
-                write(output, 1, i, 20, h.name.display());
+                write(output, 0, i, 30, h.name.full());
                 i++;
             }
 
@@ -148,7 +141,7 @@ int main(int, const char **)
             for (auto &p : party)
             {
                 drawBar<long>(output, -50, i, 50, p["HP/Current"], p["HP/Total"]);
-                write(output, 1, i, 20, p.name.display());
+                write(output, 0, i, 30, p.name.full());
                 i--;
             }
 
