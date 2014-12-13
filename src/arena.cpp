@@ -42,6 +42,35 @@
 
 using namespace efgy;
 
+template<typename T, typename U>
+void drawBar(terminal::terminal<U> &term,
+             const T &x, const T &y, const T &width, const T &min, const T &max,
+             const T &full = '#', const T &left = '[', const T &right = ']',
+             const int &foregroundColour = 7,
+             const int &backgroundColour = 0)
+{
+    const auto dim = term.size();
+    const double perc = double(min)/double(max);
+    const T fullchars = perc > 0 ? (width-2) * perc : 0;
+
+    const T ry = (y >= 0) ? y : (dim[1] + y);
+    T rx = (x >= 0) ? x : (dim[0] + x);
+
+    term.target[ry][rx].content = left;
+    term.target[ry][rx].foregroundColour = foregroundColour;
+    term.target[ry][rx].backgroundColour = backgroundColour;
+    rx++;
+    for (T i = 0; i < (width - 2); i++, rx++)
+    {
+        term.target[ry][rx].content = (i < fullchars) ? full : ' ';
+        term.target[ry][rx].foregroundColour = foregroundColour;
+        term.target[ry][rx].backgroundColour = backgroundColour;
+    }
+    term.target[ry][rx].content = right;
+    term.target[ry][rx].foregroundColour = foregroundColour;
+    term.target[ry][rx].backgroundColour = backgroundColour;
+}
+
 /**\brief Metaquest: Arena main function
  *
  * This is the main function for the 'arena' programme. It is currently far from
@@ -63,15 +92,15 @@ int main(int, const char **)
     {
         auto hostiles = metaquest::generate<metaquest::rules::simple::character>(4);
 
-        std::cerr << hostiles[0].name.full() << " [" << hostiles[0].name.display() << "]\n";
+        //std::cerr << hostiles[0].name.full() << " [" << hostiles[0].name.display() << "]\n";
 
-        std::cerr << hostiles[0]["Attack"] << "\n";
-        std::cerr << hostiles[0]["HP/Current"] << "\n";
+        //std::cerr << hostiles[0]["Attack"] << "\n";
+        //std::cerr << hostiles[0]["HP/Current"] << "\n";
 
         while (true)
         {
-            std::cerr << hostiles[0]["HP/Current"] << "/" << hostiles[0]["HP/Total"] << "\n";
             std::vector<metaquest::character<>*> targets;
+            int i = 0;
 
             for (auto &h : hostiles)
             {
@@ -79,14 +108,27 @@ int main(int, const char **)
                 {
                     targets.push_back(&h);
                 }
+
+                drawBar<long>(output, -50, i, 50, h["HP/Current"], h["HP/Total"]);
+                i++;
             }
+
+            i = -1;
+            for (auto &p : party)
+            {
+                drawBar<long>(output, -50, i, 50, p["HP/Current"], p["HP/Total"]);
+                i--;
+            }
+
+            while(output.flush());
 
             if (targets.size() == 0)
             {
                 break;
             }
 
-            std::cerr << party[0]("Attack", targets) << "\n";
+            //std::cerr << party[0]("Attack", targets) << "\n";
+            party[0]("Attack", targets);
         }
     }
 
