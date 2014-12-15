@@ -84,7 +84,7 @@ int main(int, const char **)
 
                 outw.to(-50, i)
                     .bar(h["HP/Current"], h["HP/Total"], 50);
-                outw.to(0, i)
+                outw.x(0)
                     .write(h.name.full(), 30);
                 i++;
             }
@@ -94,7 +94,7 @@ int main(int, const char **)
             {
                 outw.to(-50, i)
                     .bar(p["HP/Current"], p["HP/Total"], 50);
-                outw.to(0, i)
+                outw.x(0)
                     .write(p.name.full(), 30);
                 i--;
             }
