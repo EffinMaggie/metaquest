@@ -37,62 +37,11 @@
 #include <iostream>
 
 #include <ef.gy/vt100.h>
+#include <ef.gy/terminal-writer.h>
 #include <metaquest/party.h>
 #include <metaquest/rules-simple.h>
 
 using namespace efgy;
-
-template<typename U>
-void drawBar(terminal::terminal<U> &term,
-             const ssize_t &x, const ssize_t &y,
-             const std::size_t &width,
-             const ssize_t &min, const ssize_t &max,
-             const U &full = '#', const U &left = '[', const U &right = ']',
-             const int &foregroundColour = 7,
-             const int &backgroundColour = 0)
-{
-    const auto dim = term.size();
-    const double perc = double(min)/double(max);
-    const std::size_t fullchars = perc > 0 ? (width-2) * perc : 0;
-
-    const std::size_t ry = (y >= 0) ? y : (dim[1] + y);
-    std::size_t rx = (x >= 0) ? x : (dim[0] + x);
-
-    term.target[ry][rx].content = left;
-    term.target[ry][rx].foregroundColour = foregroundColour;
-    term.target[ry][rx].backgroundColour = backgroundColour;
-    rx++;
-    for (std::size_t i = 0; i < (width - 2); i++, rx++)
-    {
-        term.target[ry][rx].content = (i < fullchars) ? full : ' ';
-        term.target[ry][rx].foregroundColour = foregroundColour;
-        term.target[ry][rx].backgroundColour = backgroundColour;
-    }
-    term.target[ry][rx].content = right;
-    term.target[ry][rx].foregroundColour = foregroundColour;
-    term.target[ry][rx].backgroundColour = backgroundColour;
-}
-
-template<typename U, typename C>
-void write(terminal::terminal<U> &term,
-           const ssize_t &x, const ssize_t &y,
-           const std::size_t &width,
-           const std::basic_string<C> &str,
-           const int &foregroundColour = 7,
-           const int &backgroundColour = 0)
-{
-    const auto dim = term.size();
-
-    const std::size_t ry = (y >= 0) ? y : (dim[1] + y);
-    std::size_t rx = (x >= 0) ? x : (dim[0] + x);
-
-    for (std::size_t i = 0; i < width; i++, rx++)
-    {
-        term.target[ry][rx].content = (i < str.size()) ? str[i] : ' ';
-        term.target[ry][rx].foregroundColour = foregroundColour;
-        term.target[ry][rx].backgroundColour = backgroundColour;
-    }
-}
 
 /**\brief Metaquest: Arena main function
  *
@@ -106,6 +55,7 @@ int main(int, const char **)
     terminal::vt100<> output;
 
     output.resize(output.getOSDimensions());
+    terminal::writer<> outw(output);
 
     auto party = metaquest::generate<metaquest::rules::simple::character>(4);
 
@@ -132,16 +82,20 @@ int main(int, const char **)
                     targets.push_back(&h);
                 }
 
-                drawBar(output, -50, i, 50, h["HP/Current"], h["HP/Total"]);
-                write(output, 0, i, 30, h.name.full());
+                outw.to(-50, i)
+                    .bar(h["HP/Current"], h["HP/Total"], 50);
+                outw.to(0, i)
+                    .write(h.name.full(), 30);
                 i++;
             }
 
             i = -1;
             for (auto &p : party)
             {
-                drawBar<long>(output, -50, i, 50, p["HP/Current"], p["HP/Total"]);
-                write(output, 0, i, 30, p.name.full());
+                outw.to(-50, i)
+                    .bar(p["HP/Current"], p["HP/Total"], 50);
+                outw.to(0, i)
+                    .write(p.name.full(), 30);
                 i--;
             }
 
