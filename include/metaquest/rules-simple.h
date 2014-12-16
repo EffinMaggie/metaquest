@@ -33,6 +33,7 @@
 #define METAQUEST_RULES_SIMPLE_H
 
 #include <metaquest/character.h>
+#include <metaquest/game.h>
 #include <random>
 
 namespace metaquest
@@ -123,8 +124,12 @@ namespace metaquest
                             parent::bind("Attack", true, attack);
                         }
             };
-        };
-    };
-};
+
+            class game : public metaquest::game::base<character>
+            {
+            };
+        }
+    }
+}
 
 #endif

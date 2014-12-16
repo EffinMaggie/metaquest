@@ -57,58 +57,48 @@ int main(int, const char **)
     output.resize(output.getOSDimensions());
     terminal::writer<> outw(output);
 
-    auto party = metaquest::generate<metaquest::rules::simple::character>(4);
+    metaquest::rules::simple::game game;
 
-    std::cerr << party[0].name.full() << " [" << party[0].name.display() << "]\n";
+    auto &party = game.parties[0];
+    auto &hostiles = game.parties[1];
 
-    for (unsigned int i = 0; i < 100; i++)
+    while (true)
     {
-        auto hostiles = metaquest::generate<metaquest::rules::simple::character>(4);
+        std::vector<metaquest::character<>*> targets;
+        int i = 0;
 
-        //std::cerr << hostiles[0].name.full() << " [" << hostiles[0].name.display() << "]\n";
-
-        //std::cerr << hostiles[0]["Attack"] << "\n";
-        //std::cerr << hostiles[0]["HP/Current"] << "\n";
-
-        while (true)
+        for (auto &h : hostiles)
         {
-            std::vector<metaquest::character<>*> targets;
-            int i = 0;
-
-            for (auto &h : hostiles)
+            if (h["Alive"])
             {
-                if (h["Alive"])
-                {
-                    targets.push_back(&h);
-                }
-
-                outw.to(-50, i)
-                    .bar(h["HP/Current"], h["HP/Total"], 50);
-                outw.x(0)
-                    .write(h.name.full(), 30);
-                i++;
+                targets.push_back(&h);
             }
 
-            i = -1;
-            for (auto &p : party)
-            {
-                outw.to(-50, i)
-                    .bar(p["HP/Current"], p["HP/Total"], 50);
-                outw.x(0)
-                    .write(p.name.full(), 30);
-                i--;
-            }
-
-            while(output.flush());
-
-            if (targets.size() == 0)
-            {
-                break;
-            }
-
-            //std::cerr << party[0]("Attack", targets) << "\n";
-            party[0]("Attack", targets);
+            outw.to(-50, i)
+                .bar(h["HP/Current"], h["HP/Total"], 50);
+            outw.x(0)
+                .write(h.name.full(), 30);
+            i++;
         }
+
+        i = -1;
+        for (auto &p : party)
+        {
+            outw.to(-50, i)
+                .bar(p["HP/Current"], p["HP/Total"], 50);
+            outw.x(0)
+                .write(p.name.full(), 30);
+            i--;
+        }
+
+        while(output.flush());
+
+        if (targets.size() == 0)
+        {
+            break;
+        }
+
+        party[0]("Attack", targets);
     }
 
     output.flush();
