@@ -121,12 +121,20 @@ namespace metaquest
 
                             attribute["HP/Current"] = (*this)["HP/Total"];
 
-                            parent::bind("Attack", true, attack);
+                            bind("Attack", true, attack);
                         }
             };
 
-            class game : public metaquest::game::base<character>
+            template<typename inter>
+            class game : public metaquest::game::base<character, inter>
             {
+                public:
+                    typedef metaquest::game::base<character, inter> parent;
+
+                    game(inter &pInteract)  
+                        : parent(pInteract)
+                        {
+                        }
             };
         }
     }

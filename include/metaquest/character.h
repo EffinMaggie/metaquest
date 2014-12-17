@@ -115,8 +115,9 @@ namespace metaquest
                 return action[name];
             }
 
+        protected:
             std::map<std::string,action<T>> action;
     };
-};
+}
 
 #endif

@@ -36,7 +36,7 @@ namespace metaquest
 {
     namespace game
     {
-        template<typename character>
+        template<typename character, typename inter>
         class base : public metaquest::object<typename character::base>
         {
             public:
@@ -45,8 +45,9 @@ namespace metaquest
                 using parent::attribute;
                 using parent::function;
 
-                base (long pParties = 2)
-                    : parent()
+                base (inter &pInteract, long pParties = 2)
+                    : parent(),
+                      interact(pInteract)
                     {
                         attribute["parties"] = pParties;
                         bind("generate-parties", doGenerateParties);
@@ -81,6 +82,8 @@ namespace metaquest
                     action[name] = apply;
                     return *this;
                 }
+
+                inter &interact;
 
             protected:
                 static std::string doGenerateParties (parent &pSelf)

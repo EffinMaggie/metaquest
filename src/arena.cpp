@@ -43,6 +43,28 @@
 
 using namespace efgy;
 
+template<typename term = terminal::vt100<>>
+class interact
+{
+    public:
+        interact()
+            : io(),
+              out(io)
+            {
+                io.resize(io.getOSDimensions());
+            }
+              
+        terminal::writer<> out;
+
+        void flush(void)
+        {
+            while(io.flush());
+        }
+
+    protected:
+        term io;
+};
+
 /**\brief Metaquest: Arena main function
  *
  * This is the main function for the 'arena' programme. It is currently far from
@@ -52,12 +74,9 @@ using namespace efgy;
  */
 int main(int, const char **)
 {
-    terminal::vt100<> output;
+    interact<> inter;
 
-    output.resize(output.getOSDimensions());
-    terminal::writer<> outw(output);
-
-    metaquest::rules::simple::game game;
+    metaquest::rules::simple::game<interact<>> game(inter);
 
     auto &party = game.parties[0];
     auto &hostiles = game.parties[1];
@@ -74,24 +93,24 @@ int main(int, const char **)
                 targets.push_back(&h);
             }
 
-            outw.to(-50, i)
-                .bar(h["HP/Current"], h["HP/Total"], 50);
-            outw.x(0)
-                .write(h.name.full(), 30);
+            inter.out.to(-50, i)
+                     .bar(h["HP/Current"], h["HP/Total"], 50)
+                     .x(0)
+                     .write(h.name.full(), 30);
             i++;
         }
 
         i = -1;
         for (auto &p : party)
         {
-            outw.to(-50, i)
-                .bar(p["HP/Current"], p["HP/Total"], 50);
-            outw.x(0)
-                .write(p.name.full(), 30);
+            inter.out.to(-50, i)
+                     .bar(p["HP/Current"], p["HP/Total"], 50)
+                     .x(0)
+                     .write(p.name.full(), 30);
             i--;
         }
 
-        while(output.flush());
+        inter.flush();
 
         if (targets.size() == 0)
         {
@@ -101,7 +120,7 @@ int main(int, const char **)
         party[0]("Attack", targets);
     }
 
-    output.flush();
+    inter.flush();
 
     std::cerr << "\u261e" << "\n";
 

@@ -97,6 +97,6 @@ namespace metaquest
              */
             std::map<std::string,T> attribute;
     };
-};
+}
 
 #endif
