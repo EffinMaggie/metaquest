@@ -37,25 +37,48 @@ namespace metaquest
     namespace game
     {
         template<typename character>
-        class base
+        class base : public metaquest::object<typename character::base>
         {
             public:
+                typedef metaquest::object<typename character::base> parent;
+
+                using parent::attribute;
+                using parent::function;
+
                 base (long pParties = 2)
-                    : nParties(pParties)
+                    : parent()
                     {
+                        attribute["parties"] = pParties;
+                        function["generate-parties"] = doGenerateParties;
                         generateParties();
                     }
 
                 std::vector<metaquest::party<character>> parties;
 
-                long nParties;
-
-                void generateParties (void)
+                typename parent::base generateParties (void)
                 {
-                    while (parties.size() < nParties)
+                    return (*this)["generate-parties"];
+                }
+
+                typename parent::base next (void)
+                {
+                    return (*this)["next"];
+                }
+
+            protected:
+                static typename parent::base doGenerateParties (parent &pSelf)
+                {
+                    base &self = static_cast<base&>(pSelf);
+
+                    typename parent::base generated = 0;
+
+                    while (self.parties.size() < self["parties"])
                     {
-                        parties.push_back(metaquest::generate<character>(4));
+                        self.parties.push_back(metaquest::generate<character>(4));
+                        generated++;
                     }
+
+                    return generated;
                 }
         };
     }
