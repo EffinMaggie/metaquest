@@ -76,8 +76,8 @@ namespace metaquest
              */
             std::string operator () (const std::string &skill, std::vector<character*> &pTarget)
             {
-                auto action = actions.find(skill);
-                if (action != actions.end())
+                auto act = action.find(skill);
+                if (act != action.end())
                 {
                     std::vector<object<T>*> source, target;
                     source.push_back(this);
@@ -87,7 +87,7 @@ namespace metaquest
                         target.push_back(t);
                     }
 
-                    return action->second(source, target);
+                    return act->second(source, target);
                 }
                 
                 return object<T>::name.display() + " looks bewildered\n";
@@ -107,15 +107,15 @@ namespace metaquest
              */
             std::vector<item<T>> inventory;
 
-            std::map<std::string,action<T>> actions;
-
-            action<T> &bind (const std::string &name, bool isVisible, std::function<std::string(std::vector<object<T>*> &source, std::vector<object<T>*> &target)> pApply)
+            metaquest::action<T> &bind (const std::string &name, bool isVisible, std::function<std::string(std::vector<object<T>*>&, std::vector<object<T>*>&)> pApply)
             {
-                action<T> action(isVisible, pApply);
-                action.name = metaquest::name::simple<>(name);
-                actions[name] = action;
-                return actions[name];
+                metaquest::action<T> act(isVisible, pApply);
+                act.name = metaquest::name::simple<>(name);
+                action[name] = act;
+                return action[name];
             }
+
+            std::map<std::string,action<T>> action;
     };
 };
 

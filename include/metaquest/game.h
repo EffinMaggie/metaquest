@@ -49,37 +49,56 @@ namespace metaquest
                     : parent()
                     {
                         attribute["parties"] = pParties;
-                        function["generate-parties"] = doGenerateParties;
+                        bind("generate-parties", doGenerateParties);
                         generateParties();
                     }
 
                 std::vector<metaquest::party<character>> parties;
 
-                typename parent::base generateParties (void)
+                std::string generateParties (void)
                 {
-                    return (*this)["generate-parties"];
+                    return (*this)("generate-parties");
                 }
 
-                typename parent::base next (void)
+                std::string next (void)
                 {
-                    return (*this)["next"];
+                    return (*this)("next");
+                }
+
+                std::string operator () (const std::string &command)
+                {
+                    auto act = action.find(command);
+                    if (act != action.end())
+                    {
+                        return act->second(*this);
+                    }
+
+                    return command + " is not something that came up while writing this game\n";
+                }
+
+                base &bind (const std::string &name, std::function<std::string(parent&)> apply)
+                {
+                    action[name] = apply;
+                    return *this;
                 }
 
             protected:
-                static typename parent::base doGenerateParties (parent &pSelf)
+                static std::string doGenerateParties (parent &pSelf)
                 {
                     base &self = static_cast<base&>(pSelf);
 
-                    typename parent::base generated = 0;
+                    std::string out = "";
 
                     while (self.parties.size() < self["parties"])
                     {
                         self.parties.push_back(metaquest::generate<character>(4));
-                        generated++;
+                        out += "a new party appeared!\n";
                     }
 
-                    return generated;
+                    return out;
                 }
+
+                std::map<std::string,std::function<std::string(parent&)>> action;
         };
     }
 }
