@@ -131,10 +131,40 @@ namespace metaquest
                 public:
                     typedef metaquest::game::base<character, inter> parent;
 
+                    using parent::bind;
+
                     game(inter &pInteract)  
                         : parent(pInteract)
                         {
+                            bind("next", doNext);
                         }
+
+                protected:
+                    static std::string doNext (typename parent::parent &pSelf)
+                    {
+                        static std::mt19937 rng;
+                        game &self = static_cast<game&>(pSelf);
+
+                        std::size_t p = rng() % self.parties.size();
+                        std::size_t n = rng() % self.parties[p].size();
+
+                        character &c = self.parties[p][n];
+
+                        auto visible = c.visibleActions();
+                        std::string s = self.interact.query(c, visible);
+
+                        std::vector<metaquest::character<>*> targets;
+
+                        for (auto &h : self.parties[((long)!p)])
+                        {
+                            if (h["Alive"])
+                            {
+                                targets.push_back(&h);
+                            }
+                        }
+
+                        return c(s, targets);
+                    }
             };
         }
     }

@@ -49,7 +49,8 @@ class interact
     public:
         interact()
             : io(),
-              out(io)
+              out(io),
+              rng()
             {
                 io.resize(io.getOSDimensions());
             }
@@ -61,8 +62,15 @@ class interact
             while(io.flush());
         }
 
+        template<typename T>
+        std::string query (const metaquest::character<T> &source, const std::vector<std::string> &list)
+        {
+            return list[(rng()%list.size())];
+        }
+
     protected:
         term io;
+        std::mt19937 rng;
 };
 
 /**\brief Metaquest: Arena main function
@@ -85,6 +93,9 @@ int main(int, const char **)
     {
         std::vector<metaquest::character<>*> targets;
         int i = 0;
+
+        inter.out.to(0,5)
+                 .write(game.next(), 80);
 
         for (auto &h : hostiles)
         {
@@ -117,7 +128,7 @@ int main(int, const char **)
             break;
         }
 
-        party[0]("Attack", targets);
+        // party[0]("Attack", targets);
     }
 
     inter.flush();

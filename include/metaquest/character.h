@@ -115,6 +115,21 @@ namespace metaquest
                 return action[name];
             }
 
+            std::vector<std::string> visibleActions (void)
+            {
+                std::vector<std::string> actions;
+
+                for(auto a : action)
+                {
+                    if (a.second.visible)
+                    {
+                        actions.push_back(a.first);
+                    }
+                }
+
+                return actions;
+            }
+
         protected:
             std::map<std::string,action<T>> action;
     };
