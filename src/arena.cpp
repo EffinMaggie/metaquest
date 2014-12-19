@@ -62,8 +62,8 @@ class interact
             while(io.flush());
         }
 
-        template<typename T>
-        std::string query (const metaquest::character<T> &source, const std::vector<std::string> &list)
+        template<typename T, typename G>
+        std::string query (const G &game, const metaquest::character<T> &source, const std::vector<std::string> &list)
         {
             return list[(rng()%list.size())];
         }
@@ -95,7 +95,7 @@ int main(int, const char **)
         int i = 0;
 
         inter.out.to(0,5)
-                 .write(game.next(), 80);
+                 .write(game.next(), 400);
 
         for (auto &h : hostiles)
         {

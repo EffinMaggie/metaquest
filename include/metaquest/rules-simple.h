@@ -151,7 +151,7 @@ namespace metaquest
                         character &c = self.parties[p][n];
 
                         auto visible = c.visibleActions();
-                        std::string s = self.interact.query(c, visible);
+                        std::string s = self.interact.query(self, c, visible);
 
                         std::vector<metaquest::character<>*> targets;
 
