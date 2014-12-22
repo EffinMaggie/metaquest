@@ -155,7 +155,7 @@ namespace metaquest
 
                         std::vector<metaquest::character<>*> targets;
 
-                        for (auto &h : self.parties[((long)!p)])
+                        for (auto &h : self.parties[(self.parties.size() - 1 - p)])
                         {
                             if (h["Alive"])
                             {

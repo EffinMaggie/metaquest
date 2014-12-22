@@ -65,6 +65,16 @@ class interact
         template<typename T, typename G>
         std::string query (const G &game, const metaquest::character<T> &source, const std::vector<std::string> &list)
         {
+            out.to(6, 6).box(20,2 + list.size());
+            flush();
+
+            for (std::size_t i = 0; i < list.size(); i++)
+            {
+                out.to(8, 7+i).write(list[i], 17);
+            }
+
+            out.to(0,15);
+
             return list[(rng()%list.size())];
         }
 
