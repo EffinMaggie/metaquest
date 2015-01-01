@@ -103,7 +103,7 @@ data/census/dist.%: data/census/dist.%.census.gov
 
 data/census/dist.%.census.gov:
 	mkdir -p $(dir $@) || true
-	$(CURL) 'http://www.census.gov/genealogy/www/data/1990surnames/dist.$*' > $@
+	$(CURL) 'http://www2.census.gov/topics/genealogy/1990surnames/dist.$*' > $@
 
 include/data/%.h: data/census/dist.%
 	mkdir -p $(dir $@) || true
