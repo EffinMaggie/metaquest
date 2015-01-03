@@ -58,7 +58,7 @@ namespace metaquest
                 party,
                 enemies,
                 everyone
-            };
+            } scope;
 
             std::string operator () (std::vector<object<T>*> &source, std::vector<object<T>*> &target)
             {

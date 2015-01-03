@@ -75,7 +75,7 @@ class interact
                 return list[(rng() % list.size())];
             }
 
-            size_t left = indent, top = 6,
+            size_t left = indent, top = 8,
                    width = 20, height = 2 + list.size();
 
             out.foreground = 7;
@@ -89,7 +89,7 @@ class interact
 
             for (std::size_t i = 0; i < list.size(); i++)
             {
-                out.to(left + 2, top + 1 + i).write(list[i], width - 3);
+                out.to(left + 1, top + 1 + i).write(" " + list[i], width - 3);
             }
 
             long selection = 0;
@@ -143,6 +143,8 @@ class interact
                 }
             }
             while (!didSelect);
+
+//            out.to(left, top).clear(width, height);
 
             out.to(0,15);
 

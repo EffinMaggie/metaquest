@@ -99,6 +99,32 @@ namespace metaquest
                 return os.str();
             }
 
+            static std::string heal (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+            {
+                std::stringstream os("");
+                for (auto &sp : source)
+                {
+                    auto &s = *sp;
+                    for (auto &tp : target)
+                    {
+                        auto &t = *tp;
+
+                        os << s.name.display() << " heals " << t.name.display() << "\n";
+
+                        int amt = roll(s["Attack"]);
+
+                        os << s.name.display() << " heals " << amt << " points of damage\n";
+
+                        t.attribute["HP/Current"] += amt;
+                        if (t["HP/Current"] > t["HP/Total"])
+                        {
+                            t.attribute["HP/Current"] -= t["HP/Current"] - t["HP/Total"];
+                        }
+                    }
+                }
+                return os.str();
+            }
+
             static std::string pass (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
             {
                 std::stringstream os("");
@@ -133,7 +159,8 @@ namespace metaquest
                             attribute["HP/Current"] = (*this)["HP/Total"];
 
                             bind("Attack", true, attack);
-                            bind("Pass", true, pass);
+                            bind("Heal", true, heal, metaquest::action<long>::ally);
+                            bind("Pass", true, pass, metaquest::action<long>::self);
                         }
             };
 
@@ -194,12 +221,77 @@ namespace metaquest
                         std::string s = self.interact.query(self, p, c, visible);
 
                         std::vector<metaquest::character<>*> targets;
+                        std::vector<metaquest::character<>*> candidates;
 
-                        for (auto &h : self.parties[(self.parties.size() - 1 - p)])
+                        switch (c.scope(s))
                         {
-                            if (h["Alive"])
+                            case metaquest::action<long>::self:
+                                candidates.push_back(&c);
+                                break;
+                            case metaquest::action<long>::ally:
+                            case metaquest::action<long>::party:
+                                for (auto &h : self.parties[p])
+                                {
+                                    if (h["Alive"])
+                                    {
+                                        candidates.push_back (&h);
+                                    }
+                                }
+                                break;
+                            case metaquest::action<long>::enemy:
+                            case metaquest::action<long>::enemies:
+                                for (auto &h : self.parties[(self.parties.size() - 1 - p)])
+                                {
+                                    if (h["Alive"])
+                                    {
+                                        candidates.push_back (&h);
+                                    }
+                                }
+                                break;
+                            case metaquest::action<long>::everyone:
+                                for (auto &pa : self.parties)
+                                {
+                                    for (auto &h : pa)
+                                    {
+                                        if (h["Alive"])
+                                        {
+                                            candidates.push_back (&h);
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+
+                        switch (c.scope(s))
+                        {
+                            case metaquest::action<long>::self:
+                            case metaquest::action<long>::party:
+                            case metaquest::action<long>::enemies:
+                            case metaquest::action<long>::everyone:
+                                targets = candidates;
+                                break;
+                            case metaquest::action<long>::ally:
+                            case metaquest::action<long>::enemy:
                             {
-                                targets.push_back(&h);
+                                std::vector<std::string> l;
+                                for (auto h : candidates)
+                                {
+                                    l.push_back (h->name.display());
+                                }
+                                std::string hc = self.interact.query(self, p, c, l, 8);
+                                for (auto h : candidates)
+                                {
+                                    if (h->name.display() == hc)
+                                    {
+                                        targets.push_back(h);
+                                    }
+                                }
+
+                                while (targets.size() > 1)
+                                {
+                                    targets.erase(targets.begin() + (rng() % targets.size()));
+                                }
+                                break;
                             }
                         }
 

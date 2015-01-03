@@ -107,10 +107,16 @@ namespace metaquest
              */
             std::vector<item<T>> inventory;
 
-            metaquest::action<T> &bind (const std::string &name, bool isVisible, std::function<std::string(std::vector<object<T>*>&, std::vector<object<T>*>&)> pApply)
+            metaquest::action<T> &bind
+                (const std::string &name,
+                 bool isVisible,
+                 std::function<std::string(std::vector<object<T>*>&,
+                 std::vector<object<T>*>&)> pApply,
+                 const enum metaquest::action<T>::scope &pScope = metaquest::action<T>::enemy)
             {
                 metaquest::action<T> act(isVisible, pApply);
                 act.name = metaquest::name::simple<>(name);
+                act.scope = pScope;
                 action[name] = act;
                 return action[name];
             }
@@ -128,6 +134,18 @@ namespace metaquest
                 }
 
                 return actions;
+            }
+
+            const enum metaquest::action<T>::scope scope (const std::string &act)
+            {
+                if (action.find(act) == action.end())
+                {
+                    return metaquest::action<T>::self;
+                }
+                else
+                {
+                    return action[act].scope;
+                }
             }
 
         protected:
