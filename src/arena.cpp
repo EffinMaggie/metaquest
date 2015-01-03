@@ -62,6 +62,11 @@ class interact
             while(io.flush());
         }
 
+        void clearQuery (void)
+        {
+            out.to(0, 8).clear(-1, 10);
+        }
+
         template<typename T, typename G>
         std::string query
             (const G &game,
@@ -143,8 +148,6 @@ class interact
                 }
             }
             while (!didSelect);
-
-//            out.to(left, top).clear(width, height);
 
             out.to(0,15);
 

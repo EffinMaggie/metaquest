@@ -273,12 +273,20 @@ namespace metaquest
                             case metaquest::action<long>::ally:
                             case metaquest::action<long>::enemy:
                             {
-                                std::vector<std::string> l;
-                                for (auto h : candidates)
+                                std::string hc;
+                                if (candidates.size() == 1)
                                 {
-                                    l.push_back (h->name.display());
+                                    hc = candidates[0]->name.display();
                                 }
-                                std::string hc = self.interact.query(self, p, c, l, 8);
+                                else
+                                {
+                                    std::vector<std::string> l;
+                                    for (auto h : candidates)
+                                    {
+                                        l.push_back (h->name.display());
+                                    }
+                                    hc = self.interact.query(self, p, c, l, 8);
+                                }
                                 for (auto h : candidates)
                                 {
                                     if (h->name.display() == hc)
@@ -294,6 +302,8 @@ namespace metaquest
                                 break;
                             }
                         }
+
+                        self.interact.clearQuery();
 
                         return c(s, targets);
                     }
