@@ -73,9 +73,32 @@ class interact
                 out.to(8, 7+i).write(list[i], 17);
             }
 
+            long selection = 0;
+            bool didSelect = false;
+
+            do
+            {
+                flush();
+
+                io.read([&selection] (const typename term::command &c) -> bool
+                    {
+                        return false;
+                    }, [&didSelect] (const T &l) -> bool
+                    {
+                        if (l == '\n')
+                        {
+                            didSelect = true;
+                        }
+                        return false;
+                    });
+
+                flush();
+            }
+            while (!didSelect);
+
             out.to(0,15);
 
-            return list[(rng()%list.size())];
+            return list[selection];
         }
 
     protected:
@@ -103,9 +126,6 @@ int main(int, const char **)
     {
         std::vector<metaquest::character<>*> targets;
         int i = 0;
-
-        inter.out.to(0,5)
-                 .write(game.next(), 400);
 
         for (auto &h : hostiles)
         {
@@ -137,6 +157,9 @@ int main(int, const char **)
         {
             break;
         }
+
+        inter.out.to(0,5)
+                 .write(game.next(), 400);
 
         // party[0]("Attack", targets);
     }
