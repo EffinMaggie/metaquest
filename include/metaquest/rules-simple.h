@@ -99,6 +99,17 @@ namespace metaquest
                 return os.str();
             }
 
+            static std::string pass (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+            {
+                std::stringstream os("");
+                for (auto &sp : source)
+                {
+                    auto &s = *sp;
+                    os << s.name.display() << " would rather be reading a book.\n";
+                }
+                return os.str();
+            }
+
             class character : public metaquest::character<long>
             {
                 public:
@@ -122,6 +133,7 @@ namespace metaquest
                             attribute["HP/Current"] = (*this)["HP/Total"];
 
                             bind("Attack", true, attack);
+                            bind("Pass", true, pass);
                         }
             };
 
@@ -142,16 +154,44 @@ namespace metaquest
                 protected:
                     static std::string doNext (typename parent::parent &pSelf)
                     {
-                        static std::mt19937 rng;
                         game &self = static_cast<game&>(pSelf);
 
+                        for (std::size_t pi = 0; pi < self.parties.size(); pi++)
+                        {
+                            auto &p = self.parties[pi];
+                            long alive = 0;
+
+                            for (auto &c : p)
+                            {
+                                if (c["Alive"])
+                                {
+                                    alive++;
+                                }
+                            }
+
+                            if (alive == 0)
+                            {
+                                std::ostringstream os("");
+                                os << "Party #" << (self.parties.size() - pi - 1) << " was victorious!\n";
+                                return os.str();
+                            }
+                        }
+
+                        static std::mt19937 rng;
+
                         std::size_t p = rng() % self.parties.size();
-                        std::size_t n = rng() % self.parties[p].size();
+                        std::size_t n = 0;
+                        do
+                        {
+                            n = rng() % self.parties[p].size();
+                        }
+                        while (!self.parties[p][n]["Alive"]);
 
                         character &c = self.parties[p][n];
 
                         auto visible = c.visibleActions();
-                        std::string s = self.interact.query(self, c, visible);
+
+                        std::string s = self.interact.query(self, p, c, visible);
 
                         std::vector<metaquest::character<>*> targets;
 

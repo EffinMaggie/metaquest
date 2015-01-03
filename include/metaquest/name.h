@@ -152,7 +152,7 @@ namespace metaquest
                  *
                  * \returns A string with the proper, full name.
                  */
-                std::basic_string<T> full(void)
+                std::basic_string<T> full (void) const
                 {
                     std::basic_string<T> s = "";
 
@@ -176,7 +176,7 @@ namespace metaquest
                  * \returns A shorter version of the name, if that can be
                  *          deduced easily.
                  */
-                std::basic_string<T> display(void)
+                std::basic_string<T> display (void) const
                 {
                     for (const name<T,generator> &n : *this)
                     {

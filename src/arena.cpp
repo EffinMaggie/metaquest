@@ -63,14 +63,33 @@ class interact
         }
 
         template<typename T, typename G>
-        std::string query (const G &game, const metaquest::character<T> &source, const std::vector<std::string> &list)
+        std::string query
+            (const G &game,
+             std::size_t party,
+             const metaquest::character<T> &source,
+             const std::vector<std::string> &list,
+             std::size_t indent = 4)
         {
-            out.to(6, 6).box(20,2 + list.size());
+            if (party > 0)
+            {
+                return list[(rng() % list.size())];
+            }
+
+            size_t left = indent, top = 6,
+                   width = 20, height = 2 + list.size();
+
+            out.foreground = 7;
+            out.background = 0;
+
+            out.to(left, top).box(width, height);
             flush();
+
+            out.to(left + 2, top)
+               .write(": " + source.name.display() + " :", source.name.display().size() + 4);
 
             for (std::size_t i = 0; i < list.size(); i++)
             {
-                out.to(8, 7+i).write(list[i], 17);
+                out.to(left + 2, top + 1 + i).write(list[i], width - 3);
             }
 
             long selection = 0;
@@ -78,10 +97,31 @@ class interact
 
             do
             {
+                out.to(left + 1, top + 1)
+                   .colour(width - 2, height - 2);
+
+                out.foreground = 0;
+                out.background = 7;
+
+                out.to(left + 1, top + 1 + selection)
+                   .colour(width - 2, 1);
+
+                out.foreground = 7;
+                out.background = 0;
+
                 flush();
 
                 io.read([&selection] (const typename term::command &c) -> bool
                     {
+                        switch (c.code)
+                        {
+                            case 'A': // up
+                                selection--;
+                                break;
+                            case 'B': // down
+                                selection++;
+                                break;
+                        }
                         return false;
                     }, [&didSelect] (const T &l) -> bool
                     {
@@ -92,7 +132,15 @@ class interact
                         return false;
                     });
 
-                flush();
+                if (selection >= (long)list.size())
+                {
+                    selection = list.size() - 1;
+                }
+
+                if (selection < 0)
+                {
+                    selection = 0;
+                }
             }
             while (!didSelect);
 
@@ -119,21 +167,18 @@ int main(int, const char **)
 
     metaquest::rules::simple::game<interact<>> game(inter);
 
+    inter.out.to(0,0).clear();
+
     auto &party = game.parties[0];
     auto &hostiles = game.parties[1];
+    std::string r;
 
     while (true)
     {
-        std::vector<metaquest::character<>*> targets;
         int i = 0;
 
         for (auto &h : hostiles)
         {
-            if (h["Alive"])
-            {
-                targets.push_back(&h);
-            }
-
             inter.out.to(-50, i)
                      .bar(h["HP/Current"], h["HP/Total"], 50)
                      .x(0)
@@ -153,20 +198,26 @@ int main(int, const char **)
 
         inter.flush();
 
-        if (targets.size() == 0)
+        r = game.next();
+
+        if (r.find("victorious") != r.npos)
         {
             break;
         }
 
         inter.out.to(0,5)
-                 .write(game.next(), 400);
-
-        // party[0]("Attack", targets);
+                 .write(r, 400);
     }
 
     inter.flush();
 
     std::cerr << "\u261e" << "\n";
+
+    inter.out.to(0,0).clear()
+             .to(0,1).write(r, 200)
+             .to(0,3);
+
+    inter.flush();
 
     return 0;
 }
