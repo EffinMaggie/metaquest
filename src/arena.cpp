@@ -70,11 +70,12 @@ class interact
         template<typename T, typename G>
         std::string query
             (const G &game,
-             std::size_t party,
              const metaquest::character<T> &source,
              const std::vector<std::string> &list,
              std::size_t indent = 4)
         {
+            std::size_t party = game.partyOf (source);
+
             if (party > 0)
             {
                 return list[(rng() % list.size())];

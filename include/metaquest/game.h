@@ -85,7 +85,8 @@ namespace metaquest
 
                 inter &interact;
 
-                size_t partyIDOf (const character &c)
+                template<typename C>
+                size_t partyOf (const C &c) const
                 {
                     for (size_t pi = 0; pi < parties.size(); pi++)
                     {
@@ -122,7 +123,7 @@ namespace metaquest
                     (character &c,
                      const std::string &s)
                 {
-                    size_t p = partyIDOf(c);
+                    size_t p = partyOf(c);
 
                     std::vector<metaquest::character<typename character::base>*> targets;
                     std::vector<metaquest::character<typename character::base>*> candidates;
@@ -195,7 +196,7 @@ namespace metaquest
                                 {
                                     l.push_back (h->name.display());
                                 }
-                                hc = interact.query(*this, p, c, l, 8);
+                                hc = interact.query(*this, c, l, 8);
                             }
                             for (auto h : candidates)
                             {

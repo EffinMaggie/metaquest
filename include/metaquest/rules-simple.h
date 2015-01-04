@@ -201,13 +201,13 @@ namespace metaquest
                         {
                             n = self.rng() % self.parties[p].size();
                         }
-                        while (!self.parties[p][n]["Alive"]);
+                        while (!self.alive(self.parties[p][n]));
 
                         character &c = self.parties[p][n];
 
                         auto visible = c.visibleActions();
 
-                        std::string s = self.interact.query(self, p, c, visible);
+                        std::string s = self.interact.query(self, c, visible);
 
                         auto targets = self.resolve(c, s);
 
