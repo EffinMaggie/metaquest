@@ -127,11 +127,17 @@ namespace metaquest
                             break;
                         case metaquest::action<typename character::base>::enemy:
                         case metaquest::action<typename character::base>::enemies:
-                            for (auto &h : parties[(parties.size() - 1 - p)])
+                            for (size_t pi = 0; pi < parties.size(); pi++)
                             {
-                                if (h["Alive"])
+                                if (pi != p)
                                 {
-                                    candidates.push_back (&h);
+                                    for (auto &h : parties[pi])
+                                    {
+                                        if (h["Alive"])
+                                        {
+                                            candidates.push_back (&h);
+                                        }
+                                    }
                                 }
                             }
                             break;
