@@ -37,51 +37,9 @@
 #include <metaquest/terminal.h>
 #include <metaquest/party.h>
 #include <metaquest/rules-simple.h>
+#include <metaquest/flow-generic.h>
 
 using namespace efgy;
-
-template<typename interaction, typename logic>
-class flow
-{
-    public:
-        flow(void)
-            : interact(),
-              game(interact)
-            {
-                interact.clear();
-            }
-
-        ~flow(void)
-            {
-                interact.clear();
-                interact.flush();
-            }
-
-        void run(void)
-        {
-            while (true)
-            {
-                interact.drawUI(game);
-
-                interact.flush();
-
-                log = game.next();
-
-                if (log.find("victorious") != log.npos)
-                {
-                    break;
-                }
-
-                interact.log(log);
-            }
-
-            interact.flush();
-        }
-
-        interaction interact;
-        logic game;
-        std::string log;
-};
 
 /**\brief Metaquest: Arena main function
  *
@@ -95,7 +53,8 @@ int main(int, const char **)
     std::string log;
 
     {
-        flow<metaquest::interact::terminal<>,
+        metaquest::flow::generic
+            <metaquest::interact::terminal<>,
              metaquest::rules::simple::game<metaquest::interact::terminal<>>> game;
 
         game.run();
