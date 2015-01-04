@@ -40,6 +40,44 @@
 
 using namespace efgy;
 
+template<typename interaction, typename logic>
+class flow
+{
+    public:
+        flow()
+            : interact(),
+              game(interact)
+            {
+                interact.clear();
+            }
+
+        void run(void)
+        {
+            while (true)
+            {
+                interact.drawUI(game);
+
+                interact.flush();
+
+                log = game.next();
+
+                if (log.find("victorious") != log.npos)
+                {
+                    break;
+                }
+
+                interact.out.to(0,5)
+                            .write(log, 400);
+            }
+
+            interact.flush();
+        }
+
+        interaction interact;
+        logic game;
+        std::string log;
+};
+
 /**\brief Metaquest: Arena main function
  *
  * This is the main function for the 'arena' programme. It is currently far from
@@ -49,40 +87,19 @@ using namespace efgy;
  */
 int main(int, const char **)
 {
-    metaquest::interact::terminal<> inter;
+    flow<metaquest::interact::terminal<>,
+         metaquest::rules::simple::game<metaquest::interact::terminal<>>> game;
 
-    metaquest::rules::simple::game<metaquest::interact::terminal<>> game(inter);
-
-    inter.out.to(0,0).clear();
-
-    std::string r;
-
-    while (true)
-    {
-        inter.drawUI(game);
-
-        inter.flush();
-
-        r = game.next();
-
-        if (r.find("victorious") != r.npos)
-        {
-            break;
-        }
-
-        inter.out.to(0,5)
-                 .write(r, 400);
-    }
-
-    inter.flush();
+    game.run();
 
     std::cerr << "\u261e" << "\n";
 
-    inter.out.to(0,0).clear()
-             .to(0,1).write(r, 200)
-             .to(0,3);
+    game.interact.clear();
 
-    inter.flush();
+    game.interact.out.to(0,1).write(game.log, 200)
+                     .to(0,3);
+
+    game.interact.flush();
 
     return 0;
 }

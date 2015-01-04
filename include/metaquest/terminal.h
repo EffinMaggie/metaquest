@@ -56,6 +56,11 @@ namespace metaquest
 
                 efgy::terminal::writer<> out;
 
+                void clear(void)
+                {
+                    out.to(0,0).clear();
+                }
+
                 void flush(void)
                 {
                     while(io.flush());
