@@ -66,6 +66,12 @@ namespace metaquest
                     while(io.flush());
                 }
 
+                void log(std::string log)
+                {
+                    out.to(0,5)
+                       .write(log, 400);
+                }
+
                 template<typename G>
                 void drawUI
                     (G &game)

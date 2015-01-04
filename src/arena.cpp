@@ -72,8 +72,7 @@ class flow
                     break;
                 }
 
-                interact.out.to(0,5)
-                            .write(log, 400);
+                interact.log(log);
             }
 
             interact.flush();
