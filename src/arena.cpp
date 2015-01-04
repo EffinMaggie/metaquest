@@ -34,162 +34,11 @@
  * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
  */
 
-#include <iostream>
-
-#include <ef.gy/vt100.h>
-#include <ef.gy/terminal-writer.h>
+#include <metaquest/terminal.h>
 #include <metaquest/party.h>
 #include <metaquest/rules-simple.h>
 
 using namespace efgy;
-
-template<typename term = terminal::vt100<>>
-class interact
-{
-    public:
-        interact()
-            : io(),
-              out(io),
-              rng()
-            {
-                io.resize(io.getOSDimensions());
-            }
-              
-        terminal::writer<> out;
-
-        void flush(void)
-        {
-            while(io.flush());
-        }
-
-        template<typename G>
-        void drawUI
-            (G &game)
-        {
-            auto &party    = game.parties[0];
-            auto &hostiles = game.parties[1];
-
-            long i = 0;
-
-            clearQuery();
-
-            for (auto &h : hostiles)
-            {
-                out.to(-50, i)
-                   .bar(h["HP/Current"], h["HP/Total"], 50)
-                   .x(0)
-                   .write(h.name.full(), 30);
-                i++;
-            }
-
-            i = -1;
-            for (auto &p : party)
-            {
-                out.to(-50, i)
-                   .bar(p["HP/Current"], p["HP/Total"], 50)
-                   .x(0)
-                   .write(p.name.full(), 30);
-                i--;
-            }
-        }
-
-        void clearQuery (void)
-        {
-            out.to(0, 8).clear(-1, 10);
-        }
-
-        template<typename T, typename G>
-        std::string query
-            (const G &game,
-             const metaquest::character<T> &source,
-             const std::vector<std::string> &list,
-             std::size_t indent = 4)
-        {
-            std::size_t party = game.partyOf (source);
-
-            if (party > 0)
-            {
-                return list[(rng() % list.size())];
-            }
-
-            size_t left = indent, top = 8,
-                   width = 20, height = 2 + list.size();
-
-            out.foreground = 7;
-            out.background = 0;
-
-            out.to(left, top).box(width, height);
-            flush();
-
-            out.to(left + 2, top)
-               .write(": " + source.name.display() + " :", source.name.display().size() + 4);
-
-            for (std::size_t i = 0; i < list.size(); i++)
-            {
-                out.to(left + 1, top + 1 + i).write(" " + list[i], width - 3);
-            }
-
-            long selection = 0;
-            bool didSelect = false;
-
-            do
-            {
-                out.to(left + 1, top + 1)
-                   .colour(width - 2, height - 2);
-
-                out.foreground = 0;
-                out.background = 7;
-
-                out.to(left + 1, top + 1 + selection)
-                   .colour(width - 2, 1);
-
-                out.foreground = 7;
-                out.background = 0;
-
-                flush();
-
-                io.read([&selection] (const typename term::command &c) -> bool
-                    {
-                        switch (c.code)
-                        {
-                            case 'A': // up
-                                selection--;
-                                break;
-                            case 'B': // down
-                                selection++;
-                                break;
-                        }
-                        return false;
-                    }, [&didSelect] (const T &l) -> bool
-                    {
-                        if (l == '\n')
-                        {
-                            didSelect = true;
-                        }
-                        return false;
-                    });
-
-                if (selection >= (long)list.size())
-                {
-                    selection = list.size() - 1;
-                }
-
-                if (selection < 0)
-                {
-                    selection = 0;
-                }
-            }
-            while (!didSelect);
-
-            out.to(0,15);
-
-            return list[selection];
-        }
-
-    protected:
-        term io;
-        std::mt19937 rng;
-};
 
 /**\brief Metaquest: Arena main function
  *
@@ -200,9 +49,9 @@ class interact
  */
 int main(int, const char **)
 {
-    interact<> inter;
+    metaquest::interact::terminal<> inter;
 
-    metaquest::rules::simple::game<interact<>> game(inter);
+    metaquest::rules::simple::game<metaquest::interact::terminal<>> game(inter);
 
     inter.out.to(0,0).clear();
 
