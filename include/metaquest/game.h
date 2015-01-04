@@ -85,7 +85,7 @@ namespace metaquest
 
                 inter &interact;
 
-                size_t getPartyIDOf (const character &c)
+                size_t partyIDOf (const character &c)
                 {
                     for (size_t pi = 0; pi < parties.size(); pi++)
                     {
@@ -101,11 +101,28 @@ namespace metaquest
                     return 0;
                 }
 
+                bool alive (character &c) const
+                {
+                    return c["Alive"];
+                }
+
+                bool alive (metaquest::party<character> &party) const
+                {
+                    bool ret = false;
+
+                    for (auto &c : party)
+                    {
+                        ret |= alive(c);
+                    }
+
+                    return ret;
+                }
+
                 std::vector<metaquest::character<typename character::base>*> resolve
                     (character &c,
                      const std::string &s)
                 {
-                    size_t p = getPartyIDOf(c);
+                    size_t p = partyIDOf(c);
 
                     std::vector<metaquest::character<typename character::base>*> targets;
                     std::vector<metaquest::character<typename character::base>*> candidates;
@@ -119,7 +136,7 @@ namespace metaquest
                         case metaquest::action<typename character::base>::party:
                             for (auto &h : parties[p])
                             {
-                                if (h["Alive"])
+                                if (alive(h))
                                 {
                                     candidates.push_back (&h);
                                 }
@@ -133,7 +150,7 @@ namespace metaquest
                                 {
                                     for (auto &h : parties[pi])
                                     {
-                                        if (h["Alive"])
+                                        if (alive(h))
                                         {
                                             candidates.push_back (&h);
                                         }
@@ -146,7 +163,7 @@ namespace metaquest
                             {
                                 for (auto &h : pa)
                                 {
-                                    if (h["Alive"])
+                                    if (alive(h))
                                     {
                                         candidates.push_back (&h);
                                     }

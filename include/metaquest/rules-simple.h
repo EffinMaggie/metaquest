@@ -186,17 +186,8 @@ namespace metaquest
                         for (std::size_t pi = 0; pi < self.parties.size(); pi++)
                         {
                             auto &p = self.parties[pi];
-                            long alive = 0;
 
-                            for (auto &c : p)
-                            {
-                                if (c["Alive"])
-                                {
-                                    alive++;
-                                }
-                            }
-
-                            if (alive == 0)
+                            if (!self.alive(p))
                             {
                                 std::ostringstream os("");
                                 os << "Party #" << (self.parties.size() - pi - 1) << " was victorious!\n";
