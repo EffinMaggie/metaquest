@@ -204,13 +204,11 @@ namespace metaquest
                             }
                         }
 
-                        static std::mt19937 rng;
-
-                        std::size_t p = rng() % self.parties.size();
+                        std::size_t p = self.rng() % self.parties.size();
                         std::size_t n = 0;
                         do
                         {
-                            n = rng() % self.parties[p].size();
+                            n = self.rng() % self.parties[p].size();
                         }
                         while (!self.parties[p][n]["Alive"]);
 
@@ -220,88 +218,7 @@ namespace metaquest
 
                         std::string s = self.interact.query(self, p, c, visible);
 
-                        std::vector<metaquest::character<>*> targets;
-                        std::vector<metaquest::character<>*> candidates;
-
-                        switch (c.scope(s))
-                        {
-                            case metaquest::action<long>::self:
-                                candidates.push_back(&c);
-                                break;
-                            case metaquest::action<long>::ally:
-                            case metaquest::action<long>::party:
-                                for (auto &h : self.parties[p])
-                                {
-                                    if (h["Alive"])
-                                    {
-                                        candidates.push_back (&h);
-                                    }
-                                }
-                                break;
-                            case metaquest::action<long>::enemy:
-                            case metaquest::action<long>::enemies:
-                                for (auto &h : self.parties[(self.parties.size() - 1 - p)])
-                                {
-                                    if (h["Alive"])
-                                    {
-                                        candidates.push_back (&h);
-                                    }
-                                }
-                                break;
-                            case metaquest::action<long>::everyone:
-                                for (auto &pa : self.parties)
-                                {
-                                    for (auto &h : pa)
-                                    {
-                                        if (h["Alive"])
-                                        {
-                                            candidates.push_back (&h);
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-
-                        switch (c.scope(s))
-                        {
-                            case metaquest::action<long>::self:
-                            case metaquest::action<long>::party:
-                            case metaquest::action<long>::enemies:
-                            case metaquest::action<long>::everyone:
-                                targets = candidates;
-                                break;
-                            case metaquest::action<long>::ally:
-                            case metaquest::action<long>::enemy:
-                            {
-                                std::string hc;
-                                if (candidates.size() == 1)
-                                {
-                                    hc = candidates[0]->name.display();
-                                }
-                                else
-                                {
-                                    std::vector<std::string> l;
-                                    for (auto h : candidates)
-                                    {
-                                        l.push_back (h->name.display());
-                                    }
-                                    hc = self.interact.query(self, p, c, l, 8);
-                                }
-                                for (auto h : candidates)
-                                {
-                                    if (h->name.display() == hc)
-                                    {
-                                        targets.push_back(h);
-                                    }
-                                }
-
-                                while (targets.size() > 1)
-                                {
-                                    targets.erase(targets.begin() + (rng() % targets.size()));
-                                }
-                                break;
-                            }
-                        }
+                        auto targets = self.resolve(c, s);
 
                         self.interact.clearQuery();
 

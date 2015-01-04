@@ -136,15 +136,16 @@ namespace metaquest
                 return actions;
             }
 
-            const enum metaquest::action<T>::scope scope (const std::string &act)
+            const enum metaquest::action<T>::scope scope (const std::string &act) const
             {
-                if (action.find(act) == action.end())
+                const auto it = action.find(act);
+                if (it == action.end())
                 {
                     return metaquest::action<T>::self;
                 }
                 else
                 {
-                    return action[act].scope;
+                    return it->second.scope;
                 }
             }
 

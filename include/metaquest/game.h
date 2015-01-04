@@ -85,6 +85,114 @@ namespace metaquest
 
                 inter &interact;
 
+                size_t getPartyIDOf (const character &c)
+                {
+                    for (size_t pi = 0; pi < parties.size(); pi++)
+                    {
+                        for (const auto &ca : parties[pi])
+                        {
+                            if (&ca == &c)
+                            {
+                                return pi;
+                            }
+                        }
+                    }
+
+                    return 0;
+                }
+
+                std::vector<metaquest::character<typename character::base>*> resolve
+                    (character &c,
+                     const std::string &s)
+                {
+                    size_t p = getPartyIDOf(c);
+
+                    std::vector<metaquest::character<typename character::base>*> targets;
+                    std::vector<metaquest::character<typename character::base>*> candidates;
+
+                    switch (c.scope(s))
+                    {
+                        case metaquest::action<typename character::base>::self:
+                            candidates.push_back(&c);
+                            break;
+                        case metaquest::action<typename character::base>::ally:
+                        case metaquest::action<typename character::base>::party:
+                            for (auto &h : parties[p])
+                            {
+                                if (h["Alive"])
+                                {
+                                    candidates.push_back (&h);
+                                }
+                            }
+                            break;
+                        case metaquest::action<typename character::base>::enemy:
+                        case metaquest::action<typename character::base>::enemies:
+                            for (auto &h : parties[(parties.size() - 1 - p)])
+                            {
+                                if (h["Alive"])
+                                {
+                                    candidates.push_back (&h);
+                                }
+                            }
+                            break;
+                        case metaquest::action<typename character::base>::everyone:
+                            for (auto &pa : parties)
+                            {
+                                for (auto &h : pa)
+                                {
+                                    if (h["Alive"])
+                                    {
+                                        candidates.push_back (&h);
+                                    }
+                                }
+                            }
+                            break;
+                    }
+
+                    switch (c.scope(s))
+                    {
+                        case metaquest::action<typename character::base>::self:
+                        case metaquest::action<typename character::base>::party:
+                        case metaquest::action<typename character::base>::enemies:
+                        case metaquest::action<typename character::base>::everyone:
+                            targets = candidates;
+                            break;
+                        case metaquest::action<typename character::base>::ally:
+                        case metaquest::action<typename character::base>::enemy:
+                        {
+                            std::string hc;
+                            if (candidates.size() == 1)
+                            {
+                                hc = candidates[0]->name.display();
+                            }
+                            else
+                            {
+                                std::vector<std::string> l;
+                                for (auto h : candidates)
+                                {
+                                    l.push_back (h->name.display());
+                                }
+                                hc = interact.query(*this, p, c, l, 8);
+                            }
+                            for (auto h : candidates)
+                            {
+                                if (h->name.display() == hc)
+                                {
+                                    targets.push_back(h);
+                                }
+                            }
+
+                            while (targets.size() > 1)
+                            {
+                                targets.erase(targets.begin() + (rng() % targets.size()));
+                            }
+                            break;
+                        }
+                    }
+
+                    return targets;
+                }
+
             protected:
                 static std::string doGenerateParties (parent &pSelf)
                 {
@@ -102,6 +210,7 @@ namespace metaquest
                 }
 
                 std::map<std::string,std::function<std::string(parent&)>> action;
+                std::mt19937 rng;
         };
     }
 }
