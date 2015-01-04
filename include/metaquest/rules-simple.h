@@ -211,8 +211,6 @@ namespace metaquest
 
                         auto targets = self.resolve(c, s);
 
-                        self.interact.clearQuery();
-
                         return c(s, targets);
                     }
             };

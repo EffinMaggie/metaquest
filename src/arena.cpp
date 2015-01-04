@@ -62,6 +62,37 @@ class interact
             while(io.flush());
         }
 
+        template<typename G>
+        void drawUI
+            (G &game)
+        {
+            auto &party    = game.parties[0];
+            auto &hostiles = game.parties[1];
+
+            long i = 0;
+
+            clearQuery();
+
+            for (auto &h : hostiles)
+            {
+                out.to(-50, i)
+                   .bar(h["HP/Current"], h["HP/Total"], 50)
+                   .x(0)
+                   .write(h.name.full(), 30);
+                i++;
+            }
+
+            i = -1;
+            for (auto &p : party)
+            {
+                out.to(-50, i)
+                   .bar(p["HP/Current"], p["HP/Total"], 50)
+                   .x(0)
+                   .write(p.name.full(), 30);
+                i--;
+            }
+        }
+
         void clearQuery (void)
         {
             out.to(0, 8).clear(-1, 10);
@@ -175,32 +206,11 @@ int main(int, const char **)
 
     inter.out.to(0,0).clear();
 
-    auto &party = game.parties[0];
-    auto &hostiles = game.parties[1];
     std::string r;
 
     while (true)
     {
-        int i = 0;
-
-        for (auto &h : hostiles)
-        {
-            inter.out.to(-50, i)
-                     .bar(h["HP/Current"], h["HP/Total"], 50)
-                     .x(0)
-                     .write(h.name.full(), 30);
-            i++;
-        }
-
-        i = -1;
-        for (auto &p : party)
-        {
-            inter.out.to(-50, i)
-                     .bar(p["HP/Current"], p["HP/Total"], 50)
-                     .x(0)
-                     .write(p.name.full(), 30);
-            i--;
-        }
+        inter.drawUI(game);
 
         inter.flush();
 
