@@ -217,6 +217,14 @@ namespace metaquest
                     return targets;
                 }
 
+                enum state
+                {
+                    idle,
+                    combat,
+                    postCombat,
+                    menu
+                } state;
+
             protected:
                 static std::string doGenerateParties (parent &pSelf)
                 {
