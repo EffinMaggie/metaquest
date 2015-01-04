@@ -84,6 +84,12 @@ namespace metaquest
                 }
             }
 
+            bool have (const std::string &s)
+            {
+                return ( function.find(s) !=  function.end())
+                    || (attribute.find(s) != attribute.end());
+            }
+
             /**\brief Attribute generation functions
              *
              * Maps attribute names to thunks which can generate an attribute on
