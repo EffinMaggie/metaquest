@@ -44,11 +44,17 @@ template<typename interaction, typename logic>
 class flow
 {
     public:
-        flow()
+        flow(void)
             : interact(),
               game(interact)
             {
                 interact.clear();
+            }
+
+        ~flow(void)
+            {
+                interact.clear();
+                interact.flush();
             }
 
         void run(void)
@@ -87,19 +93,19 @@ class flow
  */
 int main(int, const char **)
 {
-    flow<metaquest::interact::terminal<>,
-         metaquest::rules::simple::game<metaquest::interact::terminal<>>> game;
+    std::string log;
 
-    game.run();
+    {
+        flow<metaquest::interact::terminal<>,
+             metaquest::rules::simple::game<metaquest::interact::terminal<>>> game;
+
+        game.run();
+
+        log = game.log;
+    }
 
     std::cerr << "\u261e" << "\n";
-
-    game.interact.clear();
-
-    game.interact.out.to(0,1).write(game.log, 200)
-                     .to(0,3);
-
-    game.interact.flush();
+    std::cout << "\n" << log << "\n";
 
     return 0;
 }
