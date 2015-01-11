@@ -49,7 +49,7 @@ namespace metaquest
                 terminal()
                     : io(),
                       out(io),
-                      rng()
+                      rng(std::random_device()())
                     {
                         io.resize(io.getOSDimensions());
                     }
@@ -194,6 +194,43 @@ namespace metaquest
                     out.to(0,15);
 
                     return list[selection];
+                }
+
+                template<typename T, typename G>
+                std::vector<metaquest::character<T>*> query
+                    (const G &game,
+                     const metaquest::character<T> &source,
+                     const std::vector<metaquest::character<T>*> &candidates,
+                     std::size_t indent = 4)
+                {
+                    std::vector<metaquest::character<T>*> targets;
+
+                    std::string hc;
+                    if (candidates.size() == 1)
+                    {
+                        return candidates;
+                    }
+
+                    std::vector<std::string> l;
+                    for (auto h : candidates)
+                    {
+                        l.push_back (h->name.display());
+                    }
+                    hc = query(game, source, l, indent);
+                    for (auto h : candidates)
+                    {
+                        if (h->name.display() == hc)
+                        {
+                            targets.push_back(h);
+                        }
+                    }
+
+                    while (targets.size() > 1)
+                    {
+                        targets.erase(targets.begin() + (rng() % targets.size()));
+                    }
+
+                    return targets;
                 }
 
             protected:

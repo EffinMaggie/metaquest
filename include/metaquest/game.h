@@ -47,7 +47,8 @@ namespace metaquest
 
                 base (inter &pInteract, long pParties = 2)
                     : parent(),
-                      interact(pInteract)
+                      interact(pInteract),
+                      rng(std::random_device()())
                     {
                         attribute["parties"] = pParties;
                         bind("generate-parties", doGenerateParties);
@@ -96,6 +97,24 @@ namespace metaquest
                             {
                                 return pi;
                             }
+                        }
+                    }
+
+                    return 0;
+                }
+
+                template<typename C>
+                size_t positionOf (const C &c) const
+                {
+                    const auto party = partyOf (c);
+
+                    for (auto pi = 0; pi < parties[party].size(); pi++)
+                    {
+                        const auto &ca = parties[party][pi];
+
+                        if (&ca == &c)
+                        {
+                            return pi;
                         }
                     }
 
@@ -183,35 +202,8 @@ namespace metaquest
                             break;
                         case metaquest::action<typename character::base>::ally:
                         case metaquest::action<typename character::base>::enemy:
-                        {
-                            std::string hc;
-                            if (candidates.size() == 1)
-                            {
-                                hc = candidates[0]->name.display();
-                            }
-                            else
-                            {
-                                std::vector<std::string> l;
-                                for (auto h : candidates)
-                                {
-                                    l.push_back (h->name.display());
-                                }
-                                hc = interact.query(*this, c, l, 8);
-                            }
-                            for (auto h : candidates)
-                            {
-                                if (h->name.display() == hc)
-                                {
-                                    targets.push_back(h);
-                                }
-                            }
-
-                            while (targets.size() > 1)
-                            {
-                                targets.erase(targets.begin() + (rng() % targets.size()));
-                            }
+                            targets = interact.query(*this, c, candidates, 8);
                             break;
-                        }
                     }
 
                     return targets;

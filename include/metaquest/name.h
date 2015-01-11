@@ -57,7 +57,7 @@ namespace metaquest
          *
          * Used to seed the PRNG when generating names.
          */
-        static const unsigned long seed = 1337;
+        static const unsigned long seed = std::random_device()();
 
         /**\brief A name
          *

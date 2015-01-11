@@ -54,7 +54,7 @@ namespace metaquest
 
             static int roll (int num, int sides = 6)
             {
-                static std::mt19937 rng;
+                static std::mt19937 rng = std::mt19937(std::random_device()());
 
                 int res = 0;
                 for (int i = 0; i < num; i++)
