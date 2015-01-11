@@ -83,6 +83,9 @@ namespace metaquest
 
                     clearQuery();
 
+                    out.to(0,0).clear(-1, hostiles.size());
+                    out.to(0,-party.size()).clear(-1, party.size());
+
                     for (auto &h : hostiles)
                     {
                         out.to(-50, i)
@@ -198,12 +201,19 @@ namespace metaquest
 
                 template<typename T, typename G>
                 std::vector<metaquest::character<T>*> query
-                    (const G &game,
+                    (G &game,
                      const metaquest::character<T> &source,
                      const std::vector<metaquest::character<T>*> &candidates,
                      std::size_t indent = 4)
                 {
                     std::vector<metaquest::character<T>*> targets;
+                    std::size_t party = game.partyOf (source);
+
+                    if (party > 0)
+                    {
+                        targets.push_back(candidates[(rng() % candidates.size())]);
+                        return targets;
+                    }
 
                     std::string hc;
                     if (candidates.size() == 1)
@@ -211,24 +221,62 @@ namespace metaquest
                         return candidates;
                     }
 
-                    std::vector<std::string> l;
-                    for (auto h : candidates)
+                    long selection = 0;
+                    bool didSelect = false;
+
+                    do
                     {
-                        l.push_back (h->name.display());
-                    }
-                    hc = query(game, source, l, indent);
-                    for (auto h : candidates)
-                    {
-                        if (h->name.display() == hc)
+                        const auto &c = *(candidates[selection]);
+                        const auto &pa = game.partyOf(c);
+                        const auto &pp = game.positionOf(c);
+
+                        drawUI(game);
+
+                        out.foreground = 0;
+                        out.background = 7;
+
+                        out.to(0, pa == 0 ? -1 * (pp+1) : pp)
+                           .colour(80, 1);
+
+                        out.foreground = 7;
+                        out.background = 0;
+
+                        flush();
+
+                        io.read([&selection, pa] (const typename term::command &c) -> bool
+                            {
+                                switch (c.code)
+                                {
+                                    case 'A': // up
+                                        selection += pa > 0 ? -1 : 1;
+                                        break;
+                                    case 'B': // down
+                                        selection += pa > 0 ? 1 : -1;
+                                        break;
+                                }
+                                return false;
+                            }, [&didSelect] (const T &l) -> bool
+                            {
+                                if (l == '\n')
+                                {
+                                    didSelect = true;
+                                }
+                                return false;
+                            });
+
+                        if (selection >= (long)candidates.size())
                         {
-                            targets.push_back(h);
+                            selection = candidates.size() - 1;
+                        }
+
+                        if (selection < 0)
+                        {
+                            selection = 0;
                         }
                     }
+                    while (!didSelect);
 
-                    while (targets.size() > 1)
-                    {
-                        targets.erase(targets.begin() + (rng() % targets.size()));
-                    }
+                    targets.push_back(candidates[selection]);
 
                     return targets;
                 }
