@@ -49,7 +49,12 @@ namespace metaquest
 
             static long getHPTotal(object<long> &t)
             {
-                return t.attribute["Experience"] * 2 + 5;
+                return t.attribute["Experience"] * 2 + 10;
+            }
+
+            static long getMPTotal(object<long> &t)
+            {
+                return t.attribute["Experience"] * 3 + 15;
             }
 
             static int roll (int num, int sides = 6)
@@ -109,6 +114,14 @@ namespace metaquest
                     {
                         auto &t = *tp;
 
+                        if (t["MP/Current"] < 2)
+                        {
+                            os << s.name.display() << " does not have enough MP!\n";
+                            continue;
+                        }
+
+                        t.attribute["MP/Current"] -= 2;
+
                         os << s.name.display() << " heals " << t.name.display() << "\n";
 
                         int amt = roll(s["Attack"]);
@@ -154,9 +167,11 @@ namespace metaquest
                             attribute["Experience"] = 0;
 
                             function["HP/Total"]    = getHPTotal;
+                            function["MP/Total"]    = getMPTotal;
                             function["Alive"]       = isAlive;
 
                             attribute["HP/Current"] = (*this)["HP/Total"];
+                            attribute["MP/Current"] = (*this)["MP/Total"];
 
                             bind("Attack", true, attack);
                             bind("Heal", true, heal, metaquest::action<long>::ally);
