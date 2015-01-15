@@ -89,9 +89,10 @@ namespace metaquest
                     for (auto &h : hostiles)
                     {
                         out.to(-50, i)
-                           .bar2(h["HP/Current"], h["HP/Total"],
-                                 h["MP/Current"], h["MP/Total"],
-                                 49)
+                           .bar2c(h["HP/Current"], h["HP/Total"],
+                                  h["MP/Current"], h["MP/Total"],
+                                  49,
+                                  1, 4)
                            .x(0)
                            .write(h.name.full(), 30);
                         i++;
@@ -101,9 +102,10 @@ namespace metaquest
                     for (auto &p : party)
                     {
                         out.to(-50, i)
-                           .bar2(p["HP/Current"], p["HP/Total"],
-                                 p["MP/Current"], p["MP/Total"],
-                                 49)
+                           .bar2c(p["HP/Current"], p["HP/Total"],
+                                  p["MP/Current"], p["MP/Total"],
+                                  49,
+                                  1, 4)
                            .x(0)
                            .write(p.name.full(), 30);
                         i--;
