@@ -126,7 +126,7 @@ namespace metaquest
                 {
                     std::size_t party = game.partyOf (source);
 
-                    if (party > 0)
+                    if (game.useAI(source))
                     {
                         return list[(rng() % list.size())];
                     }
@@ -215,7 +215,7 @@ namespace metaquest
                     std::vector<metaquest::character<T>*> targets;
                     std::size_t party = game.partyOf (source);
 
-                    if (party > 0)
+                    if (game.useAI(source))
                     {
                         targets.push_back(candidates[(rng() % candidates.size())]);
                         return targets;

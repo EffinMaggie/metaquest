@@ -121,7 +121,33 @@ namespace metaquest
                     return 0;
                 }
 
-                bool alive (character &c) const
+                /**\brief Is this character controlled by an AI?
+                 *
+                 * J-RPGs are usually single-player, so most characters in an
+                 * encounter are controlled by the computer. The 'default' way
+                 * to check whether this applies to any given character is to
+                 * see if they're in party 0 or not - party 0 being the default
+                 * player party.
+                 *
+                 * Different games may want to do this differently, so overrides
+                 * may be in order then.
+                 *
+                 * \tparam C The type of character to look up.
+                 *
+                 * \param[in] c The character to look up.
+                 *
+                 * \returns 'true' when a character should be controlled by an
+                 *          AI.
+                 */
+                template<typename C>
+                bool useAI (const C &c) const
+                {
+                    const auto party = partyOf (c);
+                    return party > 0;
+                }
+
+                template<typename C>
+                bool alive (C &c) const
                 {
                     return c["Alive"];
                 }
@@ -138,8 +164,9 @@ namespace metaquest
                     return ret;
                 }
 
+                template<typename C>
                 std::vector<metaquest::character<typename character::base>*> resolve
-                    (character &c,
+                    (C &c,
                      const std::string &s)
                 {
                     size_t p = partyOf(c);
