@@ -42,7 +42,7 @@ namespace metaquest
 {
     namespace interact
     {
-        template<typename term = efgy::terminal::vt100<>>
+        template<typename term = efgy::terminal::vt100<>, typename AI = void>
         class terminal
         {
             public:
@@ -128,6 +128,7 @@ namespace metaquest
 
                     if (game.useAI(source))
                     {
+                        out.to(0,15);
                         return list[(rng() % list.size())];
                     }
 
@@ -217,6 +218,7 @@ namespace metaquest
 
                     if (game.useAI(source))
                     {
+                        out.to(0,15);
                         targets.push_back(candidates[(rng() % candidates.size())]);
                         return targets;
                     }
