@@ -174,7 +174,7 @@ namespace metaquest
                             attribute["MP/Current"] = (*this)["MP/Total"];
 
                             bind("Attack", true, attack);
-                            bind("Heal", true, heal, metaquest::action<long>::ally);
+                            bind("Skill/Heal", true, heal, metaquest::action<long>::ally);
                             bind("Pass", true, pass, metaquest::action<long>::self);
                         }
             };

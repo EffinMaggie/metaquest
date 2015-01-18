@@ -124,7 +124,7 @@ namespace metaquest
                 std::string query
                     (const G &game,
                      const metaquest::character<T> &source,
-                     const std::vector<std::string> &list,
+                     const std::vector<std::string> &pList,
                      std::size_t indent = 4)
                 {
                     std::size_t party = game.partyOf (source);
@@ -132,7 +132,27 @@ namespace metaquest
                     if (game.useAI(source))
                     {
                         out.to(0,15);
-                        return ai.query(game,source,list,indent);
+                        return ai.query(game,source,pList,indent);
+                    }
+
+                    std::vector<std::string> list;
+                    std::map<std::string,std::vector<std::string>> map;
+
+                    for (const auto &la : pList)
+                    {
+                        std::string l = la;
+
+                        const auto pos = la.find('/');
+                        if (pos != std::string::npos)
+                        {
+                            l = la.substr(0, pos);
+                            map[l].push_back(la.substr(pos+1));
+                        }
+
+                        if (std::find(list.begin(), list.end(), l) == list.end())
+                        {
+                            list.push_back(l);
+                        }
                     }
 
                     size_t left = indent, top = 8,
@@ -205,6 +225,15 @@ namespace metaquest
                     while (!didSelect);
 
                     out.to(0,15);
+
+                    const auto &sel = list[selection];
+
+                    if (map[sel].size() > 0)
+                    {
+                        const auto sub = query(game, source, map[sel], indent+4);
+
+                        return sel + '/' + sub;
+                    }
 
                     return list[selection];
                 }
