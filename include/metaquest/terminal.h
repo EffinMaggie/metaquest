@@ -36,25 +36,28 @@
 #include <ef.gy/vt100.h>
 #include <ef.gy/terminal-writer.h>
 #include <metaquest/game.h>
+#include <metaquest/ai.h>
 #include <random>
 
 namespace metaquest
 {
     namespace interact
     {
-        template<typename term = efgy::terminal::vt100<>, typename AI = void>
+        template<typename term = efgy::terminal::vt100<>, template<typename> class AI = ai::random>
         class terminal
         {
             public:
                 terminal()
                     : io(),
                       out(io),
-                      rng(std::random_device()())
+                      rng(std::random_device()()),
+                      ai(*this)
                     {
                         io.resize(io.getOSDimensions());
                     }
 
                 efgy::terminal::writer<> out;
+                AI<terminal<term,AI>> ai;
 
                 void clear(void)
                 {
@@ -129,7 +132,7 @@ namespace metaquest
                     if (game.useAI(source))
                     {
                         out.to(0,15);
-                        return list[(rng() % list.size())];
+                        return ai.query(game,source,list,indent);
                     }
 
                     size_t left = indent, top = 8,
@@ -213,14 +216,12 @@ namespace metaquest
                      const std::vector<metaquest::character<T>*> &candidates,
                      std::size_t indent = 4)
                 {
-                    std::vector<metaquest::character<T>*> targets;
                     std::size_t party = game.partyOf (source);
 
                     if (game.useAI(source))
                     {
                         out.to(0,15);
-                        targets.push_back(candidates[(rng() % candidates.size())]);
-                        return targets;
+                        return ai.query(game,source,candidates,indent);
                     }
 
                     std::string hc;
@@ -229,6 +230,7 @@ namespace metaquest
                         return candidates;
                     }
 
+                    std::vector<metaquest::character<T>*> targets;
                     long selection = 0;
                     bool didSelect = false;
 
