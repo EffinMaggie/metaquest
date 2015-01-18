@@ -101,7 +101,7 @@ namespace metaquest
                         i++;
                     }
 
-                    i = -1;
+                    i = -party.size();
                     for (auto &p : party)
                     {
                         out.to(-50, i)
@@ -111,7 +111,7 @@ namespace metaquest
                                   1, 4)
                            .x(0)
                            .write(p.name.full(), 30);
-                        i--;
+                        i++;
                     }
                 }
 
@@ -245,7 +245,7 @@ namespace metaquest
                         out.foreground = 0;
                         out.background = 7;
 
-                        out.to(0, pa == 0 ? -1 * (pp+1) : pp)
+                        out.to(0, (pa == 0 ? -game.parties[pa].size() : 0) + pp)
                            .colour(-52, 1);
 
                         out.foreground = 7;
@@ -258,10 +258,10 @@ namespace metaquest
                                 switch (c.code)
                                 {
                                     case 'A': // up
-                                        selection += pa > 0 ? -1 : 1;
+                                        selection--;
                                         break;
                                     case 'B': // down
-                                        selection += pa > 0 ? 1 : -1;
+                                        selection++;
                                         break;
                                 }
                                 return false;
