@@ -94,7 +94,7 @@ namespace metaquest
                         out.to(-50, i)
                            .bar2c(h["HP/Current"], h["HP/Total"],
                                   h["MP/Current"], h["MP/Total"],
-                                  49,
+                                  50,
                                   1, 4)
                            .x(0)
                            .write(h.name.full(), 30);
@@ -107,7 +107,7 @@ namespace metaquest
                         out.to(-50, i)
                            .bar2c(p["HP/Current"], p["HP/Total"],
                                   p["MP/Current"], p["MP/Total"],
-                                  49,
+                                  50,
                                   1, 4)
                            .x(0)
                            .write(p.name.full(), 30);
