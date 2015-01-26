@@ -79,39 +79,39 @@ namespace metaquest
                 void drawUI
                     (G &game)
                 {
-                    auto &party    = game.parties[0];
-                    auto &hostiles = game.parties[1];
-
-                    long i = 0;
+                    long in = 0, i = 0;
 
                     clearQuery();
 
-                    out.to(0,0).clear(-1, hostiles.size());
-                    out.to(0,-party.size()).clear(-1, party.size());
-
-                    for (auto &h : hostiles)
+                    for (auto &party : game.parties)
                     {
-                        out.to(-50, i)
-                           .bar2c(h["HP/Current"], h["HP/Total"],
-                                  h["MP/Current"], h["MP/Total"],
-                                  50,
-                                  1, 4)
-                           .x(0)
-                           .write(h.name.full(), 30);
-                        i++;
-                    }
+                        if (in == 0)
+                        {
+                            i = -party.size();
+                        }
+                        else if (in == 1)
+                        {
+                            i = 0;
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                        in++;
 
-                    i = -party.size();
-                    for (auto &p : party)
-                    {
-                        out.to(-50, i)
-                           .bar2c(p["HP/Current"], p["HP/Total"],
-                                  p["MP/Current"], p["MP/Total"],
-                                  50,
-                                  1, 4)
-                           .x(0)
-                           .write(p.name.full(), 30);
-                        i++;
+                        for (auto &p : party)
+                        {
+                            out.to(0, i)
+                               .clear(-1, 1)
+                               .to(0, i)
+                               .write(p.name.full(), 30)
+                               .x(-50)
+                               .bar2c(p["HP/Current"], p["HP/Total"],
+                                      p["MP/Current"], p["MP/Total"],
+                                      50,
+                                      1, 4);
+                            i++;
+                        }
                     }
                 }
 
