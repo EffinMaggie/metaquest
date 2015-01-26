@@ -38,6 +38,7 @@
 #include <metaquest/game.h>
 #include <metaquest/ai.h>
 #include <random>
+#include <sstream>
 
 namespace metaquest
 {
@@ -101,10 +102,20 @@ namespace metaquest
 
                         for (auto &p : party)
                         {
+                            std::ostringstream hp("");
+                            std::ostringstream mp("");
+
+                            hp << p["HP/Current"];
+                            mp << p["MP/Current"];
+
                             out.to(0, i)
                                .clear(-1, 1)
                                .to(0, i)
                                .write(p.name.full(), 30)
+                               .x(-60)
+                               .write(hp.str(), 4, 1)
+                               .x(-55)
+                               .write(mp.str(), 4, 4)
                                .x(-50)
                                .bar2c(p["HP/Current"], p["HP/Total"],
                                       p["MP/Current"], p["MP/Total"],
