@@ -98,18 +98,16 @@ test-case-%: src/test-case/%.cpp include/*/*.h
 	$(EMXX) -std=c++0x -Iinclude/ -D NOLIBRARIES $(EMXXFLAGS) $< $(LDFLAGS) -o $@
 
 # gather source data
-data/census/dist.%: data/census/dist.%.census.gov
-	cat $^ | cut -d ' ' -f 1 | head -n $(MAXLINES) > $@
-
 data/census/dist.%.census.gov:
 	mkdir -p $(dir $@) || true
 	$(CURL) 'http://www2.census.gov/topics/genealogy/1990surnames/dist.$*' > $@
 
-include/data/%.h: data/census/dist.%
+include/data/%.h: data/census/dist.%.census.gov makefile
 	mkdir -p $(dir $@) || true
 	echo '#include <array>' > $@
+	echo '#include <tuple>' >> $@
 	echo 'namespace data {' >> $@
-	echo "    static const constexpr std::array<const char*,$$(wc -l $^ | sed 's/^ *//' | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') = {{" >> $@
-	sed 's/\(.*\)/        "\1",/' < $^ >> $@
+	echo "    static const std::array<std::tuple<const char*,long>,$$(cat $< | head -n $(MAXLINES) | wc -l | sed 's/^ *//' | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') {{" >> $@
+	awk '{print " {\"" $$1 "\"," ($$2*1000+1) "}," }' < $< | head -n $(MAXLINES) >> $@
 	echo '    }};' >> $@
 	echo '};' >> $@
