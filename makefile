@@ -89,13 +89,13 @@ $(MANDIR)/man1/%.1: src/%.1
 
 # pattern rules for C++ code
 %: src/%.cpp include/*/*.h $(DATAHEADERS)
-	$(CXX) -std=c++0x -Iinclude/ $(CXXFLAGS) $(PCCFLAGS) $< $(LDFLAGS) $(PCLDFLAGS) -o $@ && ($(DEBUG) || strip -x $@)
+	$(CXX) -std=c++11 -Iinclude/ $(CXXFLAGS) $(PCCFLAGS) $< $(LDFLAGS) $(PCLDFLAGS) -o $@ && ($(DEBUG) || strip -x $@)
 
 test-case-%: src/test-case/%.cpp include/*/*.h
-	$(CXX) -std=c++0x -Iinclude/ -DRUN_TEST_CASES $(CXXFLAGS) $(PCCFLAGS) $< $(LDFLAGS) $(PCLDFLAGS) -o $@
+	$(CXX) -std=c++11 -Iinclude/ -DRUN_TEST_CASES $(CXXFLAGS) $(PCCFLAGS) $< $(LDFLAGS) $(PCLDFLAGS) -o $@
 
 %.js: src/%.cpp include/*/*.h
-	$(EMXX) -std=c++0x -Iinclude/ -D NOLIBRARIES $(EMXXFLAGS) $< $(LDFLAGS) -o $@
+	$(EMXX) -std=c++11 -Iinclude/ -D NOLIBRARIES $(EMXXFLAGS) $< $(LDFLAGS) -o $@
 
 # gather source data
 data/census/dist.%.census.gov:
@@ -107,7 +107,7 @@ include/data/%.h: data/census/dist.%.census.gov makefile
 	echo '#include <array>' > $@
 	echo '#include <tuple>' >> $@
 	echo 'namespace data {' >> $@
-	echo "    static const std::array<std::tuple<const char*,long>,$$(cat $< | head -n $(MAXLINES) | wc -l | sed 's/^ *//' | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') {{" >> $@
-	awk '{print " {\"" $$1 "\"," ($$2*1000+1) "}," }' < $< | head -n $(MAXLINES) >> $@
+	echo "    static const constexpr std::array<std::tuple<const char*,long>,$$(cat $< | head -n $(MAXLINES) | wc -l | sed 's/^ *//' | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') {{" >> $@
+	awk '{print " std::tuple<const char*,long>(\"" $$1 "\"," ($$2*1000+1) "),"}' < $< | head -n $(MAXLINES) >> $@
 	echo '    }};' >> $@
 	echo '};' >> $@
