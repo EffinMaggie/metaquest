@@ -50,6 +50,16 @@ namespace metaquest
     class character : public object<T>
     {
         public:
+            typedef object<T> parent;
+
+            using parent::attribute;
+
+            character(const T points = 1)
+                : parent()
+                {
+                    attribute["Points/Creation"] = points;
+                }
+
             /**\brief Use global skill
              *
              * Uses a skill with a global effect.

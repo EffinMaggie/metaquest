@@ -156,10 +156,10 @@ namespace metaquest
 
                     using parent::name;
 
-                    character()
-                        : parent()
+                    character(long points = 1)
+                        : parent(points)
                         {
-                            metaquest::name::american::proper<> cname;
+                            metaquest::name::american::proper<> cname(roll(1,10) > 5);
                             name = cname;
 
                             attribute["Attack"]     = 1;

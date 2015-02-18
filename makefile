@@ -107,7 +107,7 @@ include/data/%.h: data/census/dist.%.census.gov makefile
 	echo '#include <array>' > $@
 	echo '#include <tuple>' >> $@
 	echo 'namespace data {' >> $@
-	echo "    static const constexpr std::array<std::tuple<const char*,long>,$$(cat $< | head -n $(MAXLINES) | wc -l | sed 's/^ *//' | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') {{" >> $@
+	echo "    static const std::array<std::tuple<const char*,long>,$$(cat $< | head -n $(MAXLINES) | wc -l | sed 's/^ *//' | cut -d ' ' -f 1)> $$(echo $* | tr '.' '_') {{" >> $@
 	awk '{print " std::tuple<const char*,long>(\"" $$1 "\"," ($$2*1000+1) "),"}' < $< | head -n $(MAXLINES) >> $@
 	echo '    }};' >> $@
 	echo '};' >> $@
