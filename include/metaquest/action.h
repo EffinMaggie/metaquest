@@ -31,7 +31,6 @@
 
 #include <metaquest/object.h>
 
-#include <vector>
 #include <string>
 
 namespace metaquest
@@ -43,7 +42,7 @@ namespace metaquest
             typedef metaquest::object<T> parent;
 
             action(bool pVisible = false,
-                   std::function<std::string(std::vector<object<T>*> &source, std::vector<object<T>*> &target)> pApply = nullptr)
+                   std::function<std::string(objects<T> &source, objects<T> &target)> pApply = nullptr)
                 : parent(),
                   visible(pVisible),
                   apply(pApply)
@@ -60,7 +59,7 @@ namespace metaquest
                 everyone
             } scope;
 
-            std::string operator () (std::vector<object<T>*> &source, std::vector<object<T>*> &target)
+            std::string operator () (objects<T> &source, objects<T> &target)
             {
                 if (apply != nullptr)
                 {
@@ -72,7 +71,7 @@ namespace metaquest
 
             bool visible;
 
-            std::function<std::string(std::vector<object<T>*> &source, std::vector<object<T>*> &target)> apply;
+            std::function<std::string(objects<T> &source, objects<T> &target)> apply;
     };
 };
 

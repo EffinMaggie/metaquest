@@ -69,7 +69,7 @@ namespace metaquest
                 return res;
             }
 
-            static std::string attack (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+            static std::string attack (objects<long> &source, objects<long> &target)
             {
                 std::stringstream os("");
                 for (auto &sp : source)
@@ -104,7 +104,7 @@ namespace metaquest
                 return os.str();
             }
 
-            static std::string heal (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+            static std::string heal (objects<long> &source, objects<long> &target)
             {
                 std::stringstream os("");
                 for (auto &sp : source)
@@ -138,7 +138,7 @@ namespace metaquest
                 return os.str();
             }
 
-            static std::string pass (std::vector<object<long>*> &source, std::vector<object<long>*> &target)
+            static std::string pass (objects<long> &source, objects<long> &target)
             {
                 std::stringstream os("");
                 for (auto &sp : source)

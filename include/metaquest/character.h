@@ -89,7 +89,7 @@ namespace metaquest
                 auto act = action.find(skill);
                 if (act != action.end())
                 {
-                    std::vector<object<T>*> source, target;
+                    objects<T> source, target;
                     source.push_back(this);
 
                     for (auto &t : pTarget)
@@ -120,7 +120,7 @@ namespace metaquest
             metaquest::action<T> &bind
                 (const std::string &name,
                  bool isVisible,
-                 std::function<std::string(std::vector<object<T>*>&,
+                 std::function<std::string(objects<T>&,
                  std::vector<object<T>*>&)> pApply,
                  const enum metaquest::action<T>::scope &pScope = metaquest::action<T>::enemy)
             {

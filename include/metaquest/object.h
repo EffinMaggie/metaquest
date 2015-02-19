@@ -37,6 +37,7 @@
 #include <string>
 #include <map>
 #include <functional>
+#include <vector>
 
 namespace metaquest
 {
@@ -103,6 +104,9 @@ namespace metaquest
              */
             std::map<std::string,T> attribute;
     };
+
+    template<typename T>
+    using objects = std::vector<object<T>*>;
 }
 
 #endif
