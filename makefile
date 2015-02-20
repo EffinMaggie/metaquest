@@ -14,6 +14,7 @@ PKGCONFIG:=pkg-config
 INSTALL:=install
 XSLTPROC:=xsltproc
 CURL:=curl
+CLANG_FORMAT:=clang-format
 
 LIBRARIES:=
 
@@ -61,6 +62,10 @@ archive: ../$(NAME)-$(VERSION).tar.gz
 # meta rules for documentation
 documentation: doxyfile include/*/* xslt/doxy*
 	doxygen $^
+
+# meta rules to reformat sources
+format:
+	$(CLANG_FORMAT) -i $(wildcard src/*.cpp) $(wildcard src/*/*.cpp) $(wildcard include/$(NAME)/*.h)
 
 # meta rules for javascript
 js: $(JSBINARIES)
