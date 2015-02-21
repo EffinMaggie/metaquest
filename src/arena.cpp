@@ -30,8 +30,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #include <metaquest/terminal.h>
@@ -48,22 +49,22 @@ using namespace efgy;
  *
  * \returns 0 on success, something else otherwise.
  */
-int main(int, const char **)
-{
-    std::string log;
+int main(int, const char **) {
+  std::string log;
 
-    {
-        metaquest::flow::generic
-            <metaquest::interact::terminal<>,
-             metaquest::rules::simple::game<metaquest::interact::terminal<>>> game;
+  {
+    metaquest::flow::generic<
+        metaquest::interact::terminal<>,
+        metaquest::rules::simple::game<metaquest::interact::terminal<> > > game;
 
-        game.run();
+    game.run();
 
-        log = game.log;
-    }
+    log = game.log;
+  }
 
-    std::cerr << "\u261e" << "\n";
-    std::cout << "\n" << log << "\n";
+  std::cerr << "\u261e"
+            << "\n";
+  std::cout << "\n" << log << "\n";
 
-    return 0;
+  return 0;
 }

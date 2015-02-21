@@ -25,8 +25,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_ITEM_H)
@@ -34,29 +35,23 @@
 
 #include <metaquest/action.h>
 
-namespace metaquest
-{
-    /**\brief An item
-     *
-     * Defines the basic interface that any item follows - turns out items are
-     * your standard type of object. Who'da thunk?
-     *
-     * \tparam T Base type for attributes. Integers are probably a good choice,
-     *           at least for J-RPGs and tabletops.
-     */
-    template<typename T = long>
-    class item : public object<T>
-    {
-        public:
-            typedef metaquest::object<T> parent;
+namespace metaquest {
+/**\brief An item
+ *
+ * Defines the basic interface that any item follows - turns out items are
+ * your standard type of object. Who'da thunk?
+ *
+ * \tparam T Base type for attributes. Integers are probably a good choice,
+ *           at least for J-RPGs and tabletops.
+ */
+template <typename T = long> class item : public object<T> {
+public:
+  typedef metaquest::object<T> parent;
 
-            item(const action<T> &pApply)
-                : parent(),
-                  apply(pApply)
-                {}
+  item(const action<T> &pApply) : parent(), apply(pApply) {}
 
-            action<T> apply;
-    };
+  action<T> apply;
+};
 };
 
 #endif

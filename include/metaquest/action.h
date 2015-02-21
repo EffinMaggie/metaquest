@@ -22,8 +22,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_ACTION_H)
@@ -33,46 +34,37 @@
 
 #include <string>
 
-namespace metaquest
-{
-    template<typename T>
-    class action : public object<T>
-    {
-        public:
-            typedef metaquest::object<T> parent;
+namespace metaquest {
+template <typename T> class action : public object<T> {
+public:
+  typedef metaquest::object<T> parent;
 
-            action(bool pVisible = false,
-                   std::function<std::string(objects<T> &source, objects<T> &target)> pApply = nullptr)
-                : parent(),
-                  visible(pVisible),
-                  apply(pApply)
-                {
-                }
+  action(bool pVisible = false,
+         std::function<std::string(objects<T> &source, objects<T> &target)>
+             pApply = nullptr)
+      : parent(), visible(pVisible), apply(pApply) {}
 
-            enum scope
-            {
-                self,
-                ally,
-                enemy,
-                party,
-                enemies,
-                everyone
-            } scope;
+  enum scope {
+    self,
+    ally,
+    enemy,
+    party,
+    enemies,
+    everyone
+  } scope;
 
-            std::string operator () (objects<T> &source, objects<T> &target)
-            {
-                if (apply != nullptr)
-                {
-                    return apply(source, target);
-                }
+  std::string operator()(objects<T> &source, objects<T> &target) {
+    if (apply != nullptr) {
+      return apply(source, target);
+    }
 
-                return "";
-            }
+    return "";
+  }
 
-            bool visible;
+  bool visible;
 
-            std::function<std::string(objects<T> &source, objects<T> &target)> apply;
-    };
+  std::function<std::string(objects<T> &source, objects<T> &target)> apply;
+};
 };
 
 #endif

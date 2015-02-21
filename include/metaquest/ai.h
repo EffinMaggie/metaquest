@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_AI_H)
@@ -31,46 +32,34 @@
 #include <metaquest/game.h>
 #include <random>
 
-namespace metaquest
-{
-    namespace ai
-    {
-        template<typename inter>
-        class random
-        {
-            public:
-                random(inter &pInteract)
-                    : interact(pInteract),
-                      rng(std::random_device()())
-                    {}
+namespace metaquest {
+namespace ai {
+template <typename inter> class random {
+public:
+  random(inter &pInteract) : interact(pInteract), rng(std::random_device()()) {}
 
-                template<typename T, typename G>
-                std::string query
-                    (const G &game,
-                     const metaquest::character<T> &source,
-                     const std::vector<std::string> &list,
-                     std::size_t indent = 4)
-                {
-                    return list[(rng() % list.size())];
-                }
+  template <typename T, typename G>
+  std::string query(const G &game, const metaquest::character<T> &source,
+                    const std::vector<std::string> &list,
+                    std::size_t indent = 4) {
+    return list[(rng() % list.size())];
+  }
 
-                template<typename T, typename G>
-                std::vector<metaquest::character<T>*> query
-                    (G &game,
-                     const metaquest::character<T> &source,
-                     const std::vector<metaquest::character<T>*> &candidates,
-                     std::size_t indent = 4)
-                {
-                    std::vector<metaquest::character<T>*> targets;
-                    targets.push_back(candidates[(rng() % candidates.size())]);
-                    return targets;
-                }
+  template <typename T, typename G>
+  std::vector<metaquest::character<T> *>
+  query(G &game, const metaquest::character<T> &source,
+        const std::vector<metaquest::character<T> *> &candidates,
+        std::size_t indent = 4) {
+    std::vector<metaquest::character<T> *> targets;
+    targets.push_back(candidates[(rng() % candidates.size())]);
+    return targets;
+  }
 
-            protected:
-                inter &interact;
-                std::mt19937 rng;
-        };
-    }
+protected:
+  inter &interact;
+  std::mt19937 rng;
+};
+}
 }
 
 #endif

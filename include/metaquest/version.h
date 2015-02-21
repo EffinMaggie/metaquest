@@ -24,8 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_VERSION_H)
@@ -35,14 +36,13 @@
  *
  * Everything related to metaquest is contained in this namespace.
  */
-namespace metaquest
-{
-    /**\brief Metaquest version
-     *
-     * This is the version number of the metaquest library. It's a single
-     * integer - how unusual ;).
-     */
-    static const unsigned int version = 1;
+namespace metaquest {
+/**\brief Metaquest version
+ *
+ * This is the version number of the metaquest library. It's a single
+ * integer - how unusual ;).
+ */
+static const unsigned int version = 1;
 };
 
 #endif

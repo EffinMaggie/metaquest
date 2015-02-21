@@ -24,8 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_CHARACTER_H)
@@ -36,132 +37,114 @@
 
 #include <vector>
 
-namespace metaquest
-{
-    /**\brief A character
-     *
-     * Characters, here, are basically objects that can use skills. So that's
-     * pretty much how they're defined.
-     *
-     * \tparam T Base type for attributes. Integers are probably a good choice,
-     *           at least for J-RPGs and tabletops.
-     */
-    template<typename T = long>
-    class character : public object<T>
-    {
-        public:
-            typedef object<T> parent;
+namespace metaquest {
+/**\brief A character
+ *
+ * Characters, here, are basically objects that can use skills. So that's
+ * pretty much how they're defined.
+ *
+ * \tparam T Base type for attributes. Integers are probably a good choice,
+ *           at least for J-RPGs and tabletops.
+ */
+template <typename T = long> class character : public object<T> {
+public:
+  typedef object<T> parent;
 
-            using parent::attribute;
+  using parent::attribute;
 
-            character(const T points = 1)
-                : parent()
-                {
-                    attribute["Points/Creation"] = points;
-                }
+  character(const T points = 1) : parent() {
+    attribute["Points/Creation"] = points;
+  }
 
-            /**\brief Use global skill
-             *
-             * Uses a skill with a global effect.
-             *
-             * \param[in] skill The skill to use.
-             *
-             * \returns 'True' if the skill was used successfully, 'false' if it
-             *          failed.
-             */
-            bool operator () (const std::string &skill)
-            {
-                return false;
-            }
+  /**\brief Use global skill
+   *
+   * Uses a skill with a global effect.
+   *
+   * \param[in] skill The skill to use.
+   *
+   * \returns 'True' if the skill was used successfully, 'false' if it
+   *          failed.
+   */
+  bool operator()(const std::string &skill) { return false; }
 
-            /**\brief Use targeted skill
-             *
-             * Uses a skill that targets one or more other characters.
-             *
-             * \param[in] skill  The skill to use.
-             * \param[in] target The skill's target.
-             *
-             * \returns 'True' if the skill was used successfully, 'false' if it
-             *          failed.
-             */
-            std::string operator () (const std::string &skill, std::vector<character*> &pTarget)
-            {
-                auto act = action.find(skill);
-                if (act != action.end())
-                {
-                    objects<T> source, target;
-                    source.push_back(this);
+  /**\brief Use targeted skill
+   *
+   * Uses a skill that targets one or more other characters.
+   *
+   * \param[in] skill  The skill to use.
+   * \param[in] target The skill's target.
+   *
+   * \returns 'True' if the skill was used successfully, 'false' if it
+   *          failed.
+   */
+  std::string operator()(const std::string &skill,
+                         std::vector<character *> &pTarget) {
+    auto act = action.find(skill);
+    if (act != action.end()) {
+      objects<T> source, target;
+      source.push_back(this);
 
-                    for (auto &t : pTarget)
-                    {
-                        target.push_back(t);
-                    }
+      for (auto &t : pTarget) {
+        target.push_back(t);
+      }
 
-                    return act->second(source, target);
-                }
-                
-                return object<T>::name.display() + " looks bewildered\n";
-            }
+      return act->second(source, target);
+    }
 
-            /**\brief List of equipped items
-             *
-             * The list of items that a character currently has equipped.
-             */
-            std::vector<item<T>> equipment;
+    return object<T>::name.display() + " looks bewildered\n";
+  }
 
-            /**\brief List of inventory items
-             *
-             * The list of items that a character currently has in their
-             * inventory. These items are not equipped and should not have any
-             * effect on the character's stats.
-             */
-            std::vector<item<T>> inventory;
+  /**\brief List of equipped items
+   *
+   * The list of items that a character currently has equipped.
+   */
+  std::vector<item<T> > equipment;
 
-            metaquest::action<T> &bind
-                (const std::string &name,
-                 bool isVisible,
-                 std::function<std::string(objects<T>&,
-                 std::vector<object<T>*>&)> pApply,
-                 const enum metaquest::action<T>::scope &pScope = metaquest::action<T>::enemy)
-            {
-                metaquest::action<T> act(isVisible, pApply);
-                act.name = metaquest::name::simple<>(name);
-                act.scope = pScope;
-                action[name] = act;
-                return action[name];
-            }
+  /**\brief List of inventory items
+   *
+   * The list of items that a character currently has in their
+   * inventory. These items are not equipped and should not have any
+   * effect on the character's stats.
+   */
+  std::vector<item<T> > inventory;
 
-            std::vector<std::string> visibleActions (void)
-            {
-                std::vector<std::string> actions;
+  metaquest::action<T> &
+  bind(const std::string &name, bool isVisible,
+       std::function<std::string(objects<T> &, std::vector<object<T> *> &)>
+           pApply,
+       const enum metaquest::action<T>::scope &pScope =
+           metaquest::action<T>::enemy) {
+    metaquest::action<T> act(isVisible, pApply);
+    act.name = metaquest::name::simple<>(name);
+    act.scope = pScope;
+    action[name] = act;
+    return action[name];
+  }
 
-                for(auto a : action)
-                {
-                    if (a.second.visible)
-                    {
-                        actions.push_back(a.first);
-                    }
-                }
+  std::vector<std::string> visibleActions(void) {
+    std::vector<std::string> actions;
 
-                return actions;
-            }
+    for (auto a : action) {
+      if (a.second.visible) {
+        actions.push_back(a.first);
+      }
+    }
 
-            const enum metaquest::action<T>::scope scope (const std::string &act) const
-            {
-                const auto it = action.find(act);
-                if (it == action.end())
-                {
-                    return metaquest::action<T>::self;
-                }
-                else
-                {
-                    return it->second.scope;
-                }
-            }
+    return actions;
+  }
 
-        protected:
-            std::map<std::string,action<T>> action;
-    };
+  const enum metaquest::action<T>::scope scope(const std::string &act) const {
+    const auto it = action.find(act);
+    if (it == action.end()) {
+      return metaquest::action<T>::self;
+    } else {
+      return it->second.scope;
+    }
+  }
+
+protected:
+  std::map<std::string, action<T> > action;
+};
 }
 
 #endif

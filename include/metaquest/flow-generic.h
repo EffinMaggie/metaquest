@@ -24,60 +24,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_FLOW_GENERIC_H)
 #define METAQUEST_FLOW_GENERIC_H
 
-namespace metaquest
-{
-    namespace flow
-    {
-        template<typename interaction, typename logic>
-        class generic
-        {
-            public:
-                generic(void)
-                    : interact(),
-                      game(interact)
-                    {
-                        interact.clear();
-                    }
+namespace metaquest {
+namespace flow {
+template <typename interaction, typename logic> class generic {
+public:
+  generic(void) : interact(), game(interact) { interact.clear(); }
 
-                ~generic(void)
-                    {
-                        interact.clear();
-                        interact.flush();
-                    }
+  ~generic(void) {
+    interact.clear();
+    interact.flush();
+  }
 
-                void run(void)
-                {
-                    while (true)
-                    {
-                        interact.drawUI(game);
+  void run(void) {
+    while (true) {
+      interact.drawUI(game);
 
-                        interact.flush();
+      interact.flush();
 
-                        log = game.next();
+      log = game.next();
 
-                        if (log.find("victorious") != log.npos)
-                        {
-                            break;
-                        }
+      if (log.find("victorious") != log.npos) {
+        break;
+      }
 
-                        interact.log(log);
-                    }
-
-                    interact.flush();
-                }
-
-                interaction interact;
-                logic game;
-                std::string log;
-        };
+      interact.log(log);
     }
+
+    interact.flush();
+  }
+
+  interaction interact;
+  logic game;
+  std::string log;
+};
+}
 }
 
 #endif

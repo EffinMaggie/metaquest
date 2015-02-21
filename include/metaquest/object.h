@@ -25,8 +25,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_OBJECT_H)
@@ -39,74 +40,65 @@
 #include <functional>
 #include <vector>
 
-namespace metaquest
-{
-    /**\brief A game object
-     *
-     * The base class for items, characters, etc. Provides common properties,
-     * such as a name, rules and attributes.
-     *
-     * \tparam T Base type for attributes. Integers are probably a good choice,
-     *           at least for J-RPGs and tabletops.
-     */
-    template<typename T = long, typename C = char>
-    class object
-    {
-        public:
-            typedef T base;
+namespace metaquest {
+/**\brief A game object
+ *
+ * The base class for items, characters, etc. Provides common properties,
+ * such as a name, rules and attributes.
+ *
+ * \tparam T Base type for attributes. Integers are probably a good choice,
+ *           at least for J-RPGs and tabletops.
+ */
+template <typename T = long, typename C = char> class object {
+public:
+  typedef T base;
 
-            /**\brief Object name
-             *
-             * Everything needs a name. Since everything in the game is an
-             * object, this is that name.
-             */
-            name::proper<C> name;
+  /**\brief Object name
+   *
+   * Everything needs a name. Since everything in the game is an
+   * object, this is that name.
+   */
+  name::proper<C> name;
 
-            /**\brief Access attribute
-             *
-             * Provides a simple way to access attributes. Attributes may either
-             * be members of the 'attribute' map, or they can be calculated on
-             * the fly using a member of the 'function' map.
-             *
-             * \param[in] s The attribute you'd like to access.
-             *
-             * \returns The attribute you tried to access.
-             */
-            T operator [] (const std::string &s)
-            {
-                std::function<T(object&)> &f = function[s];
-                if (f == nullptr)
-                {
-                    return attribute[s];
-                }
-                else
-                {
-                    return f(*this);
-                }
-            }
+  /**\brief Access attribute
+   *
+   * Provides a simple way to access attributes. Attributes may either
+   * be members of the 'attribute' map, or they can be calculated on
+   * the fly using a member of the 'function' map.
+   *
+   * \param[in] s The attribute you'd like to access.
+   *
+   * \returns The attribute you tried to access.
+   */
+  T operator[](const std::string &s) {
+    std::function<T(object &)> &f = function[s];
+    if (f == nullptr) {
+      return attribute[s];
+    } else {
+      return f(*this);
+    }
+  }
 
-            bool have (const std::string &s)
-            {
-                return ( function.find(s) !=  function.end())
-                    || (attribute.find(s) != attribute.end());
-            }
+  bool have(const std::string &s) {
+    return (function.find(s) != function.end()) ||
+           (attribute.find(s) != attribute.end());
+  }
 
-            /**\brief Attribute generation functions
-             *
-             * Maps attribute names to thunks which can generate an attribute on
-             * the fly, e.g. for derived attributes in RPGs.
-             */
-            std::map<std::string,std::function<T(object&)>> function;
+  /**\brief Attribute generation functions
+   *
+   * Maps attribute names to thunks which can generate an attribute on
+   * the fly, e.g. for derived attributes in RPGs.
+   */
+  std::map<std::string, std::function<T(object &)> > function;
 
-            /**\brief Basic attributes
-             *
-             * Maps basic attributes to their proper values.
-             */
-            std::map<std::string,T> attribute;
-    };
+  /**\brief Basic attributes
+   *
+   * Maps basic attributes to their proper values.
+   */
+  std::map<std::string, T> attribute;
+};
 
-    template<typename T>
-    using objects = std::vector<object<T>*>;
+template <typename T> using objects = std::vector<object<T> *>;
 }
 
 #endif

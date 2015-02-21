@@ -25,8 +25,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * \see Project Documentation: http://ef.gy/documentation/metaquest
- * \see Project Source Code: http://git.becquerel.org/jyujin/metaquest.git
+ * \see Documentation: https://ef.gy/documentation/metaquest
+ * \see Source Code: https://github.com/jyujin/metaquest
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
  */
 
 #if !defined(METAQUEST_PARTY_H)
@@ -34,30 +35,25 @@
 
 #include <metaquest/character.h>
 
-namespace metaquest
-{
-    /**\brief A party
-     *
-     * This type represents a group of characters, referred to as a 'party'. The
-     * type is based on std::vector as opposed to std::set because in some
-     * contexts (menu, etc.) the order might actually be relevant.
-     */
-    template<typename C>
-    using party = std::vector<C>;
+namespace metaquest {
+/**\brief A party
+ *
+ * This type represents a group of characters, referred to as a 'party'. The
+ * type is based on std::vector as opposed to std::set because in some
+ * contexts (menu, etc.) the order might actually be relevant.
+ */
+template <typename C> using party = std::vector<C>;
 
-    template<typename C>
-    party<C> generate(unsigned int members)
-    {
-        party<C> p;
+template <typename C> party<C> generate(unsigned int members) {
+  party<C> p;
 
-        for (unsigned int i = 0; i < members; i++)
-        {
-            C c;
-            p.push_back(c);
-        }
+  for (unsigned int i = 0; i < members; i++) {
+    C c;
+    p.push_back(c);
+  }
 
-        return p;
-    }
+  return p;
+}
 };
 
 #endif
