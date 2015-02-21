@@ -24,7 +24,7 @@
  *
  * \see Documentation: https://ef.gy/documentation/metaquest
  * \see Source Code: https://github.com/jyujin/metaquest
- * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING 
+ * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING
  */
 
 #if !defined(METAQUEST_ACTION_H)
