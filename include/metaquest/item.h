@@ -52,6 +52,6 @@ public:
 
   action<T> apply;
 };
-};
+}
 
 #endif

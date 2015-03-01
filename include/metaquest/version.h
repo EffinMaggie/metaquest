@@ -43,6 +43,6 @@ namespace metaquest {
  * integer - how unusual ;).
  */
 static const unsigned int version = 1;
-};
+}
 
 #endif

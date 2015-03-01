@@ -65,6 +65,6 @@ public:
 
   std::function<std::string(objects<T> &source, objects<T> &target)> apply;
 };
-};
+}
 
 #endif

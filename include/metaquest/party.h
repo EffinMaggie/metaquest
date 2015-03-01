@@ -54,6 +54,6 @@ template <typename C> party<C> generate(unsigned int members) {
 
   return p;
 }
-};
+}
 
 #endif
