@@ -36,6 +36,7 @@
 
 #include <ef.gy/vt100.h>
 #include <ef.gy/terminal-writer.h>
+#include <ef.gy/maybe.h>
 #include <metaquest/game.h>
 #include <metaquest/ai.h>
 #include <random>
@@ -141,6 +142,7 @@ public:
 
     long selection = 0;
     bool didSelect = false;
+    bool didCancel = false;
 
     do {
       out.to(left + 1, top + 1).colour(width - 2, height - 2);
@@ -155,7 +157,9 @@ public:
 
       flush();
 
-      io.read([&selection](const typename term::command & c)->bool {
+      io.read(
+          [&selection, &didSelect, &didCancel](const typename term::command & c)
+              ->bool {
         switch (c.code) {
         case 'A': // up
           selection--;
@@ -163,15 +167,23 @@ public:
         case 'B': // down
           selection++;
           break;
+        case 'C': // right: select
+          didSelect = true;
+          break;
+        case 'D': // left: cancel
+          didCancel = true;
+          break;
         }
         return false;
       },
-              [&didSelect](const T & l)->bool {
+          [&didSelect](const T & l)->bool {
         if (l == '\n') {
           didSelect = true;
         }
         return false;
       });
+
+      didSelect |= didCancel;
 
       if (selection >= (long) list.size()) {
         selection = list.size() - 1;
@@ -184,10 +196,18 @@ public:
 
     out.to(0, 15);
 
+    if (didCancel) {
+      return "Cancel";
+    }
+
     const auto &sel = list[selection];
 
     if (map[sel].size() > 0) {
       const auto sub = query(game, source, map[sel], indent + 4);
+
+      if (sub == "Cancel") {
+        return query(game, source, pList, indent);
+      }
 
       return sel + '/' + sub;
     }
@@ -196,7 +216,7 @@ public:
   }
 
   template <typename T, typename G>
-  std::vector<metaquest::character<T> *>
+  efgy::maybe<std::vector<metaquest::character<T> *> >
   query(G &game, const metaquest::character<T> &source,
         const std::vector<metaquest::character<T> *> &candidates,
         std::size_t indent = 4) {
@@ -215,6 +235,7 @@ public:
     std::vector<metaquest::character<T> *> targets;
     long selection = 0;
     bool didSelect = false;
+    bool didCancel = false;
 
     do {
       const auto &c = *(candidates[selection]);
@@ -233,7 +254,9 @@ public:
 
       flush();
 
-      io.read([&selection, pa](const typename term::command & c)->bool {
+      io.read(
+          [&selection, &didSelect, &didCancel](const typename term::command & c)
+              ->bool {
         switch (c.code) {
         case 'A': // up
           selection--;
@@ -241,15 +264,23 @@ public:
         case 'B': // down
           selection++;
           break;
+        case 'C': // right: select
+          didSelect = true;
+          break;
+        case 'D': // left: cancel
+          didCancel = true;
+          break;
         }
         return false;
       },
-              [&didSelect](const T & l)->bool {
+          [&didSelect](const T & l)->bool {
         if (l == '\n') {
           didSelect = true;
         }
         return false;
       });
+
+      didSelect |= didCancel;
 
       if (selection >= (long) candidates.size()) {
         selection = candidates.size() - 1;
@@ -260,8 +291,11 @@ public:
       }
     } while (!didSelect);
 
-    targets.push_back(candidates[selection]);
+    if (didCancel) {
+      return efgy::maybe<std::vector<metaquest::character<T> *> >();
+    }
 
+    targets.push_back(candidates[selection]);
     return targets;
   }
 

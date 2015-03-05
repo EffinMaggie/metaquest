@@ -130,6 +130,7 @@ static std::string pass(objects<long> &source, objects<long> &target) {
 class character : public metaquest::character<long> {
 public:
   typedef metaquest::character<long> parent;
+  typedef metaquest::action<long> action;
 
   using parent::name;
 
@@ -149,8 +150,8 @@ public:
     attribute["MP/Current"] = (*this)["MP/Total"];
 
     bind("Attack", true, attack);
-    bind("Skill/Heal", true, heal, metaquest::action<long>::ally);
-    bind("Pass", true, pass, metaquest::action<long>::self);
+    bind("Skill/Heal", true, heal, action::ally);
+    bind("Pass", true, pass, action::self);
   }
 };
 
@@ -188,11 +189,29 @@ protected:
 
     auto visible = c.visibleActions();
 
-    std::string s = self.interact.query(self, c, visible);
+    bool retry = false;
 
-    auto targets = self.resolve(c, s);
+    do {
+      retry = false;
 
-    return c(s, targets);
+      std::string s = self.interact.query(self, c, visible);
+
+      if (s == "Cancel") {
+        retry = true;
+        continue;
+      }
+
+      auto targets = self.resolve(c, s);
+
+      if (!targets) {
+        retry = true;
+        continue;
+      }
+
+      return c(s, targets.just);
+    } while (retry);
+
+    return "Nothing happened.";
   }
 };
 }

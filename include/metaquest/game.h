@@ -135,7 +135,7 @@ public:
   }
 
   template <typename C>
-  std::vector<metaquest::character<typename character::base> *>
+  efgy::maybe<std::vector<metaquest::character<typename character::base> *> >
   resolve(C &c, const std::string &s) {
     size_t p = partyOf(c);
 
@@ -186,7 +186,7 @@ public:
       break;
     case metaquest::action<typename character::base>::ally:
     case metaquest::action<typename character::base>::enemy:
-      targets = interact.query(*this, c, candidates, 8);
+      return interact.query(*this, c, candidates, 8);
       break;
     }
 
