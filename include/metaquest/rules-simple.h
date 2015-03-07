@@ -189,6 +189,12 @@ protected:
 
     auto visible = c.visibleActions();
 
+    if (!self.useAI(c)) {
+      visible.push_back("Status");
+      visible.push_back("Quit/Yes");
+      visible.push_back("Quit/No");
+    }
+
     bool retry = false;
 
     do {
@@ -196,9 +202,19 @@ protected:
 
       std::string s = self.interact.query(self, c, visible);
 
-      if (s == "Cancel") {
+      if (s == "Cancel" || s == "Quit/No") {
         retry = true;
         continue;
+      }
+
+      if (s == "Status") {
+        // display status here.
+        retry = true;
+        continue;
+      }
+
+      if (s == "Quit/Yes") {
+        return "Quit.";
       }
 
       auto targets = self.resolve(c, s);

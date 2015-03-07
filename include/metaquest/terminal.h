@@ -48,12 +48,14 @@ template <typename term = efgy::terminal::vt100<>,
           template <typename> class AI = ai::random>
 class terminal {
 public:
-  terminal() : io(), out(io), rng(std::random_device()()), ai(*this) {
+  terminal()
+      : io(), out(io), rng(std::random_device()()), ai(*this), logbook("") {
     io.resize(io.getOSDimensions());
   }
 
   efgy::terminal::writer<> out;
   AI<terminal<term, AI> > ai;
+  std::stringstream logbook;
 
   void clear(void) { out.to(0, 0).clear(); }
 
@@ -62,7 +64,10 @@ public:
       ;
   }
 
-  void log(std::string log) { out.to(0, 5).write(log, 400); }
+  void log(std::string log) {
+    logbook << log;
+    out.to(0, 5).write(log, 400);
+  }
 
   template <typename G> void drawUI(G &game) {
     long in = 0, i = 0;

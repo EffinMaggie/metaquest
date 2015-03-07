@@ -98,7 +98,7 @@ public:
    *
    * The list of items that a character currently has equipped.
    */
-  std::vector<item<T> > equipment;
+  std::map<std::string, item<T> > equipment;
 
   /**\brief List of inventory items
    *

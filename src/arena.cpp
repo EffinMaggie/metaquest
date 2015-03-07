@@ -59,7 +59,7 @@ int main(int, const char **) {
 
     game.run();
 
-    log = game.log;
+    log = game.interact.logbook.str();
   }
 
   std::cerr << "\u261e"

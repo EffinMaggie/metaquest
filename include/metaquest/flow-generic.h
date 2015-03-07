@@ -51,11 +51,15 @@ public:
 
       log = game.next();
 
+      interact.log(log);
+
       if (log.find("victorious") != log.npos) {
         break;
       }
 
-      interact.log(log);
+      if (log.find("Quit.") != log.npos) {
+        break;
+      }
     }
 
     interact.flush();
