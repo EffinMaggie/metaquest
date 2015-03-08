@@ -42,12 +42,16 @@ namespace rules {
 namespace simple {
 static long isAlive(object<long> &t) { return t.attribute["HP/Current"] > 0; }
 
+static long getPoints(long level) {
+  return level*10+(level%2)*5;
+}
+
 static long getHPTotal(object<long> &t) {
-  return t.attribute["Experience"] * 2 + 10;
+  return getPoints(t.attribute["Level"]+1);
 }
 
 static long getMPTotal(object<long> &t) {
-  return t.attribute["Experience"] * 3 + 15;
+  return getPoints((t.attribute["Level"]+1)*2);
 }
 
 static int roll(int num, int sides = 6) {
