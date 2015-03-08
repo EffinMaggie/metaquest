@@ -131,11 +131,15 @@ public:
     }
 
     size_t left = indent, top = 8, width = source.name.display().size() + 8,
-           height = 2 + list.size();
+           height = 2 + list.size(), llen = 0;
 
     for (const auto &la : list) {
       width = la.size() + 4 > width ? la.size() + 4 : width;
+      std::string label = game.getResourceLabel(source, la);
+      llen = label.size() > llen ? label.size() : llen;
     }
+
+    width += llen;
 
     out.foreground = 7;
     out.background = 0;
@@ -148,6 +152,11 @@ public:
 
     for (std::size_t i = 0; i < list.size(); i++) {
       out.to(left + 1, top + 1 + i).write(" " + list[i], width - 3);
+
+      std::string label = game.getResourceLabel(source, list[i]);
+      if (label.size() > 0) {
+        out.to(left + width - llen - 2, top + 1 + i).write(label, llen);
+      }
     }
 
     long selection = 0;

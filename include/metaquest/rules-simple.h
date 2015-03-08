@@ -233,8 +233,10 @@ public:
     return "Nothing happened.";
   }
 
-  virtual std::string getResourceLabel(character &c, const std::string &s) {
-    if (s == "Skill/Heal") {
+  virtual std::string
+  getResourceLabel(const metaquest::character<typename character::base> &c,
+                   const std::string &s) const {
+    if (s == "Heal") {
       return "2 MP";
     }
 

@@ -212,7 +212,9 @@ public:
     return out;
   }
 
-  virtual std::string getResourceLabel(character &c, const std::string &s) {
+  virtual std::string
+  getResourceLabel(const metaquest::character<typename character::base> &c,
+                   const std::string &s) const {
     return "";
   }
 
