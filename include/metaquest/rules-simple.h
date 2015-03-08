@@ -232,6 +232,14 @@ public:
 
     return "Nothing happened.";
   }
+
+  virtual std::string getResourceLabel(character &c, const std::string &s) {
+    if (s == "Skill/Heal") {
+      return "2 MP";
+    }
+
+    return "";
+  }
 };
 }
 }

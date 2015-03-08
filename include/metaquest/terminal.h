@@ -130,7 +130,12 @@ public:
       }
     }
 
-    size_t left = indent, top = 8, width = 20, height = 2 + list.size();
+    size_t left = indent, top = 8, width = source.name.display().size() + 8,
+           height = 2 + list.size();
+
+    for (const auto &la : list) {
+      width = la.size() + 4 > width ? la.size() + 4 : width;
+    }
 
     out.foreground = 7;
     out.background = 0;

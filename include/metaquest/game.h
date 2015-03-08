@@ -212,6 +212,10 @@ public:
     return out;
   }
 
+  virtual std::string getResourceLabel(character &c, const std::string &s) {
+    return "";
+  }
+
 protected:
   std::map<std::string, std::function<std::string(parent &)> > action;
   std::mt19937 rng;
