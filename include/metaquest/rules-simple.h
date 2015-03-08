@@ -42,16 +42,14 @@ namespace rules {
 namespace simple {
 static long isAlive(object<long> &t) { return t.attribute["HP/Current"] > 0; }
 
-static long getPoints(long level) {
-  return level*10+(level%2)*5;
-}
+static long getPoints(long level) { return level * 10 + (level % 2) * 5; }
 
 static long getHPTotal(object<long> &t) {
-  return getPoints(t.attribute["Level"]+1);
+  return getPoints(t.attribute["Level"] + 1);
 }
 
 static long getMPTotal(object<long> &t) {
-  return getPoints((t.attribute["Level"]+1)*2);
+  return getPoints((t.attribute["Level"] + 1) * 2);
 }
 
 static int roll(int num, int sides = 6) {
@@ -164,36 +162,37 @@ class game : public metaquest::game::base<character, inter> {
 public:
   typedef metaquest::game::base<character, inter> parent;
 
-  using parent::bind;
+  game(inter &pInteract) : parent(pInteract) {}
 
-  game(inter &pInteract) : parent(pInteract) { bind("next", doNext); }
+  using parent::parties;
+  using parent::rng;
+  using parent::useAI;
+  using parent::interact;
+  using parent::resolve;
+  using parent::alive;
 
-protected:
-  static std::string doNext(typename parent::parent &pSelf) {
-    game &self = static_cast<game &>(pSelf);
+  virtual std::string next(void) {
+    for (std::size_t pi = 0; pi < parties.size(); pi++) {
+      auto &p = parties[pi];
 
-    for (std::size_t pi = 0; pi < self.parties.size(); pi++) {
-      auto &p = self.parties[pi];
-
-      if (!self.alive(p)) {
+      if (!alive(p)) {
         std::ostringstream os("");
-        os << "Party #" << (self.parties.size() - pi - 1)
-           << " was victorious!\n";
+        os << "Party #" << (parties.size() - pi - 1) << " was victorious!\n";
         return os.str();
       }
     }
 
-    std::size_t p = self.rng() % self.parties.size();
+    std::size_t p = rng() % parties.size();
     std::size_t n = 0;
     do {
-      n = self.rng() % self.parties[p].size();
-    } while (!self.alive(self.parties[p][n]));
+      n = rng() % parties[p].size();
+    } while (!alive(parties[p][n]));
 
-    character &c = self.parties[p][n];
+    character &c = parties[p][n];
 
     auto visible = c.visibleActions();
 
-    if (!self.useAI(c)) {
+    if (!useAI(c)) {
       visible.push_back("Status");
       visible.push_back("Quit/Yes");
       visible.push_back("Quit/No");
@@ -204,7 +203,7 @@ protected:
     do {
       retry = false;
 
-      std::string s = self.interact.query(self, c, visible);
+      std::string s = interact.query(*this, c, visible);
 
       if (s == "Cancel" || s == "Quit/No") {
         retry = true;
@@ -221,7 +220,7 @@ protected:
         return "Quit.";
       }
 
-      auto targets = self.resolve(c, s);
+      auto targets = resolve(c, s);
 
       if (!targets) {
         retry = true;

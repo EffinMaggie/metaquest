@@ -46,15 +46,14 @@ public:
   base(inter &pInteract, long pParties = 2)
       : parent(), interact(pInteract), rng(std::random_device()()) {
     attribute["parties"] = pParties;
-    bind("generate-parties", doGenerateParties);
     generateParties();
   }
 
+  virtual ~base(void) {}
+
   std::vector<metaquest::party<character> > parties;
 
-  std::string generateParties(void) { return (*this)("generate-parties"); }
-
-  std::string next(void) { return (*this)("next"); }
+  virtual std::string next(void) = 0;
 
   std::string operator()(const std::string &command) {
     auto act = action.find(command);
@@ -200,20 +199,20 @@ public:
     menu
   } state;
 
-protected:
-  static std::string doGenerateParties(parent &pSelf) {
-    base &self = static_cast<base &>(pSelf);
+  virtual std::string generateParties(void) {
+    base &self = *this;
 
     std::string out = "";
 
-    while (self.parties.size() < self["parties"]) {
-      self.parties.push_back(metaquest::generate<character>(4));
+    while (parties.size() < self["parties"]) {
+      parties.push_back(metaquest::generate<character>(4));
       out += "a new party appeared!\n";
     }
 
     return out;
   }
 
+protected:
   std::map<std::string, std::function<std::string(parent &)> > action;
   std::mt19937 rng;
 };
