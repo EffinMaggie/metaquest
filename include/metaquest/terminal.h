@@ -44,23 +44,26 @@
 #include <chrono>
 #include <list>
 #include <thread>
+#include <mutex>
 #include <functional>
 #include <utility>
+#include <algorithm>
 
 namespace metaquest {
 namespace interact {
 namespace terminal {
-template <typename term, typename clock> class animator {
+namespace animator {
+template <typename term, typename clock> class base {
 public:
-  animator(const typename clock::duration &pSleepTime)
+  base(const typename clock::duration &pSleepTime)
       : sleepTime(pSleepTime), validSince(clock::now()), validUntil() {}
 
-  animator(const typename clock::duration &pSleepTime,
-           const std::chrono::milliseconds &ttl)
+  base(const typename clock::duration &pSleepTime,
+       const std::chrono::milliseconds &ttl)
       : sleepTime(pSleepTime), validSince(clock::now()),
         validUntil(validSince + ttl) {}
 
-  virtual ~animator(void) {}
+  virtual ~base(void) {}
 
   bool expire(void) {
     validUntil = clock::now();
@@ -71,7 +74,33 @@ public:
     return (bool) validUntil ? clock::now() < validUntil.just : true;
   }
 
-  virtual bool draw(void) = 0;
+  double progress(typename clock::duration until) {
+    const auto el = std::chrono::duration_cast<std::chrono::milliseconds>(
+        clock::now() - validSince).count();
+    const auto ts =
+        std::chrono::duration_cast<std::chrono::milliseconds>(until).count();
+
+    return std::min((double) el / (double) ts, 1.0);
+  }
+
+  double progress(typename clock::time_point until) {
+    const auto el = std::chrono::duration_cast<std::chrono::milliseconds>(
+        clock::now() - validSince).count();
+    const auto ts = std::chrono::duration_cast<std::chrono::milliseconds>(
+        until - validSince).count();
+
+    return std::min((double) el / (double) ts, 1.0);
+  }
+
+  double progress(void) {
+    if (!(bool) validUntil) {
+      return .0;
+    }
+
+    return progress(validUntil.just);
+  }
+
+  virtual bool draw(typename term::base &terminal) = 0;
   virtual bool postProcess(const typename term::base &terminal,
                            const std::size_t &l, const std::size_t &c,
                            typename term::cell &cell) = 0;
@@ -82,6 +111,66 @@ protected:
   typename clock::time_point validSince;
   efgy::maybe<typename clock::time_point> validUntil;
 };
+
+template <typename term, typename clock>
+class highlight : public base<term, clock> {
+public:
+  highlight(const std::size_t pColumn, const std::size_t pLine,
+            const std::size_t pWidth, const std::size_t pHeight)
+      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
+        base<term, clock>(std::chrono::milliseconds(50)) {}
+
+  virtual bool draw(typename term::base &) { return false; }
+
+  virtual bool postProcess(const typename term::base &terminal,
+                           const std::size_t &l, const std::size_t &c,
+                           typename term::cell &cell) {
+    if ((l >= line) && (l < (line + height)) && (c >= column) &&
+        (c < (column + width))) {
+      std::swap(cell.foregroundColour, cell.backgroundColour);
+      return true;
+    }
+
+    return false;
+  }
+
+  std::size_t column;
+  std::size_t line;
+  std::size_t width;
+  std::size_t height;
+};
+
+template <typename term, typename clock> class glow : public base<term, clock> {
+public:
+  glow(const std::size_t pColumn, const std::size_t pLine,
+       const std::size_t pWidth, const std::size_t pHeight)
+      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
+        base<term, clock>(std::chrono::milliseconds(5),
+                          std::chrono::seconds(1)) {}
+
+  using base<term, clock>::progress;
+
+  virtual bool draw(typename term::base &) { return false; }
+
+  virtual bool postProcess(const typename term::base &terminal,
+                           const std::size_t &l, const std::size_t &c,
+                           typename term::cell &cell) {
+    std::size_t h = column + width * progress();
+
+    if ((l >= line) && (l < (line + height)) && (c >= column) && (c < h)) {
+      std::swap(cell.foregroundColour, cell.backgroundColour);
+      return true;
+    }
+
+    return false;
+  }
+
+  std::size_t column;
+  std::size_t line;
+  std::size_t width;
+  std::size_t height;
+};
+}
 
 template <typename term = efgy::terminal::vt100<>,
           template <typename> class AI = ai::random,
@@ -94,7 +183,7 @@ public:
   refresher(base<term, AI> &pBase) : base(pBase) {}
 
   bool refresh() {
-    base.activeMutex.lock();
+    std::lock_guard<std::mutex> lock(base.activeMutex);
 
     for (auto it = base.active.begin(); it != base.active.end();) {
       if (!(*it)->valid()) {
@@ -111,11 +200,10 @@ public:
 
     for (const auto &a : base.active) {
       if (a->valid()) {
-        ret = a->draw() || ret;
+        ret = a->draw(base.io) || ret;
       }
     }
 
-    base.activeMutex.unlock();
     return ret;
   }
 
@@ -133,18 +221,19 @@ public:
   }
 
   void flush(void) {
-    base.activeMutex.lock();
+    std::lock_guard<std::mutex> lock(base.activeMutex);
+
     while (base.io.flush([this](const typename term::base & terminal,
                                 const std::size_t & l, const std::size_t & c)
                              ->typename term::cell {
       return postProcess(terminal, l, c);
     }))
       ;
-    base.activeMutex.unlock();
   }
 
   typename clock::duration sleepTime(void) {
-    base.activeMutex.lock();
+    std::lock_guard<std::mutex> lock(base.activeMutex);
+
     typename clock::duration sleepFor = std::chrono::milliseconds(50);
 
     for (const auto &a : base.active) {
@@ -155,7 +244,6 @@ public:
       }
     }
 
-    base.activeMutex.unlock();
     return sleepFor;
   }
 
@@ -173,34 +261,6 @@ public:
 
 protected:
   base<term, AI, clock> &base;
-};
-
-template <typename term, typename clock>
-class highlight : public animator<term, clock> {
-public:
-  highlight(const std::size_t pColumn, const std::size_t pLine,
-            const std::size_t pWidth, const std::size_t pHeight)
-      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
-        animator<term, clock>(std::chrono::milliseconds(50)) {}
-
-  virtual bool draw(void) { return false; }
-
-  virtual bool postProcess(const typename term::base &terminal,
-                           const std::size_t &l, const std::size_t &c,
-                           typename term::cell &cell) {
-    if ((l >= line) && l < (line + height) && (c >= column) &&
-        c < (column + width)) {
-      std::swap(cell.foregroundColour, cell.backgroundColour);
-      return true;
-    }
-
-    return false;
-  }
-
-  std::size_t column;
-  std::size_t line;
-  std::size_t width;
-  std::size_t height;
 };
 
 template <typename term, template <typename> class AI, typename clock>
@@ -221,7 +281,8 @@ public:
     }
   }
 
-  typedef terminal::highlight<term, clock> highlight;
+  typedef animator::highlight<term, clock> highlight;
+  typedef animator::glow<term, clock> glow;
 
   term io;
   efgy::terminal::writer<> out;
@@ -229,14 +290,13 @@ public:
   std::stringstream logbook;
   std::thread refresherThread;
   volatile bool alive;
-  std::list<animator<term, clock> *> active;
+  std::list<animator::base<term, clock> *> active;
   std::mutex activeMutex;
 
-  bool addAnimator(animator<term, clock> *anim) {
-    activeMutex.lock();
+  void addAnimator(animator::base<term, clock> *anim) {
+    std::lock_guard<std::mutex> lock(activeMutex);
+
     active.push_back(anim);
-    activeMutex.unlock();
-    return true;
   }
 
   void clear(void) { out.to(0, 0).clear(); }
