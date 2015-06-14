@@ -41,28 +41,205 @@
 #include <metaquest/ai.h>
 #include <random>
 #include <sstream>
+#include <chrono>
+#include <list>
+#include <thread>
+#include <functional>
+#include <utility>
 
 namespace metaquest {
 namespace interact {
-template <typename term = efgy::terminal::vt100<>,
-          template <typename> class AI = ai::random>
-class terminal {
+namespace terminal {
+template <typename term, typename clock> class animator {
 public:
-  terminal()
-      : io(), out(io), rng(std::random_device()()), ai(*this), logbook("") {
+  animator(const typename clock::duration &pSleepTime)
+      : sleepTime(pSleepTime), validSince(clock::now()), validUntil() {}
+
+  animator(const typename clock::duration &pSleepTime,
+           const std::chrono::milliseconds &ttl)
+      : sleepTime(pSleepTime), validSince(clock::now()),
+        validUntil(validSince + ttl) {}
+
+  virtual ~animator(void) {}
+
+  bool expire(void) {
+    validUntil = clock::now();
+    return true;
+  }
+
+  bool valid(void) {
+    return (bool) validUntil ? clock::now() < validUntil.just : true;
+  }
+
+  virtual bool draw(void) = 0;
+  virtual bool postProcess(const typename term::base &terminal,
+                           const std::size_t &l, const std::size_t &c,
+                           typename term::cell &cell) = 0;
+
+  const typename clock::duration sleepTime;
+
+protected:
+  typename clock::time_point validSince;
+  efgy::maybe<typename clock::time_point> validUntil;
+};
+
+template <typename term = efgy::terminal::vt100<>,
+          template <typename> class AI = ai::random,
+          typename clock = std::chrono::system_clock>
+class base;
+
+template <typename term, template <typename> class AI, typename clock>
+class refresher {
+public:
+  refresher(base<term, AI> &pBase) : base(pBase) {}
+
+  bool refresh() {
+    base.activeMutex.lock();
+
+    for (auto it = base.active.begin(); it != base.active.end();) {
+      if (!(*it)->valid()) {
+        auto *p = *it;
+        base.active.erase(it);
+        delete p;
+        it = base.active.begin();
+      } else {
+        it++;
+      }
+    }
+
+    bool ret = false;
+
+    for (const auto &a : base.active) {
+      if (a->valid()) {
+        ret = a->draw() || ret;
+      }
+    }
+
+    base.activeMutex.unlock();
+    return ret;
+  }
+
+  typename term::cell postProcess(const typename term::base &terminal,
+                                  const std::size_t &l, const std::size_t &c) {
+    typename term::cell cell = terminal.target[l][c];
+
+    for (const auto &a : base.active) {
+      if (a->valid()) {
+        (void) a->postProcess(terminal, l, c, cell);
+      }
+    }
+
+    return cell;
+  }
+
+  void flush(void) {
+    base.activeMutex.lock();
+    while (base.io.flush([this](const typename term::base & terminal,
+                                const std::size_t & l, const std::size_t & c)
+                             ->typename term::cell {
+      return postProcess(terminal, l, c);
+    }))
+      ;
+    base.activeMutex.unlock();
+  }
+
+  typename clock::duration sleepTime(void) {
+    base.activeMutex.lock();
+    typename clock::duration sleepFor = std::chrono::milliseconds(50);
+
+    for (const auto &a : base.active) {
+      if (a->valid()) {
+        if (a->sleepTime < sleepFor) {
+          sleepFor = a->sleepTime;
+        }
+      }
+    }
+
+    base.activeMutex.unlock();
+    return sleepFor;
+  }
+
+  static void run(base<term, AI, clock> &pBase) {
+    refresher self(pBase);
+
+    while (self.base.alive) {
+      self.refresh();
+      self.flush();
+      std::this_thread::sleep_for(self.sleepTime());
+    }
+
+    self.flush();
+  }
+
+protected:
+  base<term, AI, clock> &base;
+};
+
+template <typename term, typename clock>
+class highlight : public animator<term, clock> {
+public:
+  highlight(const std::size_t pColumn, const std::size_t pLine,
+            const std::size_t pWidth, const std::size_t pHeight)
+      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
+        animator<term, clock>(std::chrono::milliseconds(50)) {}
+
+  virtual bool draw(void) { return false; }
+
+  virtual bool postProcess(const typename term::base &terminal,
+                           const std::size_t &l, const std::size_t &c,
+                           typename term::cell &cell) {
+    if ((l >= line) && l < (line + height) && (c >= column) &&
+        c < (column + width)) {
+      std::swap(cell.foregroundColour, cell.backgroundColour);
+      return true;
+    }
+
+    return false;
+  }
+
+  std::size_t column;
+  std::size_t line;
+  std::size_t width;
+  std::size_t height;
+};
+
+template <typename term, template <typename> class AI, typename clock>
+class base {
+public:
+  base()
+      : io(), out(io), rng(std::random_device()()), ai(*this), logbook(""),
+        alive(true),
+        refresherThread(refresher<term, AI, clock>::run, std::ref(*this)) {
     io.resize(io.getOSDimensions());
   }
 
+  ~base(void) {
+    alive = false;
+    refresherThread.join();
+    for (auto &a : active) {
+      delete a;
+    }
+  }
+
+  typedef terminal::highlight<term, clock> highlight;
+
+  term io;
   efgy::terminal::writer<> out;
-  AI<terminal<term, AI> > ai;
+  AI<base<term, AI> > ai;
   std::stringstream logbook;
+  std::thread refresherThread;
+  volatile bool alive;
+  std::list<animator<term, clock> *> active;
+  std::mutex activeMutex;
+
+  bool addAnimator(animator<term, clock> *anim) {
+    activeMutex.lock();
+    active.push_back(anim);
+    activeMutex.unlock();
+    return true;
+  }
 
   void clear(void) { out.to(0, 0).clear(); }
-
-  void flush(void) {
-    while (io.flush())
-      ;
-  }
 
   void log(std::string log) {
     logbook << log;
@@ -145,7 +322,6 @@ public:
     out.background = 0;
 
     out.to(left, top).box(width, height);
-    flush();
 
     out.to(left + 2, top).write(": " + source.name.display() + " :",
                                 source.name.display().size() + 4);
@@ -163,18 +339,11 @@ public:
     bool didSelect = false;
     bool didCancel = false;
 
+    auto selector = new highlight(left + 1, top + 1, width - 2, 1);
+    addAnimator(selector);
+
     do {
-      out.to(left + 1, top + 1).colour(width - 2, height - 2);
-
-      out.foreground = 0;
-      out.background = 7;
-
-      out.to(left + 1, top + 1 + selection).colour(width - 2, 1);
-
-      out.foreground = 7;
-      out.background = 0;
-
-      flush();
+      selector->line = top + 1 + selection;
 
       io.read(
           [&selection, &didSelect, &didCancel](const typename term::command & c)
@@ -212,6 +381,8 @@ public:
         selection = 0;
       }
     } while (!didSelect);
+
+    selector->expire();
 
     out.to(0, 15);
 
@@ -271,8 +442,6 @@ public:
       out.foreground = 7;
       out.background = 0;
 
-      flush();
-
       io.read(
           [&selection, &didSelect, &didCancel](const typename term::command & c)
               ->bool {
@@ -319,9 +488,9 @@ public:
   }
 
 protected:
-  term io;
   std::mt19937 rng;
 };
+}
 }
 }
 

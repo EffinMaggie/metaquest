@@ -38,16 +38,11 @@ template <typename interaction, typename logic> class generic {
 public:
   generic(void) : interact(), game(interact) { interact.clear(); }
 
-  ~generic(void) {
-    interact.clear();
-    interact.flush();
-  }
+  ~generic(void) { interact.clear(); }
 
   void run(void) {
     while (true) {
       interact.drawUI(game);
-
-      interact.flush();
 
       log = game.next();
 
@@ -61,8 +56,6 @@ public:
         break;
       }
     }
-
-    interact.flush();
   }
 
   interaction interact;

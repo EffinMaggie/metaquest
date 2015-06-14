@@ -53,9 +53,9 @@ int main(int, const char **) {
   std::string log;
 
   {
-    metaquest::flow::generic<
-        metaquest::interact::terminal<>,
-        metaquest::rules::simple::game<metaquest::interact::terminal<> > > game;
+    metaquest::flow::generic<metaquest::interact::terminal::base<>,
+                             metaquest::rules::simple::game<
+                                 metaquest::interact::terminal::base<> > > game;
 
     game.run();
 
