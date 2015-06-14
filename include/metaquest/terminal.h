@@ -427,6 +427,9 @@ public:
     bool didSelect = false;
     bool didCancel = false;
 
+    auto selector = new highlight(0, 0, io.size()[0] - 1, 1);
+    addAnimator(selector);
+
     do {
       const auto &c = *(candidates[selection]);
       const auto &pa = game.partyOf(c);
@@ -434,13 +437,8 @@ public:
 
       drawUI(game);
 
-      out.foreground = 0;
-      out.background = 7;
-
-      out.to(0, (pa == 0 ? -game.parties[pa].size() : 0) + pp).colour(-52, 1);
-
-      out.foreground = 7;
-      out.background = 0;
+      selector->line =
+          pp + (pa == 0 ? io.size()[1] - game.parties[pa].size() : 0);
 
       io.read(
           [&selection, &didSelect, &didCancel](const typename term::command & c)
@@ -478,6 +476,8 @@ public:
         selection = 0;
       }
     } while (!didSelect);
+
+    selector->expire();
 
     if (didCancel) {
       return efgy::maybe<std::vector<metaquest::character<T> *> >();
