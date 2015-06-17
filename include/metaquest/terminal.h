@@ -487,7 +487,7 @@ public:
     bool didSelect = false;
     bool didCancel = false;
 
-    auto selector = new highlight(0, 0, io.size()[0] - 1, 1);
+    auto selector = new highlight(0, 0, io.size()[0], 1);
     addAnimator(selector);
 
     do {
