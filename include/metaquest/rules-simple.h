@@ -227,6 +227,8 @@ public:
         continue;
       }
 
+      interact.action(*this, s, c, targets.just);
+
       return c(s, targets.just);
     } while (retry);
 

@@ -170,6 +170,70 @@ public:
   std::size_t width;
   std::size_t height;
 };
+
+template <typename term, typename clock>
+class flash : public base<term, clock> {
+public:
+  flash(const std::size_t pColumn, const std::size_t pLine,
+        const std::size_t pWidth, const std::size_t pHeight)
+      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
+        base<term, clock>(std::chrono::milliseconds(15),
+                          std::chrono::milliseconds(600)) {}
+
+  using base<term, clock>::progress;
+
+  virtual bool draw(typename term::base &) { return false; }
+
+  virtual bool postProcess(const typename term::base &terminal,
+                           const std::size_t &l, const std::size_t &c,
+                           typename term::cell &cell) {
+    if ((l >= line) && (l < (line + height)) && (c >= column) &&
+        (c < (column + width)) &&
+        (progress() < 0.2 || (progress() > 0.4 && progress() < 0.6) ||
+         progress() > 0.8)) {
+      std::swap(cell.foregroundColour, cell.backgroundColour);
+      return true;
+    }
+
+    return false;
+  }
+
+  std::size_t column;
+  std::size_t line;
+  std::size_t width;
+  std::size_t height;
+};
+
+template <typename term, typename clock> class text : public base<term, clock> {
+public:
+  text(const std::size_t pLine, const std::string &pMessage)
+      : line(pLine), message(pMessage),
+        base<term, clock>(std::chrono::milliseconds(50),
+                          std::chrono::milliseconds(1500)) {}
+
+  virtual bool draw(typename term::base &) { return false; }
+
+  virtual bool postProcess(const typename term::base &terminal,
+                           const std::size_t &l, const std::size_t &c,
+                           typename term::cell &cell) {
+    const ssize_t p = (ssize_t) c - 2;
+
+    if (l == line) {
+      std::swap(cell.foregroundColour, cell.backgroundColour);
+      if (p >= 0 && p < message.size()) {
+        cell.content = message[p];
+      } else {
+        cell.content = ' ';
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  std::size_t line;
+  std::string message;
+};
 }
 
 template <typename term = efgy::terminal::vt100<>,
@@ -283,6 +347,8 @@ public:
 
   typedef animator::highlight<term, clock> highlight;
   typedef animator::glow<term, clock> glow;
+  typedef animator::text<term, clock> text;
+  typedef animator::flash<term, clock> flash;
 
   term io;
   efgy::terminal::writer<> out;
@@ -304,6 +370,26 @@ public:
   void log(std::string log) {
     logbook << log;
     out.to(0, 5).write(log, 400);
+  }
+
+  template <typename T, typename G>
+  bool action(const G &game, const std::string &description,
+              const metaquest::character<T> &source,
+              const std::vector<metaquest::character<T> *> &targets) {
+    const auto &pa = game.partyOf(source);
+    const auto &pp = game.positionOf(source);
+
+    const auto line =
+        pp + (pa == 0 ? io.size()[1] - game.parties[pa].size() : 0);
+
+    addAnimator(new flash(0, line, io.size()[0], 1));
+    addAnimator(new text(8, source.name.display() + ": " + description));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    return true;
   }
 
   template <typename G> void drawUI(G &game) {
