@@ -367,22 +367,21 @@ public:
 
   void clear(void) { out.to(0, 0).clear(); }
 
-  void log(std::string log) {
-    logbook << log;
-    out.to(0, 5).write(log, 400);
+  void log(std::string log) { logbook << log; }
+
+  template <typename T, typename G>
+  std::size_t getLine(const G &game, const metaquest::character<T> &character) {
+    const auto &pa = game.partyOf(character);
+    const auto &pp = game.positionOf(character);
+
+    return pp + (pa == 0 ? io.size()[1] - game.parties[pa].size() : 0);
   }
 
   template <typename T, typename G>
   bool action(const G &game, const std::string &description,
               const metaquest::character<T> &source,
               const std::vector<metaquest::character<T> *> &targets) {
-    const auto &pa = game.partyOf(source);
-    const auto &pp = game.positionOf(source);
-
-    const auto line =
-        pp + (pa == 0 ? io.size()[1] - game.parties[pa].size() : 0);
-
-    addAnimator(new flash(0, line, io.size()[0], 1));
+    addAnimator(new flash(0, getLine(game, source), io.size()[0], 1));
     addAnimator(new text(8, source.name.display() + ": " + description));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
@@ -554,7 +553,7 @@ public:
   template <typename T, typename G>
   efgy::maybe<std::vector<metaquest::character<T> *> >
   query(G &game, const metaquest::character<T> &source,
-        const std::vector<metaquest::character<T> *> &candidates,
+        std::vector<metaquest::character<T> *> &candidates,
         std::size_t indent = 4) {
     std::size_t party = game.partyOf(source);
 
@@ -568,6 +567,13 @@ public:
       return candidates;
     }
 
+    std::sort(
+        candidates.begin(), candidates.end(),
+        [&game, this](metaquest::character<T> * a, metaquest::character<T> * b)
+            ->bool {
+      return getLine(game, *a) < getLine(game, *b);
+    });
+
     std::vector<metaquest::character<T> *> targets;
     long selection = 0;
     bool didSelect = false;
@@ -578,13 +584,10 @@ public:
 
     do {
       const auto &c = *(candidates[selection]);
-      const auto &pa = game.partyOf(c);
-      const auto &pp = game.positionOf(c);
 
       drawUI(game);
 
-      selector->line =
-          pp + (pa == 0 ? io.size()[1] - game.parties[pa].size() : 0);
+      selector->line = getLine(game, c);
 
       io.read(
           [&selection, &didSelect, &didCancel](const typename term::command & c)
