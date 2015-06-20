@@ -40,8 +40,6 @@
 namespace metaquest {
 namespace rules {
 namespace simple {
-static long isAlive(object<long> &t) { return t.attribute["HP/Current"] > 0; }
-
 static long getPoints(long level) { return level * 10 + (level % 2) * 5; }
 
 static long getHPTotal(object<long> &t) {
@@ -146,7 +144,6 @@ public:
 
     function["HP/Total"] = getHPTotal;
     function["MP/Total"] = getMPTotal;
-    function["Alive"] = isAlive;
 
     attribute["HP/Current"] = (*this)["HP/Total"];
     attribute["MP/Current"] = (*this)["MP/Total"];
@@ -169,13 +166,12 @@ public:
   using parent::useAI;
   using parent::interact;
   using parent::resolve;
-  using parent::alive;
 
   virtual std::string next(void) {
     for (std::size_t pi = 0; pi < parties.size(); pi++) {
       auto &p = parties[pi];
 
-      if (!alive(p)) {
+      if (p.defeated()) {
         std::ostringstream os("");
         os << "Party #" << (parties.size() - pi - 1) << " was victorious!\n";
         return os.str();
@@ -186,7 +182,7 @@ public:
     std::size_t n = 0;
     do {
       n = rng() % parties[p].size();
-    } while (!alive(parties[p][n]));
+    } while (!parties[p][n].able());
 
     character &c = parties[p][n];
 

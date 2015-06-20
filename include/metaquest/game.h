@@ -121,18 +121,6 @@ public:
     return party > 0;
   }
 
-  template <typename C> bool alive(C &c) const { return c["Alive"]; }
-
-  bool alive(metaquest::party<character> &party) const {
-    bool ret = false;
-
-    for (auto &c : party) {
-      ret |= alive(c);
-    }
-
-    return ret;
-  }
-
   template <typename C>
   efgy::maybe<std::vector<metaquest::character<typename character::base> *> >
   resolve(C &c, const std::string &s) {
@@ -148,7 +136,7 @@ public:
     case metaquest::action<typename character::base>::ally:
     case metaquest::action<typename character::base>::party:
       for (auto &h : parties[p]) {
-        if (alive(h)) {
+        if (h.alive()) {
           candidates.push_back(&h);
         }
       }
@@ -158,7 +146,7 @@ public:
       for (size_t pi = 0; pi < parties.size(); pi++) {
         if (pi != p) {
           for (auto &h : parties[pi]) {
-            if (alive(h)) {
+            if (h.alive()) {
               candidates.push_back(&h);
             }
           }
@@ -168,7 +156,7 @@ public:
     case metaquest::action<typename character::base>::everyone:
       for (auto &pa : parties) {
         for (auto &h : pa) {
-          if (alive(h)) {
+          if (h.alive()) {
             candidates.push_back(&h);
           }
         }
@@ -205,7 +193,7 @@ public:
     std::string out = "";
 
     while (parties.size() < self["parties"]) {
-      parties.push_back(metaquest::generate<character>(4));
+      parties.push_back(metaquest::party<character>::generate(4));
       out += "a new party appeared!\n";
     }
 

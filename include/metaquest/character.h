@@ -56,6 +56,46 @@ public:
     attribute["Points/Creation"] = points;
   }
 
+  /**\brief Is the character alive?
+   *
+   * Characters are either alive or not. This function tells you which it is.
+   *
+   * \returns 'true' if the character counts as 'alive'.
+   */
+  virtual bool alive(void) const {
+    const auto hp = attribute.find("HP/Current");
+    if (hp != attribute.end()) {
+      return hp->second > 0;
+    }
+    return false;
+  }
+
+  /**\brief Can the character act?
+   *
+   * Some characters might not currently be able to act. This function will tell
+   * you whether that's the case. By default, all living characters can act.
+   *
+   * Some rule sets could override this, e.g. when the rules support states such
+   * as 'sleeping'.
+   *
+   * \returns 'true' if the character can act.
+   */
+  virtual bool able(void) const { return alive(); }
+
+  /**\brief Is the character defeated?
+   *
+   * By default, any character who is not alive counts as defeated; if all
+   * characters in a party are defeated, that party is removed from play.
+   *
+   * Some rule sets could override this, e.g. such that characters with a
+   * condition that makes them unable to act and that doesn't expire on its own
+   * count as defeated. Examples of this are characters turned into stone in
+   * some games.
+   *
+   * \returns 'true' if the character should count as defeated.
+   */
+  virtual bool defeated(void) const { return !alive(); }
+
   /**\brief Use global skill
    *
    * Uses a skill with a global effect.

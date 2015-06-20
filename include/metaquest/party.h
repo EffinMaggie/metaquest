@@ -42,18 +42,53 @@ namespace metaquest {
  * type is based on std::vector as opposed to std::set because in some
  * contexts (menu, etc.) the order might actually be relevant.
  */
-template <typename C> using party = std::vector<C>;
+template <typename C> class party : public std::vector<C> {
+public:
+  /**\brief Generate a party.
+   *
+   * Given the number of members you want the party to consist of, this will
+   * randomly generate a party of that size.
+   *
+   * Actual character generation needs to be handled by the character class.
+   *
+   * \param[in] members The number of members the new party should have.
+   *
+   * \returns The generated party.
+   */
+  static party generate(unsigned int members) {
+    party p;
 
-template <typename C> party<C> generate(unsigned int members) {
-  party<C> p;
+    for (unsigned int i = 0; i < members; i++) {
+      C c;
+      p.push_back(c);
+    }
 
-  for (unsigned int i = 0; i < members; i++) {
-    C c;
-    p.push_back(c);
+    return p;
   }
 
-  return p;
-}
+  /**\brief Is the party defeated?
+   *
+   * A party counts as defeated when all characters in that party count as
+   * defeated. In the simplest case, that means all of the party members are
+   * dead.
+   *
+   * \note Empty parties count as defeated.
+   *
+   * \returns 'true' if the party counts as defeated.
+   */
+  bool defeated(void) const {
+    bool ret = true;
+
+    for (auto &c : *this) {
+      ret &= c.defeated();
+    }
+
+    return ret;
+  }
+
+protected:
+  using std::vector<C>::vector;
+};
 }
 
 #endif
