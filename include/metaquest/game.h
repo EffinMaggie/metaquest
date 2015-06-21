@@ -33,6 +33,7 @@
 #include <metaquest/party.h>
 #include <random>
 #include <algorithm>
+#include <iterator>
 
 namespace metaquest {
 namespace game {
