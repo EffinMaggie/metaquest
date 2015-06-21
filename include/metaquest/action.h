@@ -39,11 +39,6 @@ template <typename T> class action : public object<T> {
 public:
   typedef metaquest::object<T> parent;
 
-  action(bool pVisible = false,
-         std::function<std::string(objects<T> &source, objects<T> &target)>
-             pApply = nullptr)
-      : parent(), visible(pVisible), apply(pApply) {}
-
   enum scope {
     self,
     ally,
@@ -52,6 +47,22 @@ public:
     enemies,
     everyone
   } scope;
+
+  enum filter {
+    none,
+    onlyHealthy,
+    onlyAlive,
+    onlyUnhealthy,
+    onlyDead,
+    onlyUndefeated
+  } filter;
+
+  action(bool pVisible = false,
+         std::function<std::string(objects<T> &source, objects<T> &target)>
+             pApply = nullptr,
+         const enum scope &pScope = self, const enum filter &pFilter = none)
+      : parent(), visible(pVisible), apply(pApply), scope(pScope),
+        filter(pFilter) {}
 
   std::string operator()(objects<T> &source, objects<T> &target) {
     if (apply != nullptr) {

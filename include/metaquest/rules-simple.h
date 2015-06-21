@@ -148,8 +148,8 @@ public:
     attribute["HP/Current"] = (*this)["HP/Total"];
     attribute["MP/Current"] = (*this)["MP/Total"];
 
-    bind("Attack", true, attack);
-    bind("Skill/Heal", true, heal, action::ally);
+    bind("Attack", true, attack, action::enemy, action::onlyUndefeated);
+    bind("Skill/Heal", true, heal, action::ally, action::onlyUnhealthy);
     bind("Pass", true, pass, action::self);
   }
 };
@@ -189,7 +189,7 @@ public:
     auto visible = c.visibleActions();
 
     if (!useAI(c)) {
-      visible.push_back("Status");
+      visible.push_back("Inspect");
       visible.push_back("Quit/Yes");
       visible.push_back("Quit/No");
     }
@@ -206,7 +206,7 @@ public:
         continue;
       }
 
-      if (s == "Status") {
+      if (s == "Inspect") {
         // display status here.
         retry = true;
         continue;
@@ -218,7 +218,7 @@ public:
 
       auto targets = resolve(c, s);
 
-      if (!targets) {
+      if (!targets || (targets.just.size() < 1)) {
         retry = true;
         continue;
       }

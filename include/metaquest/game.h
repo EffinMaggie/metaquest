@@ -32,6 +32,7 @@
 #include <metaquest/character.h>
 #include <metaquest/party.h>
 #include <random>
+#include <algorithm>
 
 namespace metaquest {
 namespace game {
@@ -113,8 +114,7 @@ public:
    *
    * \param[in] c The character to look up.
    *
-   * \returns 'true' when a character should be controlled by an
-   *          AI.
+   * \returns 'true' when a character should be controlled by an AI.
    */
   template <typename C> bool useAI(const C &c) const {
     const auto party = partyOf(c);
@@ -126,7 +126,6 @@ public:
   resolve(C &c, const std::string &s) {
     size_t p = partyOf(c);
 
-    std::vector<metaquest::character<typename character::base> *> targets;
     std::vector<metaquest::character<typename character::base> *> candidates;
 
     switch (c.scope(s)) {
@@ -136,9 +135,7 @@ public:
     case metaquest::action<typename character::base>::ally:
     case metaquest::action<typename character::base>::party:
       for (auto &h : parties[p]) {
-        if (h.alive()) {
-          candidates.push_back(&h);
-        }
+        candidates.push_back(&h);
       }
       break;
     case metaquest::action<typename character::base>::enemy:
@@ -146,9 +143,7 @@ public:
       for (size_t pi = 0; pi < parties.size(); pi++) {
         if (pi != p) {
           for (auto &h : parties[pi]) {
-            if (h.alive()) {
-              candidates.push_back(&h);
-            }
+            candidates.push_back(&h);
           }
         }
       }
@@ -156,12 +151,64 @@ public:
     case metaquest::action<typename character::base>::everyone:
       for (auto &pa : parties) {
         for (auto &h : pa) {
-          if (h.alive()) {
-            candidates.push_back(&h);
-          }
+          candidates.push_back(&h);
         }
       }
       break;
+    }
+
+    std::vector<metaquest::character<typename character::base> *>
+        filteredCandidates;
+
+    switch (c.filter(s)) {
+    case metaquest::action<typename character::base>::none:
+      filteredCandidates = candidates;
+      break;
+    case metaquest::action<typename character::base>::onlyHealthy:
+      std::copy_if(
+          candidates.begin(), candidates.end(),
+          std::back_inserter(filteredCandidates),
+          [](metaquest::character<typename character::base> * cha)->bool {
+        return (*cha)["HP/Current"] == (*cha)["HP/Total"];
+      });
+      break;
+    case metaquest::action<typename character::base>::onlyAlive:
+      std::copy_if(
+          candidates.begin(), candidates.end(),
+          std::back_inserter(filteredCandidates),
+          [](metaquest::character<typename character::base> * cha)->bool {
+        return cha->alive();
+      });
+      break;
+    case metaquest::action<typename character::base>::onlyUnhealthy:
+      std::copy_if(
+          candidates.begin(), candidates.end(),
+          std::back_inserter(filteredCandidates),
+          [](metaquest::character<typename character::base> * cha)->bool {
+        return (*cha)["HP/Current"] < (*cha)["HP/Total"];
+      });
+      break;
+    case metaquest::action<typename character::base>::onlyDead:
+      std::copy_if(
+          candidates.begin(), candidates.end(),
+          std::back_inserter(filteredCandidates),
+          [](metaquest::character<typename character::base> * cha)->bool {
+        return !cha->alive();
+      });
+      break;
+    case metaquest::action<typename character::base>::onlyUndefeated:
+      std::copy_if(
+          candidates.begin(), candidates.end(),
+          std::back_inserter(filteredCandidates),
+          [](metaquest::character<typename character::base> * cha)->bool {
+        return !cha->defeated();
+      });
+      break;
+    }
+
+    if (filteredCandidates.size() == 0) {
+      return efgy::maybe<
+          std::vector<metaquest::character<typename character::base> *> >();
     }
 
     switch (c.scope(s)) {
@@ -169,15 +216,13 @@ public:
     case metaquest::action<typename character::base>::party:
     case metaquest::action<typename character::base>::enemies:
     case metaquest::action<typename character::base>::everyone:
-      targets = candidates;
+      return filteredCandidates;
       break;
     case metaquest::action<typename character::base>::ally:
     case metaquest::action<typename character::base>::enemy:
-      return interact.query(*this, c, candidates, 8);
+      return interact.query(*this, c, filteredCandidates, 8);
       break;
     }
-
-    return targets;
   }
 
   enum state {

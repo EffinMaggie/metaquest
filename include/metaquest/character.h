@@ -153,10 +153,11 @@ public:
        std::function<std::string(objects<T> &, std::vector<object<T> *> &)>
            pApply,
        const enum metaquest::action<T>::scope &pScope =
-           metaquest::action<T>::enemy) {
-    metaquest::action<T> act(isVisible, pApply);
+           metaquest::action<T>::enemy,
+       const enum metaquest::action<T>::filter &pFilter =
+           metaquest::action<T>::none) {
+    metaquest::action<T> act(isVisible, pApply, pScope, pFilter);
     act.name = metaquest::name::simple<>(name);
-    act.scope = pScope;
     action[name] = act;
     return action[name];
   }
@@ -179,6 +180,15 @@ public:
       return metaquest::action<T>::self;
     } else {
       return it->second.scope;
+    }
+  }
+
+  const enum metaquest::action<T>::filter filter(const std::string &act) const {
+    const auto it = action.find(act);
+    if (it == action.end()) {
+      return metaquest::action<T>::none;
+    } else {
+      return it->second.filter;
     }
   }
 
