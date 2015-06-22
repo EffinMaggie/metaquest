@@ -33,8 +33,53 @@
 #include <metaquest/object.h>
 
 #include <string>
+#include <sstream>
 
 namespace metaquest {
+namespace resource {
+template <typename T> class cost {
+public:
+  enum operation {
+    subtract,
+    add
+  } operation;
+
+  cost(enum operation pOperation, T pValue, const std::string &pResource,
+       bool pVisible)
+      : operation(pOperation), value(pValue), resource(pResource),
+        visible(pVisible) {}
+
+  std::string resource;
+  bool visible;
+  T value;
+
+  virtual T resolve(const object<T> &c) const { return 0; }
+
+  virtual bool apply(object<T> &c) { return true; }
+
+  virtual std::string label(const object<T> &c) const {
+    std::ostringstream os("");
+    os << resolve(c) << " " << resource;
+    return os.str();
+  }
+};
+
+template <typename T> class total : public std::vector<cost<T> > {
+public:
+  virtual std::string label(const object<T> &c) {
+    std::string res = "";
+    for (const auto &cost : *this) {
+      if (res == "") {
+        res = cost.label(c);
+      } else {
+        res += " " + cost.label(c);
+      }
+    }
+    return res;
+  }
+};
+}
+
 template <typename T> class action : public object<T> {
 public:
   typedef metaquest::object<T> parent;
