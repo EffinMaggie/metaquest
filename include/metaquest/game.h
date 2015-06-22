@@ -45,8 +45,9 @@ public:
   using parent::attribute;
   using parent::function;
 
-  base(inter &pInteract, long pParties = 2)
-      : parent(), interact(pInteract), rng(std::random_device()()) {
+  base(inter &pInteract, long pParties = 1)
+      : parent(), interact(pInteract), rng(std::random_device()()),
+        state(idle) {
     attribute["parties"] = pParties;
     generateParties();
   }

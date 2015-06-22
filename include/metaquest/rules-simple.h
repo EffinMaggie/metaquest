@@ -42,12 +42,12 @@ namespace rules {
 namespace simple {
 static long getPoints(long level) { return level * 10 + (level % 2) * 5; }
 
-static long getHPTotal(object<long> &t) {
-  return getPoints(t.attribute["Level"] + 1);
+static long getHPTotal(const object<long> &t) {
+  return getPoints(t["Level"] + 1);
 }
 
-static long getMPTotal(object<long> &t) {
-  return getPoints((t.attribute["Level"] + 1) * 2);
+static long getMPTotal(const object<long> &t) {
+  return getPoints((t["Level"] + 1) * 2);
 }
 
 static int roll(int num, int sides = 6) {
@@ -166,8 +166,42 @@ public:
   using parent::useAI;
   using parent::interact;
   using parent::resolve;
+  using parent::generateParties;
 
   virtual std::string next(void) {
+    bool retry = false;
+
+    if (parties.size() == 1) {
+      std::vector<std::string> visible;
+
+      visible.push_back("Fight");
+      visible.push_back("Quit/Yes");
+      visible.push_back("Quit/No");
+
+      do {
+        retry = false;
+
+        std::string s = interact.query(*this, parties[0][0], visible);
+
+        if (s == "Cancel" || s == "Quit/No") {
+          retry = true;
+          continue;
+        }
+
+        if (s == "Quit/Yes") {
+          return "Quit.";
+        }
+
+        if (s == "Fight") {
+          attribute["parties"] = 2;
+          generateParties();
+          return "OFF WITH THEIR HEADS!";
+        }
+      } while (retry);
+
+      return "";
+    }
+
     for (std::size_t pi = 0; pi < parties.size(); pi++) {
       auto &p = parties[pi];
 
@@ -193,8 +227,6 @@ public:
       visible.push_back("Quit/Yes");
       visible.push_back("Quit/No");
     }
-
-    bool retry = false;
 
     do {
       retry = false;
@@ -240,6 +272,9 @@ public:
 
     return "";
   }
+
+protected:
+  using parent::attribute;
 };
 }
 }

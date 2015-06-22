@@ -33,6 +33,8 @@
 #if !defined(METAQUEST_OBJECT_H)
 #define METAQUEST_OBJECT_H
 
+#include <ef.gy/maybe.h>
+
 #include <metaquest/name.h>
 
 #include <string>
@@ -70,13 +72,23 @@ public:
    *
    * \returns The attribute you tried to access.
    */
-  T operator[](const std::string &s) {
-    std::function<T(object &)> &f = function[s];
-    if (f == nullptr) {
-      return attribute[s];
-    } else {
-      return f(*this);
+  T operator[](const std::string &s) const {
+    auto fi = function.find(s);
+
+    if (fi != function.end()) {
+      const auto &f = fi->second;
+      if (f != nullptr) {
+        return f(*this);
+      }
     }
+
+    auto ai = attribute.find(s);
+
+    if (ai != attribute.end()) {
+      return ai->second;
+    }
+
+    return 0;
   }
 
   bool have(const std::string &s) {
@@ -89,7 +101,7 @@ public:
    * Maps attribute names to thunks which can generate an attribute on
    * the fly, e.g. for derived attributes in RPGs.
    */
-  std::map<std::string, std::function<T(object &)> > function;
+  std::map<std::string, std::function<T(const object &)> > function;
 
   /**\brief Basic attributes
    *
