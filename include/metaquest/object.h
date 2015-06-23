@@ -41,6 +41,8 @@
 #include <map>
 #include <functional>
 #include <vector>
+#include <set>
+#include <regex>
 
 namespace metaquest {
 /**\brief A game object
@@ -54,6 +56,8 @@ namespace metaquest {
 template <typename T = long, typename C = char> class object {
 public:
   typedef T base;
+
+  virtual ~object(void) {}
 
   /**\brief Object name
    *
@@ -72,7 +76,7 @@ public:
    *
    * \returns The attribute you tried to access.
    */
-  T operator[](const std::string &s) const {
+  virtual T operator[](const std::string &s) const {
     auto fi = function.find(s);
 
     if (fi != function.end()) {
@@ -91,11 +95,53 @@ public:
     return 0;
   }
 
-  bool have(const std::string &s) {
+  virtual T set(const std::string &s, const T &b) { return attribute[s] = b; }
+
+  virtual T add(const std::string &s, const T &b) { return attribute[s] += b; }
+
+  virtual T add(const std::string &s, const std::string &m, const T &b) {
+    attribute[s] += b;
+    if ((*this)[s] > (*this)[m]) {
+      return add(s, -((*this)[s] - (*this)[m]));
+    }
+    return attribute[s];
+  }
+
+  virtual bool have(const std::string &s) const {
     return (function.find(s) != function.end()) ||
            (attribute.find(s) != attribute.end());
   }
 
+  virtual std::set<std::string> attributes(void) const {
+    std::set<std::string> ret;
+
+    for (const auto &m : function) {
+      ret.insert(m.first);
+    }
+
+    for (const auto &m : attribute) {
+      ret.insert(m.first);
+    }
+
+    return ret;
+  }
+
+  virtual std::set<std::string> resources(void) const {
+    std::set<std::string> ret;
+
+    std::smatch matches;
+
+    for (const auto &a : attributes()) {
+      static std::regex resource("(.+)/(Current|Total)");
+      if (std::regex_match(a, matches, resource)) {
+        ret.insert(matches[1]);
+      }
+    }
+
+    return ret;
+  }
+
+protected:
   /**\brief Attribute generation functions
    *
    * Maps attribute names to thunks which can generate an attribute on

@@ -77,10 +77,7 @@ static std::string attack(objects<long> &source, objects<long> &target) {
         os << s.name.display() << " hits for " << admg << " (" << dmg
            << ") points of damage\n";
 
-        t.attribute["HP/Current"] -= admg;
-        if (!t["Alive"]) {
-          s.attribute["Experience"] += t.attribute["Experience"] / 2 + 1;
-        }
+        t.add("HP/Current", -admg);
       } else {
         os << s.name.display() << " misses\n";
       }
@@ -101,7 +98,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
         continue;
       }
 
-      t.attribute["MP/Current"] -= 2;
+      t.add("MP/Current", -2);
 
       os << s.name.display() << " heals " << t.name.display() << "\n";
 
@@ -109,10 +106,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
 
       os << s.name.display() << " heals " << amt << " points of damage\n";
 
-      t.attribute["HP/Current"] += amt;
-      if (t["HP/Current"] > t["HP/Total"]) {
-        t.attribute["HP/Current"] -= t["HP/Current"] - t["HP/Total"];
-      }
+      t.add("HP/Current", "HP/Total", amt);
     }
   }
   return os.str();
@@ -195,7 +189,7 @@ public:
         if (s == "Fight") {
           attribute["parties"] = 2;
           generateParties();
-          return "OFF WITH THEIR HEADS!";
+          return "OFF WITH THEIR HEADS!\n";
         }
       } while (retry);
 
@@ -240,6 +234,11 @@ public:
 
       if (s == "Inspect") {
         // display status here.
+        auto attr = c.attributes();
+        std::vector<std::string> at(attr.begin(), attr.end());
+
+        interact.query(*this, c, at, 30);
+
         retry = true;
         continue;
       }
