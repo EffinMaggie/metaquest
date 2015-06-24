@@ -427,12 +427,12 @@ public:
   template <typename T, typename G>
   std::string query(const G &game, const metaquest::character<T> &source,
                     const std::vector<std::string> &pList,
-                    std::size_t indent = 4) {
+                    std::size_t indent = 4, std::string carry = "") {
     std::size_t party = game.partyOf(source);
 
     if (game.useAI(source)) {
       out.to(0, 15);
-      return ai.query(game, source, pList, indent);
+      return ai.query(game, source, pList, indent, carry);
     }
 
     std::vector<std::string> list;
@@ -457,7 +457,7 @@ public:
 
     for (const auto &la : list) {
       width = la.size() + 4 > width ? la.size() + 4 : width;
-      std::string label = game.getResourceLabel(source, la);
+      std::string label = source.getResourceLabel(carry + la);
       llen = label.size() > llen ? label.size() : llen;
     }
 
@@ -474,7 +474,7 @@ public:
     for (std::size_t i = 0; i < list.size(); i++) {
       out.to(left + 1, top + 1 + i).write(" " + list[i], width - 3);
 
-      std::string label = game.getResourceLabel(source, list[i]);
+      std::string label = source.getResourceLabel(carry + list[i]);
       if (label.size() > 0) {
         out.to(left + width - llen - 2, top + 1 + i).write(label, llen);
       }
@@ -538,16 +538,17 @@ public:
     const auto &sel = list[selection];
 
     if (map[sel].size() > 0) {
-      const auto sub = query(game, source, map[sel], indent + 4);
+      const auto sub =
+          query(game, source, map[sel], indent + 4, carry + sel + '/');
 
       if (sub == "Cancel") {
-        return query(game, source, pList, indent);
+        return query(game, source, pList, indent, carry);
       }
 
-      return sel + '/' + sub;
+      return sub;
     }
 
-    return list[selection];
+    return carry + sel;
   }
 
   template <typename T, typename G>

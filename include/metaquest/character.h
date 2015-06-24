@@ -155,8 +155,10 @@ public:
        const enum metaquest::action<T>::scope &pScope =
            metaquest::action<T>::enemy,
        const enum metaquest::action<T>::filter &pFilter =
-           metaquest::action<T>::none) {
-    metaquest::action<T> act(isVisible, pApply, pScope, pFilter);
+           metaquest::action<T>::none,
+       const resource::total<T> pCost = {
+  }) {
+    metaquest::action<T> act(isVisible, pApply, pScope, pFilter, pCost);
     act.name = metaquest::name::simple<>(name);
     action[name] = act;
     return action[name];
@@ -189,6 +191,15 @@ public:
       return metaquest::action<T>::none;
     } else {
       return it->second.filter;
+    }
+  }
+
+  virtual std::string getResourceLabel(const std::string &act) const {
+    const auto it = action.find(act);
+    if (it == action.end()) {
+      return "";
+    } else {
+      return it->second.cost.label(*this);
     }
   }
 

@@ -41,8 +41,8 @@ public:
   template <typename T, typename G>
   std::string query(const G &game, const metaquest::character<T> &source,
                     const std::vector<std::string> &list,
-                    std::size_t indent = 4) {
-    return list[(rng() % list.size())];
+                    std::size_t indent = 4, std::string carry = "") {
+    return carry + list[(rng() % list.size())];
   }
 
   template <typename T, typename G>

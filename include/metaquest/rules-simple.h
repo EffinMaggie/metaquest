@@ -143,7 +143,9 @@ public:
     attribute["MP/Current"] = (*this)["MP/Total"];
 
     bind("Attack", true, attack, action::enemy, action::onlyUndefeated);
-    bind("Skill/Heal", true, heal, action::ally, action::onlyUnhealthy);
+    bind("Skill/Heal", true, heal, action::ally, action::onlyUnhealthy, {
+      resource::cost<long>(2, "MP")
+    });
     bind("Pass", true, pass, action::self);
   }
 };
@@ -193,7 +195,7 @@ public:
         }
       } while (retry);
 
-      return "";
+      return "Nothing happened.";
     }
 
     for (std::size_t pi = 0; pi < parties.size(); pi++) {
@@ -260,16 +262,6 @@ public:
     } while (retry);
 
     return "Nothing happened.";
-  }
-
-  virtual std::string
-  getResourceLabel(const metaquest::character<typename character::base> &c,
-                   const std::string &s) const {
-    if (s == "Heal") {
-      return "2 MP";
-    }
-
-    return "";
   }
 
 protected:

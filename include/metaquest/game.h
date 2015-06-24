@@ -46,13 +46,10 @@ public:
   using parent::function;
 
   base(inter &pInteract, long pParties = 1)
-      : parent(), interact(pInteract), rng(std::random_device()()),
-        state(idle) {
+      : parent(), interact(pInteract), rng(std::random_device()()) {
     attribute["parties"] = pParties;
     generateParties();
   }
-
-  virtual ~base(void) {}
 
   std::vector<metaquest::party<character> > parties;
 
@@ -227,13 +224,6 @@ public:
     }
   }
 
-  enum state {
-    idle,
-    combat,
-    postCombat,
-    menu
-  } state;
-
   virtual std::string generateParties(void) {
     base &self = *this;
 
@@ -245,12 +235,6 @@ public:
     }
 
     return out;
-  }
-
-  virtual std::string
-  getResourceLabel(const metaquest::character<typename character::base> &c,
-                   const std::string &s) const {
-    return "";
   }
 
 protected:

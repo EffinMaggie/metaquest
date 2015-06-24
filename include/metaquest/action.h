@@ -44,8 +44,8 @@ public:
     add
   } operation;
 
-  cost(enum operation pOperation, T pValue, const std::string &pResource,
-       bool pVisible)
+  cost(T pValue, const std::string &pResource,
+       enum operation pOperation = subtract, bool pVisible = true)
       : operation(pOperation), value(pValue), resource(pResource),
         visible(pVisible) {}
 
@@ -53,7 +53,7 @@ public:
   bool visible;
   T value;
 
-  virtual T resolve(const object<T> &c) const { return 0; }
+  virtual T resolve(const object<T> &c) const { return value; }
 
   virtual bool apply(object<T> &c) { return true; }
 
@@ -66,7 +66,9 @@ public:
 
 template <typename T> class total : public std::vector<cost<T> > {
 public:
-  virtual std::string label(const object<T> &c) {
+  using std::vector<cost<T> >::vector;
+
+  virtual std::string label(const object<T> &c) const {
     std::string res = "";
     for (const auto &cost : *this) {
       if (res == "") {
@@ -105,9 +107,11 @@ public:
   action(bool pVisible = false,
          std::function<std::string(objects<T> &source, objects<T> &target)>
              pApply = nullptr,
-         const enum scope &pScope = self, const enum filter &pFilter = none)
+         const enum scope &pScope = self, const enum filter &pFilter = none,
+         const resource::total<T> pCost = {
+  })
       : parent(), visible(pVisible), apply(pApply), scope(pScope),
-        filter(pFilter) {}
+        filter(pFilter), cost(pCost) {}
 
   std::string operator()(objects<T> &source, objects<T> &target) {
     if (apply != nullptr) {
@@ -118,6 +122,7 @@ public:
   }
 
   bool visible;
+  resource::total<T> cost;
 
   std::function<std::string(objects<T> &source, objects<T> &target)> apply;
 };
