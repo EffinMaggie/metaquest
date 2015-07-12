@@ -236,10 +236,14 @@ public:
 
       if (s == "Inspect") {
         // display status here.
-        auto attr = c.attributes();
-        std::vector<std::string> at(attr.begin(), attr.end());
+        std::map<std::string, std::string> data;
+        for (const auto &attr : c.attributes()) {
+          std::ostringstream os("");
+          os << c[attr];
+          data[attr] = os.str();
+        }
 
-        interact.query(*this, c, at, 30);
+        interact.display("Status", data, 30);
 
         retry = true;
         continue;

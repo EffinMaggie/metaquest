@@ -424,6 +424,74 @@ public:
 
   void clearQuery(void) { out.to(0, 8).clear(-1, 10); }
 
+  bool display(const std::string &title,
+               const std::map<std::string, std::string> &data,
+               std::size_t indent = 8) {
+    std::size_t lhs = 0, rhs = 0;
+    for (const auto &it : data) {
+      lhs = std::max(lhs, it.first.size());
+      rhs = std::max(rhs, it.second.size());
+    }
+
+    lhs += 1;
+
+    std::size_t left = indent, top = 8,
+                width = 4 + std::max(title.size() + 4, lhs + rhs),
+                height = 3 + data.size();
+
+    out.foreground = 7;
+    out.background = 0;
+
+    out.to(left, top).box(width, height);
+
+    out.to(left + 2, top).write(": " + title + " :", title.size() + 4);
+
+    left += 2;
+    width -= 4;
+
+    for (const auto &it : data) {
+      top++;
+      out.to(left, top).write(it.first, width);
+      out.to(left + lhs, top).write(it.second, rhs);
+    }
+
+    top++;
+
+    out.to(left, top).write(std::string(" OK "), width);
+
+    auto selector = new highlight(left - 1, top, width + 2, 1);
+    addAnimator(selector);
+
+    bool didCancel = false;
+    bool didSelect = false;
+
+    do {
+      io.read([&didSelect, &didCancel](const typename term::command & c)->bool {
+        switch (c.code) {
+        case 'C': // right: select
+          didSelect = true;
+          break;
+        case 'D': // left: cancel
+          didCancel = true;
+          break;
+        }
+        return false;
+      },
+              [&didSelect](const long & l)->bool {
+        if (l == '\n') {
+          didSelect = true;
+        }
+        return false;
+      });
+
+      didSelect |= didCancel;
+    } while (!didSelect);
+
+    selector->expire();
+
+    return !didCancel;
+  }
+
   template <typename T, typename G>
   std::string query(const G &game, const metaquest::character<T> &source,
                     const std::vector<std::string> &pList,
@@ -485,7 +553,10 @@ public:
     bool didCancel = false;
 
     auto selector = new highlight(left + 1, top + 1, width - 2, 1);
+    auto actorHighlight =
+        new highlight(0, getLine(game, source), io.size()[0], 1);
     addAnimator(selector);
+    addAnimator(actorHighlight);
 
     do {
       selector->line = top + 1 + selection;
@@ -527,6 +598,7 @@ public:
       }
     } while (!didSelect);
 
+    actorHighlight->expire();
     selector->expire();
 
     out.to(0, 15);
