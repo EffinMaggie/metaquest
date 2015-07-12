@@ -457,7 +457,7 @@ public:
 
     top++;
 
-    out.to(left, top).write(std::string(" OK "), width);
+    out.to(left, top).write(std::string("OK"), width);
 
     auto selector = new highlight(left - 1, top, width + 2, 1);
     addAnimator(selector);

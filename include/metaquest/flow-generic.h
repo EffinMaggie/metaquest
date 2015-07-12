@@ -40,7 +40,7 @@ public:
 
   ~generic(void) { interact.clear(); }
 
-  void run(void) {
+  virtual bool run(void) {
     while (true) {
       interact.drawUI(game);
 
@@ -56,6 +56,8 @@ public:
         break;
       }
     }
+
+    return true;
   }
 
   interaction interact;

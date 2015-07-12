@@ -163,39 +163,32 @@ public:
   using parent::interact;
   using parent::resolve;
   using parent::generateParties;
+  using parent::ignore;
+  using parent::quit;
+  using parent::inspect;
+
+  std::string fight(bool &retry, const character &) {
+    attribute["parties"] = 2;
+    generateParties();
+    return "OFF WITH THEIR HEADS!\n";
+  }
 
   virtual std::string next(void) {
     bool retry = false;
 
     if (parties.size() == 1) {
-      std::vector<std::string> visible;
+      std::map<std::string,
+               std::function<std::string(bool &, const character &)> > actions;
 
-      visible.push_back("Fight");
-      visible.push_back("Quit/Yes");
-      visible.push_back("Quit/No");
+      actions["Fight"] =
+          [this](bool & retry, const character & c)->std::string {
+        return fight(retry, c);
+      }
+      ;
+      actions["Quit/Yes"] = quit;
+      actions["Quit/No"] = ignore;
 
-      do {
-        retry = false;
-
-        std::string s = interact.query(*this, parties[0][0], visible);
-
-        if (s == "Cancel" || s == "Quit/No") {
-          retry = true;
-          continue;
-        }
-
-        if (s == "Quit/Yes") {
-          return "Quit.";
-        }
-
-        if (s == "Fight") {
-          attribute["parties"] = 2;
-          generateParties();
-          return "OFF WITH THEIR HEADS!\n";
-        }
-      } while (retry);
-
-      return "Nothing happened.";
+      return resolve(parties[0][0], actions);
     }
 
     for (std::size_t pi = 0; pi < parties.size(); pi++) {
@@ -235,22 +228,12 @@ public:
       }
 
       if (s == "Inspect") {
-        // display status here.
-        std::map<std::string, std::string> data;
-        for (const auto &attr : c.attributes()) {
-          std::ostringstream os("");
-          os << c[attr];
-          data[attr] = os.str();
-        }
-
-        interact.display("Status", data, 30);
-
-        retry = true;
+        inspect(retry, c);
         continue;
       }
 
       if (s == "Quit/Yes") {
-        return "Quit.";
+        return quit(retry, c);
       }
 
       auto targets = resolve(c, s);

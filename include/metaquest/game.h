@@ -55,6 +55,58 @@ public:
 
   virtual std::string next(void) = 0;
 
+  std::string
+  resolve(const character &target,
+          std::map<std::string,
+                   std::function<std::string(bool &, const character &)> > &
+              actions) {
+    std::vector<std::string> labels;
+    bool retry = false;
+    std::string res;
+
+    for (const auto &a : actions) {
+      labels.push_back(a.first);
+    }
+
+    do {
+      retry = false;
+
+      std::string s = interact.query(*this, target, labels);
+
+      if (s == "Cancel") {
+        retry = true;
+      } else {
+        res = actions[s](retry, target);
+      }
+    } while (retry);
+
+    return res;
+  }
+
+  static std::string ignore(bool &retry, const character &) {
+    retry = true;
+    return "Scratch that.";
+  }
+
+  static std::string quit(bool &retry, const character &) {
+    retry = false;
+    return "Quit.";
+  }
+
+  std::string inspect(bool &retry, const character &c) {
+    std::map<std::string, std::string> data;
+    for (const auto &attr : c.attributes()) {
+      std::ostringstream os("");
+      os << c[attr];
+      data[attr] = os.str();
+    }
+
+    interact.display("Status", data, 30);
+
+    retry = true;
+    return "Let's see...";
+  }
+
   std::string operator()(const std::string &command) {
     auto act = action.find(command);
     if (act != action.end()) {
