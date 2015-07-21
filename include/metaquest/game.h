@@ -55,14 +55,19 @@ public:
 
   virtual std::string next(void) = 0;
 
+  typedef std::map<std::string,
+      std::function<std::string(bool &, const character &)> > actionMap;
+
   std::string
-  resolve(const character &target,
-          std::map<std::string,
-                   std::function<std::string(bool &, const character &)> > &
-              actions) {
+  resolve(character &target,
+          actionMap &actions, bool allowCharacterActions = true) {
     std::vector<std::string> labels;
     bool retry = false;
     std::string res;
+
+    if (allowCharacterActions) {
+      labels = target.visibleActions();
+    }
 
     for (const auto &a : actions) {
       labels.push_back(a.first);
@@ -75,8 +80,19 @@ public:
 
       if (s == "Cancel") {
         retry = true;
-      } else {
+      } else if (actions.find(s) != actions.end()) {
         res = actions[s](retry, target);
+      } else {
+        auto targets = resolve(target, s);
+
+        if (!targets || (targets.just.size() < 1)) {
+          retry = true;
+          continue;
+        }
+
+        interact.action(*this, s, target, targets.just);
+
+        return target(s, targets.just);
       }
     } while (retry);
 

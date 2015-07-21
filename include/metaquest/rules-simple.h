@@ -177,8 +177,7 @@ public:
     bool retry = false;
 
     if (parties.size() == 1) {
-      std::map<std::string,
-               std::function<std::string(bool &, const character &)> > actions;
+      typename parent::actionMap actions;
 
       actions["Fight"] =
           [this](bool & retry, const character & c)->std::string {
@@ -188,7 +187,7 @@ public:
       actions["Quit/Yes"] = quit;
       actions["Quit/No"] = ignore;
 
-      return resolve(parties[0][0], actions);
+      return resolve(parties[0][0], actions, false);
     }
 
     for (std::size_t pi = 0; pi < parties.size(); pi++) {
@@ -211,44 +210,19 @@ public:
 
     auto visible = c.visibleActions();
 
+    typename parent::actionMap actions;
+
     if (!useAI(c)) {
-      visible.push_back("Inspect");
-      visible.push_back("Quit/Yes");
-      visible.push_back("Quit/No");
+      actions["Inspect"] =
+          [this](bool & retry, const character & c)->std::string {
+        return inspect(retry, c);
+      }
+      ;
+      actions["Quit/Yes"] = quit;
+      actions["Quit/No"] = ignore;
     }
 
-    do {
-      retry = false;
-
-      std::string s = interact.query(*this, c, visible);
-
-      if (s == "Cancel" || s == "Quit/No") {
-        retry = true;
-        continue;
-      }
-
-      if (s == "Inspect") {
-        inspect(retry, c);
-        continue;
-      }
-
-      if (s == "Quit/Yes") {
-        return quit(retry, c);
-      }
-
-      auto targets = resolve(c, s);
-
-      if (!targets || (targets.just.size() < 1)) {
-        retry = true;
-        continue;
-      }
-
-      interact.action(*this, s, c, targets.just);
-
-      return c(s, targets.just);
-    } while (retry);
-
-    return "Nothing happened.";
+    return resolve(c, actions);
   }
 
 protected:
