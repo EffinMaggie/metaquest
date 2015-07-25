@@ -34,6 +34,7 @@
 #include <random>
 #include <algorithm>
 #include <iterator>
+#include <functional>
 
 namespace metaquest {
 namespace game {
@@ -87,13 +88,55 @@ public:
     return combat;
   }
 
-  virtual std::string doMenu(void) = 0;
-  virtual std::string doCombat(void) = 0;
+  std::vector<character *>turnOrder(void) {
+    std::vector<character *> candidates;
+
+    for (auto &pa : parties) {
+      for (auto &h : pa) {
+        candidates.push_back(&h);
+      }
+    }
+
+    std::vector<character *> filteredCandidates;
+
+    std::copy_if(
+        candidates.begin(), candidates.end(),
+        std::back_inserter(filteredCandidates),
+        [](metaquest::character<typename character::base> * cha)->bool {
+      return cha->able();
+    });
+
+    std::random_shuffle(filteredCandidates.begin(), filteredCandidates.end());
+
+    return filteredCandidates;
+  }
+
+  character &nextCharacter(void) {
+    return *(turnOrder()[0]);
+  }
+
+  virtual std::string doMenuAction(bool allowCharacterActions) {
+    character &c = nextCharacter();
+
+    auto act = actions(c);
+
+    return resolve(c, act, allowCharacterActions);
+  }
+
+  virtual std::string doMenu(void) {
+    return doMenuAction(false);
+  }
+
+  virtual std::string doCombat(void) {
+    return doMenuAction(true);
+  }
+
   virtual std::string doVictory(void) {
     parties.erase(parties.begin()+1);
     interact.clear();
     return "The player party was victorious!";
   }
+
   virtual std::string doDefeat(void) {
     return "The player party was defeated!";
   }
@@ -143,14 +186,12 @@ public:
   }
 
   virtual actionMap actions(character &c) {
+    using namespace std::placeholders;
+
     actionMap actions;
 
     if (!useAI(c)) {
-      actions["Quit/Yes"] =
-          [this](bool & retry, const character & c)->std::string {
-        return quit(retry, c);
-      }
-      ;
+      actions["Quit/Yes"] = std::bind(&base::quit, this, _1, _2);
       actions["Quit/No"] = ignore;
     }
 

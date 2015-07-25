@@ -158,13 +158,10 @@ public:
   game(inter &pInteract) : parent(pInteract) {}
 
   using parent::parties;
-  using parent::rng;
   using parent::useAI;
   using parent::interact;
-  using parent::resolve;
   using parent::generateParties;
   using parent::inspect;
-  using parent::actions;
 
   std::string fight(bool &retry, const character &) {
     attribute["parties"] = 2;
@@ -172,40 +169,24 @@ public:
     return "OFF WITH THEIR HEADS!\n";
   }
 
-  virtual std::string doMenu(void) {
-    character &c = parties[0][0];
-    auto act = actions(c);
+  virtual typename parent::actionMap actions(character &c) {
+    using namespace std::placeholders;
 
-    act["Fight"] =
-        [this](bool & retry, const character & c)->std::string {
-      return fight(retry, c);
+    auto actions = parent::actions(c);
+
+    switch (parent::state()) {
+    case parent::menu:
+      actions["Fight"] = std::bind(&game::fight, this, _1, _2);
+      break;
+    default:
+      break;
     }
-    ;
-
-    return resolve(c, act, false);
-  }
-
-  virtual std::string doCombat(void) {
-    std::size_t p = rng() % parties.size();
-    std::size_t n = 0;
-    do {
-      n = rng() % parties[p].size();
-    } while (!parties[p][n].able());
-
-    character &c = parties[p][n];
-
-    auto visible = c.visibleActions();
-    auto act = actions(c);
 
     if (!useAI(c)) {
-      act["Inspect"] =
-          [this](bool & retry, const character & c)->std::string {
-        return inspect(retry, c);
-      }
-      ;
+      actions["Inspect"] = std::bind(&parent::inspect, this, _1, _2);
     }
 
-    return resolve(c, act);
+    return actions;
   }
 
 protected:
