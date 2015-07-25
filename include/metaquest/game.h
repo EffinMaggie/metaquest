@@ -46,14 +46,57 @@ public:
   using parent::function;
 
   base(inter &pInteract, long pParties = 1)
-      : parent(), interact(pInteract), rng(std::random_device()()) {
+      : parent(), interact(pInteract), rng(std::random_device()()),
+        willExit(false) {
     attribute["parties"] = pParties;
     generateParties();
   }
 
   std::vector<metaquest::party<character> > parties;
 
-  virtual std::string next(void) = 0;
+  enum state {
+    menu,
+    combat,
+    victory,
+    defeat,
+    exit
+  };
+
+  virtual enum state state (void) {
+    if (willExit) {
+      return exit;
+    }
+
+    if (parties.size() == 1) {
+      return menu;
+    }
+
+    for (std::size_t pi = 0; pi < parties.size(); pi++) {
+      auto &p = parties[pi];
+
+      if (p.defeated()) {
+        switch (parties.size() - pi - 1) {
+        case 0:
+          return victory;
+        default:
+          return defeat;
+        }
+      }
+    }
+
+    return combat;
+  }
+
+  virtual std::string doMenu(void) = 0;
+  virtual std::string doCombat(void) = 0;
+  virtual std::string doVictory(void) {
+    parties.erase(parties.begin()+1);
+    interact.clear();
+    return "The player party was victorious!";
+  }
+  virtual std::string doDefeat(void) {
+    return "The player party was defeated!";
+  }
 
   typedef std::map<std::string,
       std::function<std::string(bool &, const character &)> > actionMap;
@@ -99,12 +142,28 @@ public:
     return res;
   }
 
+  virtual actionMap actions(character &c) {
+    actionMap actions;
+
+    if (!useAI(c)) {
+      actions["Quit/Yes"] =
+          [this](bool & retry, const character & c)->std::string {
+        return quit(retry, c);
+      }
+      ;
+      actions["Quit/No"] = ignore;
+    }
+
+    return actions;
+  }
+
   static std::string ignore(bool &retry, const character &) {
     retry = true;
     return "Scratch that.";
   }
 
-  static std::string quit(bool &retry, const character &) {
+  std::string quit(bool &retry, const character &) {
+    willExit = true;
     retry = false;
     return "Quit.";
   }
@@ -252,7 +311,7 @@ public:
           candidates.begin(), candidates.end(),
           std::back_inserter(filteredCandidates),
           [](metaquest::character<typename character::base> * cha)->bool {
-        return (*cha)["HP/Current"] < (*cha)["HP/Total"];
+        return cha->alive() && (*cha)["HP/Current"] < (*cha)["HP/Total"];
       });
       break;
     case metaquest::action<typename character::base>::onlyDead:
@@ -308,6 +367,8 @@ public:
 protected:
   std::map<std::string, std::function<std::string(parent &)> > action;
   std::mt19937 rng;
+
+  bool willExit;
 };
 }
 }

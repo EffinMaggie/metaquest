@@ -44,16 +44,23 @@ public:
     while (true) {
       interact.drawUI(game);
 
-      log = game.next();
-
-      interact.log(log);
-
-      if (log.find("victorious") != log.npos) {
+      switch(game.state()){
+      case logic::menu:
+        interact.log(log = game.doMenu());
         break;
-      }
-
-      if (log.find("Quit.") != log.npos) {
+      case logic::combat:
+        interact.log(log = game.doCombat());
         break;
+      case logic::victory:
+        interact.log(log = game.doVictory());
+        break;
+      case logic::defeat:
+        interact.log(log = game.doDefeat());
+        return true;
+      case logic::exit:
+        return true;
+      default:
+        return false;
       }
     }
 

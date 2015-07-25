@@ -132,8 +132,8 @@ public:
     metaquest::name::american::proper<> cname(roll(1, 10) > 5);
     name = cname;
 
-    attribute["Attack"] = 1;
-    attribute["Defence"] = 1;
+    attribute["Attack"] = 6;
+    attribute["Defence"] = 3;
     attribute["Experience"] = 0;
 
     function["HP/Total"] = getHPTotal;
@@ -163,9 +163,8 @@ public:
   using parent::interact;
   using parent::resolve;
   using parent::generateParties;
-  using parent::ignore;
-  using parent::quit;
   using parent::inspect;
+  using parent::actions;
 
   std::string fight(bool &retry, const character &) {
     attribute["parties"] = 2;
@@ -173,33 +172,20 @@ public:
     return "OFF WITH THEIR HEADS!\n";
   }
 
-  virtual std::string next(void) {
-    bool retry = false;
+  virtual std::string doMenu(void) {
+    character &c = parties[0][0];
+    auto act = actions(c);
 
-    if (parties.size() == 1) {
-      typename parent::actionMap actions;
-
-      actions["Fight"] =
-          [this](bool & retry, const character & c)->std::string {
-        return fight(retry, c);
-      }
-      ;
-      actions["Quit/Yes"] = quit;
-      actions["Quit/No"] = ignore;
-
-      return resolve(parties[0][0], actions, false);
+    act["Fight"] =
+        [this](bool & retry, const character & c)->std::string {
+      return fight(retry, c);
     }
+    ;
 
-    for (std::size_t pi = 0; pi < parties.size(); pi++) {
-      auto &p = parties[pi];
+    return resolve(c, act, false);
+  }
 
-      if (p.defeated()) {
-        std::ostringstream os("");
-        os << "Party #" << (parties.size() - pi - 1) << " was victorious!\n";
-        return os.str();
-      }
-    }
-
+  virtual std::string doCombat(void) {
     std::size_t p = rng() % parties.size();
     std::size_t n = 0;
     do {
@@ -209,20 +195,17 @@ public:
     character &c = parties[p][n];
 
     auto visible = c.visibleActions();
-
-    typename parent::actionMap actions;
+    auto act = actions(c);
 
     if (!useAI(c)) {
-      actions["Inspect"] =
+      act["Inspect"] =
           [this](bool & retry, const character & c)->std::string {
         return inspect(retry, c);
       }
       ;
-      actions["Quit/Yes"] = quit;
-      actions["Quit/No"] = ignore;
     }
 
-    return resolve(c, actions);
+    return resolve(c, act);
   }
 
 protected:
