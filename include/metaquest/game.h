@@ -63,7 +63,7 @@ public:
     exit
   };
 
-  virtual enum state state (void) {
+  virtual enum state state(void) {
     if (willExit) {
       return exit;
     }
@@ -88,7 +88,7 @@ public:
     return combat;
   }
 
-  std::vector<character *>turnOrder(void) {
+  std::vector<character *> turnOrder(void) {
     std::vector<character *> candidates;
 
     for (auto &pa : parties) {
@@ -111,9 +111,7 @@ public:
     return filteredCandidates;
   }
 
-  character &nextCharacter(void) {
-    return *(turnOrder()[0]);
-  }
+  character &nextCharacter(void) { return *(turnOrder()[0]); }
 
   virtual std::string doMenuAction(bool allowCharacterActions) {
     character &c = nextCharacter();
@@ -123,16 +121,12 @@ public:
     return resolve(c, act, allowCharacterActions);
   }
 
-  virtual std::string doMenu(void) {
-    return doMenuAction(false);
-  }
+  virtual std::string doMenu(void) { return doMenuAction(false); }
 
-  virtual std::string doCombat(void) {
-    return doMenuAction(true);
-  }
+  virtual std::string doCombat(void) { return doMenuAction(true); }
 
   virtual std::string doVictory(void) {
-    parties.erase(parties.begin()+1);
+    parties.erase(parties.begin() + 1);
     interact.clear();
     return "The player party was victorious!";
   }
@@ -142,11 +136,11 @@ public:
   }
 
   typedef std::map<std::string,
-      std::function<std::string(bool &, const character &)> > actionMap;
+                   std::function<std::string(bool &, const character &)> >
+      actionMap;
 
-  std::string
-  resolve(character &target,
-          actionMap &actions, bool allowCharacterActions = true) {
+  std::string resolve(character &target, actionMap &actions,
+                      bool allowCharacterActions = true) {
     std::vector<std::string> labels;
     bool retry = false;
     std::string res;

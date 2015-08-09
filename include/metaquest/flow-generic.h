@@ -44,7 +44,7 @@ public:
     while (true) {
       interact.drawUI(game);
 
-      switch(game.state()){
+      switch (game.state()) {
       case logic::menu:
         interact.log(log = game.doMenu());
         break;
