@@ -2,6 +2,14 @@
 
 NAME:=metaquest
 
+# grab libefgy if we don't have it yet
+.third-party/libefgy/include/ef.gy/base.mk:
+	mkdir .third-party || true
+	cd .third-party && git clone git://github.com/ef-gy/libefgy.git
+
+include/ef.gy/base.mk: .third-party/libefgy/include/ef.gy/base.mk
+	ln -sfn ../.third-party/libefgy/include/ef.gy include/ef.gy
+
 DATAHEADERS:=include/data/female.first.h include/data/male.first.h include/data/all.last.h
 MAXLINES:=5000
 
