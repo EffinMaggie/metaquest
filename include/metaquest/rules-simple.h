@@ -75,11 +75,11 @@ static std::string attack(objects<long> &source, objects<long> &target) {
 
       if (admg > 0) {
         os << s.name.display() << " hits for " << admg << " (" << dmg
-           << ") points of damage\n";
+           << ") points of damage";
 
         t.add("HP/Current", -admg);
       } else {
-        os << s.name.display() << " misses\n";
+        os << s.name.display() << " misses";
       }
     }
   }
@@ -93,18 +93,11 @@ static std::string heal(objects<long> &source, objects<long> &target) {
     for (auto &tp : target) {
       auto &t = *tp;
 
-      if (t["MP/Current"] < 2) {
-        os << s.name.display() << " does not have enough MP!\n";
-        continue;
-      }
-
-      t.add("MP/Current", -2);
-
-      os << s.name.display() << " heals " << t.name.display() << "\n";
+      os << s.name.display() << " heals " << t.name.display();
 
       int amt = roll(s["Attack"]);
 
-      os << s.name.display() << " heals " << amt << " points of damage\n";
+      os << s.name.display() << " heals " << amt << " points of damage";
 
       t.add("HP/Current", "HP/Total", amt);
     }
@@ -116,13 +109,13 @@ static std::string pass(objects<long> &source, objects<long> &target) {
   std::stringstream os("");
   for (auto &sp : source) {
     auto &s = *sp;
-    os << s.name.display() << " would rather be reading a book.\n";
+    os << s.name.display() << " would rather be reading a book.";
   }
   return os.str();
 }
 
 class character : public metaquest::character<long> {
-public:
+ public:
   typedef metaquest::character<long> parent;
   typedef metaquest::action<long> action;
 
@@ -152,7 +145,7 @@ public:
 
 template <typename inter>
 class game : public metaquest::game::base<character, inter> {
-public:
+ public:
   typedef metaquest::game::base<character, inter> parent;
 
   game(inter &pInteract) : parent(pInteract) {}
@@ -175,11 +168,11 @@ public:
     auto actions = parent::actions(c);
 
     switch (parent::state()) {
-    case parent::menu:
-      actions["Fight"] = std::bind(&game::fight, this, _1, _2);
-      break;
-    default:
-      break;
+      case parent::menu:
+        actions["Fight"] = std::bind(&game::fight, this, _1, _2);
+        break;
+      default:
+        break;
     }
 
     if (!useAI(c)) {
@@ -189,7 +182,7 @@ public:
     return actions;
   }
 
-protected:
+ protected:
   using parent::attribute;
 };
 }

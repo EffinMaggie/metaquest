@@ -35,7 +35,7 @@
 namespace metaquest {
 namespace ai {
 template <typename inter> class random {
-public:
+ public:
   random(inter &pInteract) : interact(pInteract), rng(std::random_device()()) {}
 
   template <typename T, typename G>
@@ -46,16 +46,16 @@ public:
   }
 
   template <typename T, typename G>
-  std::vector<metaquest::character<T> *>
-  query(G &game, const metaquest::character<T> &source,
-        const std::vector<metaquest::character<T> *> &candidates,
-        std::size_t indent = 4) {
+  std::vector<metaquest::character<T> *> query(
+      G &game, const metaquest::character<T> &source,
+      const std::vector<metaquest::character<T> *> &candidates,
+      std::size_t indent = 4) {
     std::vector<metaquest::character<T> *> targets;
     targets.push_back(candidates[(rng() % candidates.size())]);
     return targets;
   }
 
-protected:
+ protected:
   inter &interact;
   std::mt19937 rng;
 };

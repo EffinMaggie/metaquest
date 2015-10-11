@@ -54,13 +54,14 @@ namespace interact {
 namespace terminal {
 namespace animator {
 template <typename term, typename clock> class base {
-public:
+ public:
   base(const typename clock::duration &pSleepTime)
       : sleepTime(pSleepTime), validSince(clock::now()), validUntil() {}
 
   base(const typename clock::duration &pSleepTime,
        const std::chrono::milliseconds &ttl)
-      : sleepTime(pSleepTime), validSince(clock::now()),
+      : sleepTime(pSleepTime),
+        validSince(clock::now()),
         validUntil(validSince + ttl) {}
 
   virtual ~base(void) {}
@@ -107,17 +108,20 @@ public:
 
   const typename clock::duration sleepTime;
 
-protected:
+ protected:
   typename clock::time_point validSince;
   efgy::maybe<typename clock::time_point> validUntil;
 };
 
 template <typename term, typename clock>
 class highlight : public base<term, clock> {
-public:
+ public:
   highlight(const std::size_t pColumn, const std::size_t pLine,
             const std::size_t pWidth, const std::size_t pHeight)
-      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
+      : column(pColumn),
+        line(pLine),
+        width(pWidth),
+        height(pHeight),
         base<term, clock>(std::chrono::milliseconds(50)) {}
 
   virtual bool draw(typename term::base &) { return false; }
@@ -141,10 +145,13 @@ public:
 };
 
 template <typename term, typename clock> class glow : public base<term, clock> {
-public:
+ public:
   glow(const std::size_t pColumn, const std::size_t pLine,
        const std::size_t pWidth, const std::size_t pHeight)
-      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
+      : column(pColumn),
+        line(pLine),
+        width(pWidth),
+        height(pHeight),
         base<term, clock>(std::chrono::milliseconds(5),
                           std::chrono::seconds(1)) {}
 
@@ -173,10 +180,13 @@ public:
 
 template <typename term, typename clock>
 class flash : public base<term, clock> {
-public:
+ public:
   flash(const std::size_t pColumn, const std::size_t pLine,
         const std::size_t pWidth, const std::size_t pHeight)
-      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
+      : column(pColumn),
+        line(pLine),
+        width(pWidth),
+        height(pHeight),
         base<term, clock>(std::chrono::milliseconds(15),
                           std::chrono::milliseconds(600)) {}
 
@@ -205,9 +215,10 @@ public:
 };
 
 template <typename term, typename clock> class text : public base<term, clock> {
-public:
+ public:
   text(const std::size_t pLine, const std::string &pMessage)
-      : line(pLine), message(pMessage),
+      : line(pLine),
+        message(pMessage),
         base<term, clock>(std::chrono::milliseconds(50),
                           std::chrono::milliseconds(1500)) {}
 
@@ -243,7 +254,7 @@ class base;
 
 template <typename term, template <typename> class AI, typename clock>
 class refresher {
-public:
+ public:
   refresher(base<term, AI> &pBase) : base(pBase) {}
 
   bool refresh() {
@@ -323,15 +334,19 @@ public:
     self.flush();
   }
 
-protected:
+ protected:
   base<term, AI, clock> &base;
 };
 
 template <typename term, template <typename> class AI, typename clock>
 class base {
-public:
+ public:
   base()
-      : io(), out(io), rng(std::random_device()()), ai(*this), logbook(""),
+      : io(),
+        out(io),
+        rng(std::random_device()()),
+        ai(*this),
+        logbook(""),
         alive(true),
         refresherThread(refresher<term, AI, clock>::run, std::ref(*this)) {
     io.resize(io.getOSDimensions());
@@ -367,7 +382,7 @@ public:
 
   void clear(void) { out.to(0, 0).clear(); }
 
-  void log(std::string log) { logbook << log; }
+  void log(std::string log) { logbook << log << "\n"; }
 
   template <typename T, typename G>
   std::size_t getLine(const G &game, const metaquest::character<T> &character) {
@@ -468,12 +483,12 @@ public:
     do {
       io.read([&didSelect, &didCancel](const typename term::command & c)->bool {
         switch (c.code) {
-        case 'C': // right: select
-          didSelect = true;
-          break;
-        case 'D': // left: cancel
-          didCancel = true;
-          break;
+          case 'C':  // right: select
+            didSelect = true;
+            break;
+          case 'D':  // left: cancel
+            didCancel = true;
+            break;
         }
         return false;
       },
@@ -565,18 +580,18 @@ public:
           [&selection, &didSelect, &didCancel](const typename term::command & c)
               ->bool {
         switch (c.code) {
-        case 'A': // up
-          selection--;
-          break;
-        case 'B': // down
-          selection++;
-          break;
-        case 'C': // right: select
-          didSelect = true;
-          break;
-        case 'D': // left: cancel
-          didCancel = true;
-          break;
+          case 'A':  // up
+            selection--;
+            break;
+          case 'B':  // down
+            selection++;
+            break;
+          case 'C':  // right: select
+            didSelect = true;
+            break;
+          case 'D':  // left: cancel
+            didCancel = true;
+            break;
         }
         return false;
       },
@@ -624,10 +639,10 @@ public:
   }
 
   template <typename T, typename G>
-  efgy::maybe<std::vector<metaquest::character<T> *> >
-  query(G &game, const metaquest::character<T> &source,
-        std::vector<metaquest::character<T> *> &candidates,
-        std::size_t indent = 4) {
+  efgy::maybe<std::vector<metaquest::character<T> *> > query(
+      G &game, const metaquest::character<T> &source,
+      std::vector<metaquest::character<T> *> &candidates,
+      std::size_t indent = 4) {
     std::size_t party = game.partyOf(source);
 
     if (game.useAI(source)) {
@@ -666,18 +681,18 @@ public:
           [&selection, &didSelect, &didCancel](const typename term::command & c)
               ->bool {
         switch (c.code) {
-        case 'A': // up
-          selection--;
-          break;
-        case 'B': // down
-          selection++;
-          break;
-        case 'C': // right: select
-          didSelect = true;
-          break;
-        case 'D': // left: cancel
-          didCancel = true;
-          break;
+          case 'A':  // up
+            selection--;
+            break;
+          case 'B':  // down
+            selection++;
+            break;
+          case 'C':  // right: select
+            didSelect = true;
+            break;
+          case 'D':  // left: cancel
+            didCancel = true;
+            break;
         }
         return false;
       },
@@ -709,7 +724,7 @@ public:
     return targets;
   }
 
-protected:
+ protected:
   std::mt19937 rng;
 };
 }

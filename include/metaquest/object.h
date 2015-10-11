@@ -54,7 +54,7 @@ namespace metaquest {
  *           at least for J-RPGs and tabletops.
  */
 template <typename T = long, typename C = char> class object {
-public:
+ public:
   typedef T base;
 
   virtual ~object(void) {}
@@ -141,7 +141,7 @@ public:
     return ret;
   }
 
-protected:
+ protected:
   /**\brief Attribute generation functions
    *
    * Maps attribute names to thunks which can generate an attribute on

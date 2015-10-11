@@ -35,7 +35,7 @@
 namespace metaquest {
 namespace flow {
 template <typename interaction, typename logic> class generic {
-public:
+ public:
   generic(void) : interact(), game(interact) { interact.clear(); }
 
   ~generic(void) { interact.clear(); }
@@ -45,22 +45,22 @@ public:
       interact.drawUI(game);
 
       switch (game.state()) {
-      case logic::menu:
-        interact.log(log = game.doMenu());
-        break;
-      case logic::combat:
-        interact.log(log = game.doCombat());
-        break;
-      case logic::victory:
-        interact.log(log = game.doVictory());
-        break;
-      case logic::defeat:
-        interact.log(log = game.doDefeat());
-        return true;
-      case logic::exit:
-        return true;
-      default:
-        return false;
+        case logic::menu:
+          interact.log(log = game.doMenu());
+          break;
+        case logic::combat:
+          interact.log(log = game.doCombat());
+          break;
+        case logic::victory:
+          interact.log(log = game.doVictory());
+          break;
+        case logic::defeat:
+          interact.log(log = game.doDefeat());
+          return true;
+        case logic::exit:
+          return true;
+        default:
+          return false;
       }
     }
 

@@ -38,7 +38,7 @@
 namespace metaquest {
 namespace resource {
 template <typename T> class cost {
-public:
+ public:
   enum operation {
     subtract,
     add
@@ -46,7 +46,9 @@ public:
 
   cost(T pValue, const std::string &pResource,
        enum operation pOperation = subtract, bool pVisible = true)
-      : operation(pOperation), value(pValue), resource(pResource),
+      : operation(pOperation),
+        value(pValue),
+        resource(pResource),
         visible(pVisible) {}
 
   std::string resource;
@@ -55,7 +57,47 @@ public:
 
   virtual T resolve(const object<T> &c) const { return value; }
 
-  virtual bool apply(object<T> &c) { return true; }
+  virtual bool canApply(const object<T> &c) const {
+    auto attr = c.attributes();
+    T val = resolve(c);
+    if (attr.find(resource) != attr.end()) {
+      if (operation == subtract) {
+        if (c[resource] >= val) {
+          return true;
+        }
+      } else {
+        return true;
+      }
+    } else if (attr.find(resource + "/Current") != attr.end()) {
+      if (operation == subtract) {
+        if (c[resource + "/Current"] >= val) {
+          return true;
+        }
+      } else {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  virtual bool apply(object<T> &c) {
+    if (!canApply(c)) {
+      return false;
+    }
+
+    auto attr = c.attributes();
+    T val = operation == subtract ? -resolve(c) : resolve(c);
+    if (attr.find(resource) != attr.end()) {
+      c.add(resource, val);
+      return true;
+    } else if (attr.find(resource + "/Current") != attr.end()) {
+      c.add(resource + "/Current", val);
+      return true;
+    }
+
+    return false;
+  }
 
   virtual std::string label(const object<T> &c) const {
     std::ostringstream os("");
@@ -65,7 +107,7 @@ public:
 };
 
 template <typename T> class total : public std::vector<cost<T> > {
-public:
+ public:
   using std::vector<cost<T> >::vector;
 
   virtual std::string label(const object<T> &c) const {
@@ -79,11 +121,30 @@ public:
     }
     return res;
   }
+
+  virtual bool canApply(const object<T> &c) const {
+    bool res = true;
+    for (const auto &cost : *this) {
+      res &= cost.canApply(c);
+    }
+    return res;
+  }
+
+  virtual bool apply(object<T> &c) {
+    if (canApply(c)) {
+      bool res = true;
+      for (auto &cost : *this) {
+        res &= cost.apply(c);
+      }
+      return res;
+    }
+    return false;
+  }
 };
 }
 
 template <typename T> class action : public object<T> {
-public:
+ public:
   typedef metaquest::object<T> parent;
 
   enum scope {
@@ -110,8 +171,12 @@ public:
          const enum scope &pScope = self, const enum filter &pFilter = none,
          const resource::total<T> pCost = {
   })
-      : parent(), visible(pVisible), apply(pApply), scope(pScope),
-        filter(pFilter), cost(pCost) {}
+      : parent(),
+        visible(pVisible),
+        apply(pApply),
+        scope(pScope),
+        filter(pFilter),
+        cost(pCost) {}
 
   std::string operator()(objects<T> &source, objects<T> &target) {
     if (apply != nullptr) {

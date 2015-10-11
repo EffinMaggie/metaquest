@@ -45,7 +45,7 @@ namespace metaquest {
  *           at least for J-RPGs and tabletops.
  */
 template <typename T = long> class item : public object<T> {
-public:
+ public:
   typedef metaquest::object<T> parent;
 
   item(const action<T> &pApply) : parent(), apply(pApply) {}

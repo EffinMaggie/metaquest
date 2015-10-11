@@ -47,7 +47,7 @@ namespace metaquest {
  *           at least for J-RPGs and tabletops.
  */
 template <typename T = long> class character : public object<T> {
-public:
+ public:
   typedef object<T> parent;
 
   using parent::attribute;
@@ -120,18 +120,25 @@ public:
   std::string operator()(const std::string &skill,
                          std::vector<character *> &pTarget) {
     auto act = action.find(skill);
-    if (act != action.end()) {
-      objects<T> source, target;
-      source.push_back(this);
-
-      for (auto &t : pTarget) {
-        target.push_back(t);
-      }
-
-      return act->second(source, target);
+    if (act == action.end()) {
+      return object<T>::name.display() + " looks bewildered";
     }
 
-    return object<T>::name.display() + " looks bewildered\n";
+    auto &cost = act->second.cost;
+    if (!cost.canApply(*this)) {
+      return object<T>::name.display() + " can't use " + skill + " right now";
+    }
+
+    objects<T> source, target;
+    source.push_back(this);
+
+    for (auto &t : pTarget) {
+      target.push_back(t);
+    }
+
+    cost.apply(*this);
+
+    return act->second(source, target);
   }
 
   /**\brief List of equipped items
@@ -148,15 +155,15 @@ public:
    */
   std::vector<item<T> > inventory;
 
-  metaquest::action<T> &
-  bind(const std::string &name, bool isVisible,
-       std::function<std::string(objects<T> &, std::vector<object<T> *> &)>
-           pApply,
-       const enum metaquest::action<T>::scope &pScope =
-           metaquest::action<T>::enemy,
-       const enum metaquest::action<T>::filter &pFilter =
-           metaquest::action<T>::none,
-       const resource::total<T> pCost = {
+  metaquest::action<T> &bind(
+      const std::string &name, bool isVisible,
+      std::function<std::string(objects<T> &, std::vector<object<T> *> &)>
+          pApply,
+      const enum metaquest::action<T>::scope &pScope =
+          metaquest::action<T>::enemy,
+      const enum metaquest::action<T>::filter &pFilter =
+          metaquest::action<T>::none,
+      const resource::total<T> pCost = {
   }) {
     metaquest::action<T> act(isVisible, pApply, pScope, pFilter, pCost);
     act.name = metaquest::name::simple<>(name);
@@ -203,7 +210,7 @@ public:
     }
   }
 
-protected:
+ protected:
   std::map<std::string, action<T> > action;
 };
 }

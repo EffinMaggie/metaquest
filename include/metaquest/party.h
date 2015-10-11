@@ -43,7 +43,7 @@ namespace metaquest {
  * contexts (menu, etc.) the order might actually be relevant.
  */
 template <typename C> class party : public std::vector<C> {
-public:
+ public:
   /**\brief Generate a party.
    *
    * Given the number of members you want the party to consist of, this will
@@ -86,7 +86,7 @@ public:
     return ret;
   }
 
-protected:
+ protected:
   using std::vector<C>::vector;
 };
 }
