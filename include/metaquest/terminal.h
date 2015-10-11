@@ -164,7 +164,7 @@ template <typename term, typename clock> class glow : public base<term, clock> {
                            typename term::cell &cell) {
     std::size_t h = column + width * progress();
 
-    if ((l >= line) && (l < (line + height)) && (c >= column) && (c < h)) {
+    if ((l >= line) && (l < (line + height)) && (c >= column) && (c >= h)) {
       std::swap(cell.foregroundColour, cell.backgroundColour);
       return true;
     }
@@ -399,9 +399,13 @@ class base {
     addAnimator(new flash(0, getLine(game, source), io.size()[0], 1));
     addAnimator(new text(8, source.name.display() + ": " + description));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    for (auto &t : targets) {
+      addAnimator(new glow(0, getLine(game, *t), io.size()[0], 1));
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     return true;
   }
