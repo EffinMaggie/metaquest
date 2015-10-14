@@ -48,9 +48,17 @@ template <typename T = long> class item : public object<T> {
  public:
   typedef metaquest::object<T> parent;
 
-  item(const action<T> &pApply) : parent(), apply(pApply) {}
+  item(const action<T> &pApply, const slots<T> &pUsedSlots = {
+  })
+      : parent(), apply(pApply), usedSlots(pUsedSlots) {}
 
   action<T> apply;
+  slots<T> usedSlots;
+};
+
+template <typename T> class items : public std::vector<item<T>> {
+ public:
+  using std::vector<item<T>>::vector;
 };
 }
 

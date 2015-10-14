@@ -120,10 +120,13 @@ class character : public metaquest::character<long> {
   typedef metaquest::action<long> action;
 
   using parent::name;
+  using parent::slots;
 
   character(long points = 1) : parent(points) {
     metaquest::name::american::proper<> cname(roll(1, 10) > 5);
     name = cname;
+
+    slots = { { "Weapon", 1 }, { "Trinket", 1 } };
 
     attribute["Attack"] = 6;
     attribute["Defence"] = 3;
@@ -148,18 +151,18 @@ class game : public metaquest::game::base<character, inter> {
  public:
   typedef metaquest::game::base<character, inter> parent;
 
-  game(inter &pInteract) : parent(pInteract) {}
-
   using parent::parties;
   using parent::useAI;
   using parent::interact;
   using parent::generateParties;
   using parent::inspect;
 
+  game(inter &pInteract) : parent(pInteract) {}
+
   std::string fight(bool &retry, const character &) {
     attribute["parties"] = 2;
     generateParties();
-    return "OFF WITH THEIR HEADS!\n";
+    return "OFF WITH THEIR HEADS!";
   }
 
   virtual typename parent::actionMap actions(character &c) {

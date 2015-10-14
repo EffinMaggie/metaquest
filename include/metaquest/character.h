@@ -145,7 +145,7 @@ template <typename T = long> class character : public object<T> {
    *
    * The list of items that a character currently has equipped.
    */
-  std::map<std::string, item<T> > equipment;
+  items<T> equipment;
 
   /**\brief List of inventory items
    *

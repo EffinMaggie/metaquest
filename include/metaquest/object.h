@@ -45,6 +45,8 @@
 #include <regex>
 
 namespace metaquest {
+template <typename T> using slots = std::map<std::string, T>;
+
 /**\brief A game object
  *
  * The base class for items, characters, etc. Provides common properties,
@@ -140,6 +142,8 @@ template <typename T = long, typename C = char> class object {
 
     return ret;
   }
+
+  slots<T> slots;
 
  protected:
   /**\brief Attribute generation functions
