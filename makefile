@@ -14,6 +14,10 @@ DATAHEADERS:=include/data/female.first.h include/data/male.first.h include/data/
 MAXLINES:=5000
 
 # gather source data
+data/female.first.h: include/data/female.first.h
+data/male.first.h: include/data/male.first.h
+data/all.last.h: include/data/all.last.h
+
 data/census/dist.%.census.gov:
 	mkdir -p $(dir $@) || true
 	$(CURL) 'http://www2.census.gov/topics/genealogy/1990surnames/dist.$*' > $@
