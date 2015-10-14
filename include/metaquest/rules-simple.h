@@ -40,14 +40,17 @@
 namespace metaquest {
 namespace rules {
 namespace simple {
-static long getPoints(long level) { return level * 10 + (level % 2) * 5; }
+static long getLevel(const object<long> &t) {
+  const double x = std::max<long>(t["Experience"], 1);
+  return std::floor(1 + std::log(x * x));
+}
 
 static long getHPTotal(const object<long> &t) {
-  return getPoints(t["Level"] + 1);
+  return std::floor(70.0 + t["Level"] * (double(t["HPL"]) / 10.0));
 }
 
 static long getMPTotal(const object<long> &t) {
-  return getPoints((t["Level"] + 1) * 2);
+  return std::floor(40.0 + t["Level"] * (double(t["MPL"]) / 10.0));
 }
 
 static int roll(int num, int sides = 6) {
@@ -93,7 +96,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
     for (auto &tp : target) {
       auto &t = *tp;
 
-      os << s.name.display() << " heals " << t.name.display();
+      os << s.name.display() << " heals " << t.name.display() << "\n";
 
       int amt = roll(s["Attack"]);
 
@@ -122,7 +125,9 @@ class character : public metaquest::character<long> {
   using parent::name;
   using parent::slots;
 
-  character(long points = 1) : parent(points) {
+  character(long points = 0) : parent(points) {
+    static std::mt19937 rng = std::mt19937(std::random_device()());
+
     metaquest::name::american::proper<> cname(roll(1, 10) > 5);
     name = cname;
 
@@ -130,8 +135,12 @@ class character : public metaquest::character<long> {
 
     attribute["Attack"] = 6;
     attribute["Defence"] = 3;
-    attribute["Experience"] = 0;
+    attribute["Experience"] = points;
 
+    attribute["HPL"] = rng() % 100;
+    attribute["MPL"] = 100 - attribute["HPL"];
+
+    function["Level"] = getLevel;
     function["HP/Total"] = getHPTotal;
     function["MP/Total"] = getMPTotal;
 

@@ -16,3 +16,4 @@ dependencies.mk
 documentation
 doxyfile
 .third-party
+*.dSYM
