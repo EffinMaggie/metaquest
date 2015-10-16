@@ -209,7 +209,21 @@ class base : public metaquest::object<typename character::base> {
     return "Quit.";
   }
 
-  std::string inspect(bool &retry, const character &c) {
+  std::string inspect(bool &retry, const character &o) {
+    retry = true;
+
+    auto cr = resolve(o, metaquest::action<typename character::base>::everyone,
+                      metaquest::action<typename character::base>::none);
+    if (cr.nothing || (cr.just.size() == 0)) {
+      return "Maybe not?";
+    }
+
+    auto cs = interact.query(*this, o, cr.just);
+    if (cs.nothing || (cs.just.size() == 0)) {
+      return "Maybe not?";
+    }
+
+    auto &c = *(cs.just[0]);
     std::map<std::string, std::string> data;
     for (const auto &attr : c.attributes()) {
       std::ostringstream os("");
@@ -231,7 +245,6 @@ class base : public metaquest::object<typename character::base> {
 
     interact.display("Status", data, 30);
 
-    retry = true;
     return "Let's see...";
   }
 
@@ -302,14 +315,23 @@ class base : public metaquest::object<typename character::base> {
 
   template <typename C>
   efgy::maybe<std::vector<metaquest::character<typename character::base> *> >
-  resolve(C &c, const std::string &s) {
+  resolve(const C &c, const std::string &s) {
+    return resolve(c, c.scope(s), c.filter(s));
+  }
+
+  template <typename C>
+  efgy::maybe<std::vector<metaquest::character<typename character::base> *> >
+  resolve(const C &c,
+          const enum metaquest::action<typename C::base>::scope scope,
+          const enum metaquest::action<typename C::base>::filter filter) {
     size_t p = partyOf(c);
+    size_t m = positionOf(c);
 
     std::vector<metaquest::character<typename character::base> *> candidates;
 
-    switch (c.scope(s)) {
+    switch (scope) {
       case metaquest::action<typename character::base>::self:
-        candidates.push_back(&c);
+        candidates.push_back(&(parties[p][m]));
         break;
       case metaquest::action<typename character::base>::ally:
       case metaquest::action<typename character::base>::party:
@@ -339,7 +361,7 @@ class base : public metaquest::object<typename character::base> {
     std::vector<metaquest::character<typename character::base> *>
         filteredCandidates;
 
-    switch (c.filter(s)) {
+    switch (filter) {
       case metaquest::action<typename character::base>::none:
         filteredCandidates = candidates;
         break;
@@ -390,7 +412,7 @@ class base : public metaquest::object<typename character::base> {
           std::vector<metaquest::character<typename character::base> *> >();
     }
 
-    switch (c.scope(s)) {
+    switch (scope) {
       case metaquest::action<typename character::base>::self:
       case metaquest::action<typename character::base>::party:
       case metaquest::action<typename character::base>::enemies:

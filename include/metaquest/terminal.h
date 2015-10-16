@@ -144,6 +144,23 @@ class highlight : public base<term, clock> {
   std::size_t height;
 };
 
+template <typename term, typename clock>
+class selector : public highlight<term, clock> {
+ public:
+  using highlight<term, clock>::highlight;
+  using highlight<term, clock>::line;
+  using highlight<term, clock>::column;
+
+  virtual bool postProcess(const typename term::base &terminal,
+                           const std::size_t &l, const std::size_t &c,
+                           typename term::cell &cell) {
+    if ((l == line) && (c == column)) {
+      cell.content = 0x261e;
+    }
+    return highlight<term, clock>::postProcess(terminal, l, c, cell);
+  }
+};
+
 template <typename term, typename clock> class glow : public base<term, clock> {
  public:
   glow(const std::size_t pColumn, const std::size_t pLine,
@@ -360,6 +377,7 @@ class base {
     }
   }
 
+  typedef animator::selector<term, clock> selector;
   typedef animator::highlight<term, clock> highlight;
   typedef animator::glow<term, clock> glow;
   typedef animator::text<term, clock> text;
@@ -432,7 +450,7 @@ class base {
         hp << p["HP/Current"];
         mp << p["MP/Current"];
 
-        out.to(0, i).clear(-1, 1).to(0, i).write(p.name.full(), 30).x(-60)
+        out.to(0, i).clear(-1, 1).to(2, i).write(p.name.full(), 28).x(-60)
             .write(hp.str(), 4, 1).x(-55).write(mp.str(), 4, 4).x(-50)
             .bar2c(p["HP/Current"], p["HP/Total"], p["MP/Current"],
                    p["MP/Total"], 50, 1, 4);
@@ -455,7 +473,7 @@ class base {
     lhs += 1;
 
     std::size_t left = indent, top = 8,
-                width = 4 + std::max(title.size() + 4, lhs + rhs),
+                width = 5 + std::max(title.size() + 4, lhs + rhs),
                 height = 3 + data.size();
 
     out.foreground = 7;
@@ -465,7 +483,7 @@ class base {
 
     out.to(left + 2, top).write(": " + title + " :", title.size() + 4);
 
-    left += 2;
+    left += 3;
     width -= 4;
 
     for (const auto &it : data) {
@@ -478,8 +496,8 @@ class base {
 
     out.to(left, top).write(std::string("OK"), width);
 
-    auto selector = new highlight(left - 1, top, width + 2, 1);
-    addAnimator(selector);
+    auto sel = new selector(left - 2, top, width + 2, 1);
+    addAnimator(sel);
 
     bool didCancel = false;
     bool didSelect = false;
@@ -506,7 +524,7 @@ class base {
       didSelect |= didCancel;
     } while (!didSelect);
 
-    selector->expire();
+    sel->expire();
 
     return !didCancel;
   }
@@ -539,7 +557,7 @@ class base {
       }
     }
 
-    size_t left = indent, top = 8, width = source.name.display().size() + 8,
+    size_t left = indent, top = 8, width = source.name.display().size() + 9,
            height = 2 + list.size(), llen = 0;
 
     for (const auto &la : list) {
@@ -559,7 +577,7 @@ class base {
                                 source.name.display().size() + 4);
 
     for (std::size_t i = 0; i < list.size(); i++) {
-      out.to(left + 1, top + 1 + i).write(" " + list[i], width - 3);
+      out.to(left + 1, top + 1 + i).write("  " + list[i], width - 3);
 
       std::string label = source.getResourceLabel(carry + list[i]);
       if (label.size() > 0) {
@@ -571,14 +589,14 @@ class base {
     bool didSelect = false;
     bool didCancel = false;
 
-    auto selector = new highlight(left + 1, top + 1, width - 2, 1);
+    auto sel = new selector(left + 1, top + 1, width - 2, 1);
     auto actorHighlight =
         new highlight(0, getLine(game, source), io.size()[0], 1);
-    addAnimator(selector);
+    addAnimator(sel);
     addAnimator(actorHighlight);
 
     do {
-      selector->line = top + 1 + selection;
+      sel->line = top + 1 + selection;
 
       io.read(
           [&selection, &didSelect, &didCancel](const typename term::command & c)
@@ -618,7 +636,7 @@ class base {
     } while (!didSelect);
 
     actorHighlight->expire();
-    selector->expire();
+    sel->expire();
 
     out.to(0, 15);
 
@@ -626,11 +644,11 @@ class base {
       return "Cancel";
     }
 
-    const auto &sel = list[selection];
+    const auto &sele = list[selection];
 
-    if (map[sel].size() > 0) {
+    if (map[sele].size() > 0) {
       const auto sub =
-          query(game, source, map[sel], indent + 4, carry + sel + '/');
+          query(game, source, map[sele], indent + 4, carry + sele + '/');
 
       if (sub == "Cancel") {
         return query(game, source, pList, indent, carry);
@@ -639,7 +657,7 @@ class base {
       return sub;
     }
 
-    return carry + sel;
+    return carry + sele;
   }
 
   template <typename T, typename G>
@@ -671,15 +689,15 @@ class base {
     bool didSelect = false;
     bool didCancel = false;
 
-    auto selector = new highlight(0, 0, io.size()[0], 1);
-    addAnimator(selector);
+    auto sel = new selector(0, 0, io.size()[0], 1);
+    addAnimator(sel);
 
     do {
       const auto &c = *(candidates[selection]);
 
       drawUI(game);
 
-      selector->line = getLine(game, c);
+      sel->line = getLine(game, c);
 
       io.read(
           [&selection, &didSelect, &didCancel](const typename term::command & c)
@@ -718,7 +736,7 @@ class base {
       }
     } while (!didSelect);
 
-    selector->expire();
+    sel->expire();
 
     if (didCancel) {
       return efgy::maybe<std::vector<metaquest::character<T> *> >();

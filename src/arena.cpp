@@ -62,9 +62,7 @@ int main(int, const char **) {
     log = game.interact.logbook.str();
   }
 
-  std::cerr << "\u261e"
-            << "\n";
-  std::cout << "\n" << log << "\n";
+  std::cout << log << "\n";
 
   return 0;
 }
