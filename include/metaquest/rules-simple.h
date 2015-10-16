@@ -46,11 +46,11 @@ static long getLevel(const object<long> &t) {
 }
 
 static long getHPTotal(const object<long> &t) {
-  return std::floor(70.0 + t["Level"] * (double(t["HPL"]) / 10.0));
+  return std::floor(70.0 + t["Level"] * (double(t["Endurance"]) / 10.0));
 }
 
 static long getMPTotal(const object<long> &t) {
-  return std::floor(40.0 + t["Level"] * (double(t["MPL"]) / 10.0));
+  return std::floor(40.0 + t["Level"] * (double(t["Magic"]) / 10.0));
 }
 
 static int roll(int num, int sides = 6) {
@@ -133,12 +133,13 @@ class character : public metaquest::character<long> {
 
     slots = { { "Weapon", 1 }, { "Trinket", 1 } };
 
-    attribute["Attack"] = 6;
-    attribute["Defence"] = 3;
     attribute["Experience"] = points;
 
-    attribute["HPL"] = rng() % 100;
-    attribute["MPL"] = 100 - attribute["HPL"];
+    attribute["Endurance"] = 1 + rng() % 100;
+    attribute["Magic"] = 100 - attribute["Endurance"];
+
+    attribute["Attack"] = 6;
+    attribute["Defence"] = 3;
 
     function["Level"] = getLevel;
     function["HP/Total"] = getHPTotal;

@@ -217,6 +217,18 @@ class base : public metaquest::object<typename character::base> {
       data[attr] = os.str();
     }
 
+    for (const auto &item : c.equipment) {
+      for (const auto &slot : c.slots) {
+        data[slot.first] = item.name.display();
+      }
+    }
+
+    for (const auto &slot : c.slots) {
+      std::ostringstream os("");
+      os << slot.second;
+      data[slot.first] = os.str();
+    }
+
     interact.display("Status", data, 30);
 
     retry = true;
