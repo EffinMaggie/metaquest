@@ -59,8 +59,7 @@ template <typename C> class party : public std::vector<C> {
     party p;
 
     for (unsigned int i = 0; i < members; i++) {
-      C c;
-      p.push_back(c);
+      p.push_back(C());
     }
 
     return p;

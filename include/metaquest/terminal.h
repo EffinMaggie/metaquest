@@ -358,6 +358,12 @@ class refresher {
 template <typename term, template <typename> class AI, typename clock>
 class base {
  public:
+  using selector = animator::selector<term, clock>;
+  using highlight = animator::highlight<term, clock>;
+  using glow = animator::glow<term, clock>;
+  using text = animator::text<term, clock>;
+  using flash = animator::flash<term, clock>;
+
   base()
       : io(),
         out(io),
@@ -376,12 +382,6 @@ class base {
       delete a;
     }
   }
-
-  typedef animator::selector<term, clock> selector;
-  typedef animator::highlight<term, clock> highlight;
-  typedef animator::glow<term, clock> glow;
-  typedef animator::text<term, clock> text;
-  typedef animator::flash<term, clock> flash;
 
   term io;
   efgy::terminal::writer<> out;
@@ -410,10 +410,11 @@ class base {
     return pp + (pa == 0 ? io.size()[1] - game.parties[pa].size() : 0);
   }
 
-  template <typename T, typename G>
-  bool action(const G &game, const std::string &description,
-              const metaquest::character<T> &source,
-              const std::vector<metaquest::character<T> *> &targets) {
+  template <typename G>
+  bool action(
+      const G &game, const std::string &description,
+      const metaquest::character<typename G::num> &source,
+      const std::vector<metaquest::character<typename G::num> *> &targets) {
     addAnimator(new flash(0, getLine(game, source), io.size()[0], 1));
     addAnimator(new text(8, source.name.display() + ": " + description));
 

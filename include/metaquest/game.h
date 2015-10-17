@@ -38,10 +38,12 @@
 
 namespace metaquest {
 namespace game {
-template <typename character, typename inter> class base {
+template <typename ch, typename inter> class base {
  public:
-  typedef typename character::base num;
-  typedef object<num> object;
+  using num = typename ch::base;
+  using object = object<num>;
+  using character = character<num>;
+  using action = action<num>;
 
   base(inter &pInteract, num pParties = 1)
       : interact(pInteract),
@@ -51,7 +53,7 @@ template <typename character, typename inter> class base {
     generateParties();
   }
 
-  std::vector<metaquest::party<character> > parties;
+  std::vector<metaquest::party<ch> > parties;
 
   enum state {
     menu,
@@ -97,10 +99,9 @@ template <typename character, typename inter> class base {
 
     std::vector<character *> filteredCandidates;
 
-    std::copy_if(
-        candidates.begin(), candidates.end(),
-        std::back_inserter(filteredCandidates),
-        [](metaquest::character<typename character::base> * cha)->bool {
+    std::copy_if(candidates.begin(), candidates.end(),
+                 std::back_inserter(filteredCandidates),
+                 [](character * cha)->bool {
       return cha->able();
     });
 
@@ -208,8 +209,7 @@ template <typename character, typename inter> class base {
   std::string inspect(bool &retry, const character &o) {
     retry = true;
 
-    auto cr = resolve(o, metaquest::action<typename character::base>::everyone,
-                      metaquest::action<typename character::base>::none);
+    auto cr = resolve(o, action::everyone, action::none);
     if (cr.nothing || (cr.just.size() == 0)) {
       return "Maybe not?";
     }
@@ -244,24 +244,9 @@ template <typename character, typename inter> class base {
     return "Let's see...";
   }
 
-  std::string operator()(const std::string &command) {
-    auto act = action.find(command);
-    if (act != action.end()) {
-      return act->second(*this);
-    }
-
-    return command + " is not something that came up while writing this game";
-  }
-
-  base &bind(const std::string &name,
-             std::function<std::string(object &)> apply) {
-    action[name] = apply;
-    return *this;
-  }
-
   inter &interact;
 
-  template <typename C> size_t partyOf(const C &c) const {
+  size_t partyOf(const character &c) const {
     for (size_t pi = 0; pi < parties.size(); pi++) {
       for (const auto &ca : parties[pi]) {
         if (&ca == &c) {
@@ -273,7 +258,7 @@ template <typename character, typename inter> class base {
     return 0;
   }
 
-  template <typename C> size_t positionOf(const C &c) const {
+  size_t positionOf(const character &c) const {
     const auto party = partyOf(c);
 
     for (auto pi = 0; pi < parties[party].size(); pi++) {
@@ -309,34 +294,31 @@ template <typename character, typename inter> class base {
     return party > 0;
   }
 
-  template <typename C>
-  efgy::maybe<std::vector<metaquest::character<typename character::base> *> >
-  resolve(const C &c, const std::string &s) {
+  efgy::maybe<std::vector<character *> > resolve(const character &c,
+                                                 const std::string &s) {
     return resolve(c, c.scope(s), c.filter(s));
   }
 
-  template <typename C>
-  efgy::maybe<std::vector<metaquest::character<typename character::base> *> >
-  resolve(const C &c,
-          const enum metaquest::action<typename C::base>::scope scope,
-          const enum metaquest::action<typename C::base>::filter filter) {
+  efgy::maybe<std::vector<character *> > resolve(
+      const character &c, const enum action::scope scope,
+      const enum action::filter filter) {
     size_t p = partyOf(c);
     size_t m = positionOf(c);
 
-    std::vector<metaquest::character<typename character::base> *> candidates;
+    std::vector<character *> candidates;
 
     switch (scope) {
-      case metaquest::action<typename character::base>::self:
+      case action::self:
         candidates.push_back(&(parties[p][m]));
         break;
-      case metaquest::action<typename character::base>::ally:
-      case metaquest::action<typename character::base>::party:
+      case action::ally:
+      case action::party:
         for (auto &h : parties[p]) {
           candidates.push_back(&h);
         }
         break;
-      case metaquest::action<typename character::base>::enemy:
-      case metaquest::action<typename character::base>::enemies:
+      case action::enemy:
+      case action::enemies:
         for (size_t pi = 0; pi < parties.size(); pi++) {
           if (pi != p) {
             for (auto &h : parties[pi]) {
@@ -345,7 +327,7 @@ template <typename character, typename inter> class base {
           }
         }
         break;
-      case metaquest::action<typename character::base>::everyone:
+      case action::everyone:
         for (auto &pa : parties) {
           for (auto &h : pa) {
             candidates.push_back(&h);
@@ -354,69 +336,62 @@ template <typename character, typename inter> class base {
         break;
     }
 
-    std::vector<metaquest::character<typename character::base> *>
-        filteredCandidates;
+    std::vector<character *> filteredCandidates;
 
     switch (filter) {
-      case metaquest::action<typename character::base>::none:
+      case action::none:
         filteredCandidates = candidates;
         break;
-      case metaquest::action<typename character::base>::onlyHealthy:
-        std::copy_if(
-            candidates.begin(), candidates.end(),
-            std::back_inserter(filteredCandidates),
-            [](metaquest::character<typename character::base> * cha)->bool {
+      case action::onlyHealthy:
+        std::copy_if(candidates.begin(), candidates.end(),
+                     std::back_inserter(filteredCandidates),
+                     [](character * cha)->bool {
           return (*cha)["HP/Current"] == (*cha)["HP/Total"];
         });
         break;
-      case metaquest::action<typename character::base>::onlyAlive:
-        std::copy_if(
-            candidates.begin(), candidates.end(),
-            std::back_inserter(filteredCandidates),
-            [](metaquest::character<typename character::base> * cha)->bool {
+      case action::onlyAlive:
+        std::copy_if(candidates.begin(), candidates.end(),
+                     std::back_inserter(filteredCandidates),
+                     [](character * cha)->bool {
           return cha->alive();
         });
         break;
-      case metaquest::action<typename character::base>::onlyUnhealthy:
-        std::copy_if(
-            candidates.begin(), candidates.end(),
-            std::back_inserter(filteredCandidates),
-            [](metaquest::character<typename character::base> * cha)->bool {
+      case action::onlyUnhealthy:
+        std::copy_if(candidates.begin(), candidates.end(),
+                     std::back_inserter(filteredCandidates),
+                     [](character * cha)->bool {
           return cha->alive() && (*cha)["HP/Current"] < (*cha)["HP/Total"];
         });
         break;
-      case metaquest::action<typename character::base>::onlyDead:
-        std::copy_if(
-            candidates.begin(), candidates.end(),
-            std::back_inserter(filteredCandidates),
-            [](metaquest::character<typename character::base> * cha)->bool {
+      case action::onlyDead:
+        std::copy_if(candidates.begin(), candidates.end(),
+                     std::back_inserter(filteredCandidates),
+                     [](character * cha)->bool {
           return !cha->alive();
         });
         break;
-      case metaquest::action<typename character::base>::onlyUndefeated:
-        std::copy_if(
-            candidates.begin(), candidates.end(),
-            std::back_inserter(filteredCandidates),
-            [](metaquest::character<typename character::base> * cha)->bool {
+      case action::onlyUndefeated:
+        std::copy_if(candidates.begin(), candidates.end(),
+                     std::back_inserter(filteredCandidates),
+                     [](character * cha)->bool {
           return !cha->defeated();
         });
         break;
     }
 
     if (filteredCandidates.size() == 0) {
-      return efgy::maybe<
-          std::vector<metaquest::character<typename character::base> *> >();
+      return efgy::maybe<std::vector<character *> >();
     }
 
     switch (scope) {
-      case metaquest::action<typename character::base>::self:
-      case metaquest::action<typename character::base>::party:
-      case metaquest::action<typename character::base>::enemies:
-      case metaquest::action<typename character::base>::everyone:
+      case action::self:
+      case action::party:
+      case action::enemies:
+      case action::everyone:
         return filteredCandidates;
         break;
-      case metaquest::action<typename character::base>::ally:
-      case metaquest::action<typename character::base>::enemy:
+      case action::ally:
+      case action::enemy:
         return interact.query(*this, c, filteredCandidates, 8);
         break;
     }
@@ -426,7 +401,7 @@ template <typename character, typename inter> class base {
     std::string out = "";
 
     while (parties.size() < nParties) {
-      parties.push_back(metaquest::party<character>::generate(4));
+      parties.push_back(metaquest::party<ch>::generate(4));
       out += "a new party appeared!\n";
     }
 
@@ -435,7 +410,6 @@ template <typename character, typename inter> class base {
 
  protected:
   num nParties;
-  std::map<std::string, std::function<std::string(object &)> > action;
   std::mt19937 rng;
 
   bool willExit;

@@ -90,7 +90,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
 
       os << s.name.display() << " heals " << amt << " points of damage";
 
-      t.add("HP/Current", "HP/Total", amt);
+      t.add("HP/Current", amt);
     }
   }
   return os.str();
@@ -107,19 +107,16 @@ static std::string pass(objects<long> &source, objects<long> &target) {
 
 class character : public metaquest::character<long> {
  public:
-  typedef metaquest::character<long> parent;
-  typedef metaquest::action<long> action;
-
-  using parent::name;
-  using parent::slots;
+  using parent = metaquest::character<long>;
+  using action = metaquest::action<long>;
 
   character(long points = 0) : parent(points) {
     static std::mt19937 rng = std::mt19937(std::random_device()());
 
     metaquest::name::american::proper<> cname(rng() % 2);
-    name = cname;
+    parent::name = cname;
 
-    slots = { { "Weapon", 1 }, { "Trinket", 1 } };
+    parent::slots = { { "Weapon", 1 }, { "Trinket", 1 } };
 
     attribute["Experience"] = points;
 
@@ -147,23 +144,17 @@ class character : public metaquest::character<long> {
 template <typename inter>
 class game : public metaquest::game::base<character, inter> {
  public:
-  typedef metaquest::game::base<character, inter> parent;
-
-  using parent::parties;
-  using parent::useAI;
-  using parent::interact;
-  using parent::generateParties;
-  using parent::inspect;
+  using parent = metaquest::game::base<character, inter>;
 
   game(inter &pInteract) : parent(pInteract) {}
 
-  std::string fight(bool &retry, const character &) {
+  std::string fight(bool &retry, const typename parent::character &) {
     nParties = 2;
-    generateParties();
+    parent::generateParties();
     return "OFF WITH THEIR HEADS!";
   }
 
-  virtual typename parent::actionMap actions(character &c) {
+  virtual typename parent::actionMap actions(typename parent::character &c) {
     using namespace std::placeholders;
 
     auto actions = parent::actions(c);
@@ -176,7 +167,7 @@ class game : public metaquest::game::base<character, inter> {
         break;
     }
 
-    if (!useAI(c)) {
+    if (!parent::useAI(c)) {
       actions["Inspect"] = std::bind(&parent::inspect, this, _1, _2);
     }
 

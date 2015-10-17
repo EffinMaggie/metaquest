@@ -107,22 +107,17 @@ template <typename T = long, typename C = char> class object {
     if (std::regex_match(s, matches, resource)) {
       std::string resource = matches[1];
       if (matches[2] == "Current") {
-        n = std::min(n, attribute[resource + "/Total"]);
+        T m = attribute[resource + "/Total"];
+        if ((m != 0) && (n > m)) {
+          n = m;
+        }
       }
     }
-    return attribute[s] = b;
+    return attribute[s] = n;
   }
 
   virtual T add(const std::string &s, const T &b) {
     return set(s, attribute[s] + b);
-  }
-
-  virtual T add(const std::string &s, const std::string &m, const T &b) {
-    attribute[s] += b;
-    if ((*this)[s] > (*this)[m]) {
-      return add(s, -((*this)[s] - (*this)[m]));
-    }
-    return attribute[s];
   }
 
   virtual bool have(const std::string &s) const {
