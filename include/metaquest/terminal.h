@@ -562,7 +562,7 @@ class base {
            height = 2 + list.size(), llen = 0;
 
     for (const auto &la : list) {
-      width = la.size() + 4 > width ? la.size() + 4 : width;
+      width = la.size() + 5 > width ? la.size() + 5 : width;
       std::string label = source.getResourceLabel(carry + la);
       llen = label.size() > llen ? label.size() : llen;
     }
@@ -578,7 +578,7 @@ class base {
                                 source.name.display().size() + 4);
 
     for (std::size_t i = 0; i < list.size(); i++) {
-      out.to(left + 1, top + 1 + i).write("  " + list[i], width - 3);
+      out.to(left + 1, top + 1 + i).write("  " + list[i], width - 2);
 
       std::string label = source.getResourceLabel(carry + list[i]);
       if (label.size() > 0) {

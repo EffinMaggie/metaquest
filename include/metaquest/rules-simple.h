@@ -165,7 +165,12 @@ class game : public metaquest::game::base<character, inter> {
  public:
   using parent = metaquest::game::base<character, inter>;
 
-  game(inter &pInteract) : parent(pInteract) {}
+  game(inter &pInteract) : parent(pInteract) {
+    if (parent::parties.size() > 0) {
+      auto &p = parent::parties[0];
+      p.inventory.push_back(weapon("Dagger"));
+    }
+  }
 
   std::string fight(bool &retry, const typename parent::character &) {
     nParties = 2;
@@ -181,6 +186,7 @@ class game : public metaquest::game::base<character, inter> {
     switch (parent::state()) {
       case parent::menu:
         actions["Fight"] = std::bind(&game::fight, this, _1, _2);
+        actions["Equipment"] = std::bind(&game::equipItem, this, _1, _2);
         break;
       default:
         break;

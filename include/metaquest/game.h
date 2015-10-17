@@ -206,6 +206,129 @@ template <typename ch, typename inter> class base {
     return "Quit.";
   }
 
+  std::string useItem(bool &retry, const character &o) {
+    retry = false;
+
+    return "...";
+  }
+
+  std::string equip(bool &retry, const character &o, const item<num> &i) {
+    std::size_t pn = partyOf(o);
+    std::size_t n = positionOf(o);
+
+    auto &p = parties[pn];
+    auto &c = p[n];
+
+    std::set<std::string> se;
+
+    se.insert(i.name.display());
+
+    for (auto &slot : i.usedSlots()) {
+      for (auto &item : p.inventory) {
+        auto slots = item.usedSlots();
+        if (slots[slot.first] > 0) {
+          se.insert(item.name.display());
+        }
+      }
+    }
+
+    if (se.size() == 0) {
+      return "No items to replace this with";
+    }
+
+    std::vector<std::string> sel(se.begin(), se.end());
+    std::string sItem = interact.query(*this, o, sel, 12);
+
+    for (std::size_t x = 0; x < c.equipment.size(); x++) {
+      auto &item = c.equipment[x];
+      if (item.name.display() == i.name.display()) {
+        p.inventory.push_back(item);
+        c.equipment.erase(c.equipment.begin() + x);
+        break;
+      }
+    }
+
+    for (std::size_t x = 0; x < p.inventory.size(); x++) {
+      auto &item = p.inventory[x];
+      if (item.name.display() == sItem) {
+        c.equipment.push_back(item);
+        p.inventory.erase(p.inventory.begin() + x);
+        break;
+      }
+    }
+
+    retry = false;
+
+    return "Item swapped.";
+  }
+
+  std::string equip(bool &retry, const character &o, const std::string &s) {
+    std::size_t pn = partyOf(o);
+    std::size_t n = positionOf(o);
+
+    auto &p = parties[pn];
+    auto &c = p[n];
+
+    std::set<std::string> se;
+
+    for (auto &item : p.inventory) {
+      auto slots = item.usedSlots();
+      if (slots[s] > 0) {
+        se.insert(item.name.display());
+      }
+    }
+
+    if (se.size() == 0) {
+      return "No items to equip in this slot.";
+    }
+
+    std::vector<std::string> sel(se.begin(), se.end());
+    std::string sItem = interact.query(*this, o, sel, 12);
+
+    for (std::size_t x = 0; x < p.inventory.size(); x++) {
+      auto &item = p.inventory[x];
+      if (item.name.display() == sItem) {
+        c.equipment.push_back(item);
+        p.inventory.erase(p.inventory.begin() + x);
+        break;
+      }
+    }
+
+    retry = false;
+
+    return "Item equipped.";
+  }
+
+  std::string equipItem(bool &retry, const character &o) {
+    retry = true;
+
+    std::vector<std::string> slots;
+
+    for (const auto &item : o.equipment) {
+      for (const auto &slot : item.usedSlots()) {
+        slots.push_back(slot.first + ": " + item.name.display());
+      }
+    }
+
+    for (const auto &slot : o.freeSlots()) {
+      if (slot.second > 0) {
+        slots.push_back(slot.first);
+      }
+    }
+
+    std::string sl = interact.query(*this, o, slots, 8);
+
+    for (const auto &item : o.equipment) {
+      for (const auto &slot : item.usedSlots()) {
+        if ((slot.first + ": " + item.name.display()) == sl) {
+          return equip(retry, o, item);
+        }
+      }
+    }
+
+    return equip(retry, o, sl);
+  }
+
   std::string inspect(bool &retry, const character &o) {
     retry = true;
 

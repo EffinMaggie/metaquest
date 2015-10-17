@@ -42,8 +42,11 @@ namespace metaquest {
  * type is based on std::vector as opposed to std::set because in some
  * contexts (menu, etc.) the order might actually be relevant.
  */
-template <typename C> class party : public std::vector<C> {
+template <typename C>
+class party : public std::vector<character<typename C::base>> {
  public:
+  using base = typename C::base;
+
   /**\brief Generate a party.
    *
    * Given the number of members you want the party to consist of, this will
@@ -75,7 +78,7 @@ template <typename C> class party : public std::vector<C> {
    *
    * \returns 'true' if the party counts as defeated.
    */
-  bool defeated(void) const {
+  virtual bool defeated(void) const {
     bool ret = true;
 
     for (auto &c : *this) {
@@ -85,8 +88,10 @@ template <typename C> class party : public std::vector<C> {
     return ret;
   }
 
+  items<base> inventory;
+
  protected:
-  using std::vector<C>::vector;
+  using std::vector<character<typename C::base>>::vector;
 };
 }
 
