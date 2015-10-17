@@ -97,9 +97,25 @@ template <typename T = long, typename C = char> class object {
     return 0;
   }
 
-  virtual T set(const std::string &s, const T &b) { return attribute[s] = b; }
+  virtual T set(const std::string &s, const T &b) {
+    T n = b;
+    if (n < 0) {
+      n = 0;
+    }
+    std::smatch matches;
+    static std::regex resource("(.+)/(Current|Total)");
+    if (std::regex_match(s, matches, resource)) {
+      std::string resource = matches[1];
+      if (matches[2] == "Current") {
+        n = std::min(n, attribute[resource + "/Total"]);
+      }
+    }
+    return attribute[s] = b;
+  }
 
-  virtual T add(const std::string &s, const T &b) { return attribute[s] += b; }
+  virtual T add(const std::string &s, const T &b) {
+    return set(s, attribute[s] + b);
+  }
 
   virtual T add(const std::string &s, const std::string &m, const T &b) {
     attribute[s] += b;

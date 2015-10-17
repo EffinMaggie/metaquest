@@ -42,7 +42,11 @@ template <typename inter> class random {
   std::string query(const G &game, const metaquest::character<T> &source,
                     const std::vector<std::string> &list,
                     std::size_t indent = 4, std::string carry = "") {
-    return carry + list[(rng() % list.size())];
+    std::string r;
+    do {
+      carry + list[(rng() % list.size())];
+    } while (r == "Pass");
+    return r;
   }
 
   template <typename T, typename G>

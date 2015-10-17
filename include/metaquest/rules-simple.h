@@ -40,6 +40,11 @@
 namespace metaquest {
 namespace rules {
 namespace simple {
+static long solveDamage(double a, double b, double c) {
+  static std::mt19937 rng = std::mt19937(std::random_device()());
+  return 5 * std::sqrt(a * b / c) * (0.95 + (rng() % 100) / 1000.0);
+}
+
 static long getLevel(const object<long> &t) {
   const double x = std::max<long>(t["Experience"], 1);
   return std::floor(1 + std::log(x * x));
@@ -53,16 +58,6 @@ static long getMPTotal(const object<long> &t) {
   return std::floor(40.0 + t["Level"] * (double(t["Magic"]) / 10.0));
 }
 
-static int roll(int num, int sides = 6) {
-  static std::mt19937 rng = std::mt19937(std::random_device()());
-
-  int res = 0;
-  for (int i = 0; i < num; i++) {
-    res += 1 + rng() % sides;
-  }
-  return res;
-}
-
 static std::string attack(objects<long> &source, objects<long> &target) {
   std::stringstream os("");
   for (auto &sp : source) {
@@ -72,18 +67,11 @@ static std::string attack(objects<long> &source, objects<long> &target) {
 
       os << s.name.display() << " attacks " << t.name.display() << "\n";
 
-      int dmg = roll(s["Attack"]);
-      int def = roll(s["Defence"]);
-      int admg = dmg - def;
+      long admg = solveDamage(s["Attack"], s["Endurance"], t["Defence"]);
 
-      if (admg > 0) {
-        os << s.name.display() << " hits for " << admg << " (" << dmg
-           << ") points of damage";
+      os << s.name.display() << " hits for " << admg << " points of damage";
 
-        t.add("HP/Current", -admg);
-      } else {
-        os << s.name.display() << " misses";
-      }
+      t.add("HP/Current", -admg);
     }
   }
   return os.str();
@@ -98,7 +86,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
 
       os << s.name.display() << " heals " << t.name.display() << "\n";
 
-      int amt = roll(s["Attack"]);
+      long amt = solveDamage(s["Attack"], t["Endurance"], 1);
 
       os << s.name.display() << " heals " << amt << " points of damage";
 
@@ -128,7 +116,7 @@ class character : public metaquest::character<long> {
   character(long points = 0) : parent(points) {
     static std::mt19937 rng = std::mt19937(std::random_device()());
 
-    metaquest::name::american::proper<> cname(roll(1, 10) > 5);
+    metaquest::name::american::proper<> cname(rng() % 2);
     name = cname;
 
     slots = { { "Weapon", 1 }, { "Trinket", 1 } };
@@ -170,7 +158,7 @@ class game : public metaquest::game::base<character, inter> {
   game(inter &pInteract) : parent(pInteract) {}
 
   std::string fight(bool &retry, const character &) {
-    attribute["parties"] = 2;
+    nParties = 2;
     generateParties();
     return "OFF WITH THEIR HEADS!";
   }
@@ -196,7 +184,7 @@ class game : public metaquest::game::base<character, inter> {
   }
 
  protected:
-  using parent::attribute;
+  using parent::nParties;
 };
 }
 }

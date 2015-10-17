@@ -38,20 +38,16 @@
 
 namespace metaquest {
 namespace game {
-template <typename character, typename inter>
-class base : public metaquest::object<typename character::base> {
+template <typename character, typename inter> class base {
  public:
-  typedef metaquest::object<typename character::base> parent;
+  typedef typename character::base num;
+  typedef object<num> object;
 
-  using parent::attribute;
-  using parent::function;
-
-  base(inter &pInteract, long pParties = 1)
-      : parent(),
-        interact(pInteract),
+  base(inter &pInteract, num pParties = 1)
+      : interact(pInteract),
         rng(std::random_device()()),
-        willExit(false) {
-    attribute["parties"] = pParties;
+        willExit(false),
+        nParties(pParties) {
     generateParties();
   }
 
@@ -258,7 +254,7 @@ class base : public metaquest::object<typename character::base> {
   }
 
   base &bind(const std::string &name,
-             std::function<std::string(parent &)> apply) {
+             std::function<std::string(object &)> apply) {
     action[name] = apply;
     return *this;
   }
@@ -427,11 +423,9 @@ class base : public metaquest::object<typename character::base> {
   }
 
   virtual std::string generateParties(void) {
-    base &self = *this;
-
     std::string out = "";
 
-    while (parties.size() < self["parties"]) {
+    while (parties.size() < nParties) {
       parties.push_back(metaquest::party<character>::generate(4));
       out += "a new party appeared!\n";
     }
@@ -440,7 +434,8 @@ class base : public metaquest::object<typename character::base> {
   }
 
  protected:
-  std::map<std::string, std::function<std::string(parent &)> > action;
+  num nParties;
+  std::map<std::string, std::function<std::string(object &)> > action;
   std::mt19937 rng;
 
   bool willExit;
