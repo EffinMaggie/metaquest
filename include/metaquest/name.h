@@ -188,9 +188,7 @@ class simple : public proper<T, generator> {
  public:
   typedef proper<T, generator> parent;
 
-  using parent::push_back;
-
-  simple(const std::string &pName) : parent() { push_back(pName); }
+  simple(const std::string &pName) : parent() { parent::push_back(pName); }
 };
 
 /**\brief American names

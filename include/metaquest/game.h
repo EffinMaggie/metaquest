@@ -63,7 +63,7 @@ template <typename ch, typename inter> class base {
     exit
   };
 
-  virtual enum state state(void) {
+  virtual enum state state(void) const {
     if (willExit) {
       return exit;
     }
@@ -227,16 +227,19 @@ template <typename ch, typename inter> class base {
       data[attr] = os.str();
     }
 
-    for (const auto &item : c.equipment) {
-      for (const auto &slot : c.slots) {
-        data[slot.first] = item.name.display();
+    for (const auto &slot : c.freeSlots()) {
+      if (slot.second > 0) {
+        std::ostringstream os("");
+        os << slot.second;
+        data[slot.first] = os.str();
       }
     }
 
-    for (const auto &slot : c.slots) {
-      std::ostringstream os("");
-      os << slot.second;
-      data[slot.first] = os.str();
+    for (const auto &item : c.equipment) {
+      for (const auto &slot : item.usedSlots()) {
+        data[slot.first] +=
+            (data[slot.first] != "" ? ", " : "") + item.name.display();
+      }
     }
 
     interact.display("Status", data, 30);
@@ -283,13 +286,11 @@ template <typename ch, typename inter> class base {
    * Different games may want to do this differently, so overrides
    * may be in order then.
    *
-   * \tparam C The type of character to look up.
-   *
    * \param[in] c The character to look up.
    *
    * \returns 'true' when a character should be controlled by an AI.
    */
-  template <typename C> bool useAI(const C &c) const {
+  bool useAI(const character &c) const {
     const auto party = partyOf(c);
     return party > 0;
   }

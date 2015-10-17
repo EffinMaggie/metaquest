@@ -67,7 +67,7 @@ static std::string attack(objects<long> &source, objects<long> &target) {
 
       os << s.name.display() << " attacks " << t.name.display() << "\n";
 
-      long admg = solveDamage(s["Attack"], s["Endurance"], t["Defence"]);
+      long admg = solveDamage(s["Attack"], s["Damage"], t["Defence"]);
 
       os << s.name.display() << " hits for " << admg << " points of damage";
 
@@ -105,6 +105,23 @@ static std::string pass(objects<long> &source, objects<long> &target) {
   return os.str();
 }
 
+class weapon : public metaquest::item<long> {
+ public:
+  using parent = metaquest::item<long>;
+
+  weapon(const std::string &name)
+      : parent({
+    { "Weapon", 1 }
+  }) {
+    static std::mt19937 rng = std::mt19937(std::random_device()());
+
+    attribute["Damage"] = 5 + rng() % 10;
+
+    parent::name = name::simple<>(name);
+    parent::name.push_back("+" + std::to_string(attribute["Damage"]));
+  }
+};
+
 class character : public metaquest::character<long> {
  public:
   using parent = metaquest::character<long>;
@@ -115,6 +132,8 @@ class character : public metaquest::character<long> {
 
     metaquest::name::american::proper<> cname(rng() % 2);
     parent::name = cname;
+
+    parent::equipment.push_back(weapon("Sword"));
 
     parent::slots = { { "Weapon", 1 }, { "Trinket", 1 } };
 

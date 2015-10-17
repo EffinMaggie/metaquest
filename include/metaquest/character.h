@@ -210,6 +210,51 @@ template <typename T = long> class character : public object<T> {
     }
   }
 
+  virtual std::set<std::string> attributes(void) const {
+    auto rv = parent::attributes();
+    for (const auto &item : equipment) {
+      auto attr = item.attributes();
+      rv.insert(attr.begin(), attr.end());
+    }
+    return rv;
+  }
+
+  virtual T operator[](const std::string &s) const {
+    T rv = parent::operator[](s);
+    for (const auto &item : equipment) {
+      rv += item[s];
+    }
+    return rv;
+  }
+
+  virtual const slots<T> allSlots(void) const {
+    auto s = parent::allSlots();
+    for (auto &item : equipment) {
+      for (auto &sl : item.allSlots()) {
+        s[sl.first] += sl.second;
+      }
+    }
+    return s;
+  }
+
+  virtual const slots<T> usedSlots(void) const {
+    slots<T> s = {};
+    for (auto &item : equipment) {
+      for (auto &sl : item.usedSlots()) {
+        s[sl.first] += sl.second;
+      }
+    }
+    return s;
+  }
+
+  virtual const slots<T> freeSlots(void) const {
+    auto s = allSlots();
+    for (auto &sl : usedSlots()) {
+      s[sl.first] -= sl.second;
+    }
+    return s;
+  }
+
  protected:
   std::map<std::string, action<T> > action;
 };

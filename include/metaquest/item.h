@@ -46,14 +46,24 @@ namespace metaquest {
  */
 template <typename T = long> class item : public object<T> {
  public:
-  typedef metaquest::object<T> parent;
+  using parent = metaquest::object<T>;
 
-  item(const action<T> &pApply, const slots<T> &pUsedSlots = {
-  })
-      : parent(), apply(pApply), usedSlots(pUsedSlots) {}
+  item(const action<T> &pApply, const slots<T> &pUsedSlots)
+      : parent(), apply(pApply), targetSlots(pUsedSlots) {}
+
+  item(const action<T> &pApply) : parent(), apply(pApply), targetSlots() {}
+
+  item(const slots<T> &pUsedSlots)
+      : parent(), apply(), targetSlots(pUsedSlots) {}
+
+  item(void) : parent(), apply(), targetSlots() {}
 
   action<T> apply;
-  slots<T> usedSlots;
+
+  virtual const slots<T> usedSlots(void) const { return targetSlots; }
+
+ protected:
+  slots<T> targetSlots;
 };
 
 template <typename T> class items : public std::vector<item<T>> {

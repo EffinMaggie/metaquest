@@ -57,7 +57,7 @@ template <typename T> using slots = std::map<std::string, T>;
  */
 template <typename T = long, typename C = char> class object {
  public:
-  typedef T base;
+  using base = T;
 
   virtual ~object(void) {}
 
@@ -154,9 +154,17 @@ template <typename T = long, typename C = char> class object {
     return ret;
   }
 
-  slots<T> slots;
+  virtual const slots<T> allSlots(void) const { return slots; }
+
+  virtual const slots<T> usedSlots(void) const {
+    return {};
+  }
+
+  virtual const slots<T> freeSlots(void) const { return allSlots(); }
 
  protected:
+  slots<T> slots;
+
   /**\brief Attribute generation functions
    *
    * Maps attribute names to thunks which can generate an attribute on
