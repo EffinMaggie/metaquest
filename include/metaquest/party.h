@@ -42,7 +42,7 @@ namespace metaquest {
  * type is based on std::vector as opposed to std::set because in some
  * contexts (menu, etc.) the order might actually be relevant.
  */
-template <typename C>
+template <typename C, typename L = long double>
 class party : public std::vector<character<typename C::base>> {
  public:
   using base = typename C::base;
@@ -92,6 +92,17 @@ class party : public std::vector<character<typename C::base>> {
     }
 
     return ret;
+  }
+
+  virtual efgy::json::value<L> json(void) const {
+    efgy::json::value<L> rv;
+
+    auto &me = rv("member");
+    for (auto &ch : *this) {
+      me.push(ch.json());
+    }
+
+    return rv;
   }
 
   items<base> inventory;

@@ -34,6 +34,7 @@
 #define METAQUEST_OBJECT_H
 
 #include <ef.gy/maybe.h>
+#include <ef.gy/json.h>
 
 #include <metaquest/name.h>
 
@@ -55,7 +56,8 @@ template <typename T> using slots = std::map<std::string, T>;
  * \tparam T Base type for attributes. Integers are probably a good choice,
  *           at least for J-RPGs and tabletops.
  */
-template <typename T = long, typename C = char> class object {
+template <typename T = long, typename C = char, typename L = long double>
+class object {
  public:
   using base = T;
 
@@ -161,6 +163,22 @@ template <typename T = long, typename C = char> class object {
   }
 
   virtual const slots<T> freeSlots(void) const { return allSlots(); }
+
+  virtual efgy::json::value<L> json(void) const {
+    efgy::json::value<L> rv;
+
+    auto &na = rv("name");
+    for (auto &n : name) {
+      na.push(n.value);
+    }
+
+    auto &at = rv("attributes");
+    for (auto &attrib : attribute) {
+      at(attrib.first) = efgy::json::value<L>(L(attrib.second));
+    }
+
+    return rv;
+  }
 
  protected:
   slots<T> slots;

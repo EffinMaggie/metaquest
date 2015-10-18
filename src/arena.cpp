@@ -39,6 +39,7 @@
 #include <metaquest/party.h>
 #include <metaquest/rules-simple.h>
 #include <metaquest/flow-generic.h>
+#include <ef.gy/stream-json.h>
 
 using namespace efgy;
 
@@ -51,6 +52,7 @@ using namespace efgy;
  */
 int main(int, const char **) {
   std::string log;
+  efgy::json::value<> json;
 
   {
     metaquest::flow::generic<metaquest::interact::terminal::base<>,
@@ -59,10 +61,14 @@ int main(int, const char **) {
 
     game.run();
 
+    json = game.game.json();
+
     log = game.interact.logbook.str();
   }
 
   std::cout << log;
+  std::cout << efgy::json::tag() << json;
+  std::cout << "\n";
 
   return 0;
 }

@@ -38,7 +38,7 @@
 
 namespace metaquest {
 namespace game {
-template <typename ch, typename inter> class base {
+template <typename ch, typename inter, typename L = long double> class base {
  public:
   using num = typename ch::base;
   using object = object<num>;
@@ -49,7 +49,9 @@ template <typename ch, typename inter> class base {
       : interact(pInteract),
         rng(std::random_device()()),
         willExit(false),
-        nParties(pParties) {
+        nParties(pParties),
+        currentTurnOrder(),
+        turn(0) {
     generateParties();
   }
 
@@ -568,6 +570,20 @@ template <typename ch, typename inter> class base {
     }
 
     return out;
+  }
+
+  virtual efgy::json::value<> json(void) const {
+    efgy::json::value<L> rv;
+
+    auto &pa = rv("parties");
+    for (auto &party : parties) {
+      pa.push(party.json());
+    }
+
+    rv("number-parties") = efgy::json::value<L>(L(nParties));
+    rv("turn") = efgy::json::value<L>(L(turn));
+
+    return rv;
   }
 
  protected:
