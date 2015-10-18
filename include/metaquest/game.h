@@ -111,9 +111,19 @@ template <typename ch, typename inter> class base {
   }
 
   virtual character &nextCharacter(void) {
-    auto order = turnOrder();
+    character *next = 0;
 
-    return *(order[0]);
+    do {
+      if (currentTurnOrder.size() == 0) {
+        currentTurnOrder = turnOrder();
+        doTurn();
+      }
+
+      next = currentTurnOrder.front();
+      currentTurnOrder.erase(currentTurnOrder.begin());
+    } while (!next->able());
+
+    return *next;
   }
 
   virtual std::string doMenuAction(bool allowCharacterActions) {
@@ -128,13 +138,17 @@ template <typename ch, typename inter> class base {
 
   virtual std::string doCombat(void) { return doMenuAction(true); }
 
+  virtual std::string doTurn(void) { return "Next turn"; }
+
   virtual std::string doVictory(void) {
+    currentTurnOrder.clear();
     parties.erase(parties.begin() + 1);
     interact.clear();
     return "The player party was victorious!";
   }
 
   virtual std::string doDefeat(void) {
+    currentTurnOrder.clear();
     return "The player party was defeated!";
   }
 
@@ -166,20 +180,29 @@ template <typename ch, typename inter> class base {
       } else if (actions.find(s) != actions.end()) {
         res = actions[s](retry, target);
       } else {
-        auto targets = resolve(target, s);
-
-        if (!targets || (targets.just.size() < 1)) {
+        auto resolution = apply(target, s);
+        if (resolution.nothing) {
           retry = true;
-          continue;
+        } else {
+          return resolution.just;
         }
-
-        interact.action(*this, s, target, targets.just);
-
-        return target(s, targets.just);
       }
     } while (retry);
 
     return res;
+  }
+
+  virtual efgy::maybe<std::string> apply(character &target,
+                                         const std::string &s) {
+    auto targets = resolve(target, s);
+
+    if (targets.size() == 0) {
+      return efgy::maybe<std::string>();
+    }
+
+    interact.action(*this, s, target, targets);
+
+    return target(s, targets);
   }
 
   virtual actionMap actions(character &c) {
@@ -333,11 +356,11 @@ template <typename ch, typename inter> class base {
     retry = true;
 
     auto cr = resolve(o, action::everyone, action::none);
-    if (cr.nothing || (cr.just.size() == 0)) {
+    if (cr.size() == 0) {
       return "Maybe not?";
     }
 
-    auto cs = interact.query(*this, o, cr.just);
+    auto cs = interact.query(*this, o, cr);
     if (cs.nothing || (cs.just.size() == 0)) {
       return "Maybe not?";
     }
@@ -418,14 +441,14 @@ template <typename ch, typename inter> class base {
     return party > 0;
   }
 
-  efgy::maybe<std::vector<character *> > resolve(const character &c,
-                                                 const std::string &s) {
+  std::vector<character *> resolve(const character &c, const std::string &s) {
     return resolve(c, c.scope(s), c.filter(s));
   }
 
-  efgy::maybe<std::vector<character *> > resolve(
-      const character &c, const enum action::scope scope,
-      const enum action::filter filter, bool query = true) {
+  std::vector<character *> resolve(const character &c,
+                                   const enum action::scope scope,
+                                   const enum action::filter filter,
+                                   bool query = true) {
     size_t p = partyOf(c);
     size_t m = positionOf(c);
 
@@ -504,7 +527,7 @@ template <typename ch, typename inter> class base {
     }
 
     if (filteredCandidates.size() == 0) {
-      return efgy::maybe<std::vector<character *> >();
+      return std::vector<character *>();
     }
 
     if (!query) {
@@ -517,11 +540,15 @@ template <typename ch, typename inter> class base {
       case action::enemies:
       case action::everyone:
         return filteredCandidates;
-        break;
       case action::ally:
-      case action::enemy:
-        return interact.query(*this, c, filteredCandidates, 8);
-        break;
+      case action::enemy: {
+        auto q = interact.query(*this, c, filteredCandidates, 8);
+        if (q.nothing) {
+          return std::vector<character *>();
+        } else {
+          return q.just;
+        }
+      }
     }
   }
 
@@ -541,6 +568,7 @@ template <typename ch, typename inter> class base {
   }
 
  protected:
+  std::vector<character *> currentTurnOrder;
   num nParties;
   std::mt19937 rng;
 

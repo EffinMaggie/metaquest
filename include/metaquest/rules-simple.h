@@ -86,7 +86,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
 
       os << s.name.display() << " heals " << t.name.display() << "\n";
 
-      long amt = solveDamage(s["Attack"], t["Endurance"], 1);
+      long amt = solveDamage(s["Magic"], t["Endurance"], 1);
 
       os << s.name.display() << " heals " << amt << " points of damage";
 
@@ -173,6 +173,7 @@ class game : public metaquest::game::base<character, inter> {
   }
 
   std::string fight(bool &retry, const typename parent::character &) {
+    parent::currentTurnOrder.clear();
     parent::nParties = 2;
     parent::generateParties();
     return "OFF WITH THEIR HEADS!";

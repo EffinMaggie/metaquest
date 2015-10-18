@@ -105,7 +105,7 @@ template <typename T = long> class character : public object<T> {
    * \returns 'True' if the skill was used successfully, 'false' if it
    *          failed.
    */
-  bool operator()(const std::string &skill) { return false; }
+  virtual bool operator()(const std::string &skill) { return false; }
 
   /**\brief Use targeted skill
    *
@@ -117,16 +117,31 @@ template <typename T = long> class character : public object<T> {
    * \returns 'True' if the skill was used successfully, 'false' if it
    *          failed.
    */
-  std::string operator()(const std::string &skill,
-                         std::vector<character *> &pTarget) {
+  virtual std::string operator()(const std::string &skill,
+                                 std::vector<character *> &pTarget) {
     auto act = action.find(skill);
     if (act == action.end()) {
       return object<T>::name.display() + " looks bewildered";
     }
 
-    auto &cost = act->second.cost;
+    return (*this)(act->second, pTarget);
+  }
+
+  /**\brief Use targeted skill
+   *
+   * Uses a skill that targets one or more other characters.
+   *
+   * \param[in] action The skill to use.
+   * \param[in] target The skill's target.
+   *
+   * \returns 'True' if the skill was used successfully, 'false' if it
+   *          failed.
+   */
+  virtual std::string operator()(action<T> &action,
+                                 std::vector<character *> &pTarget) {
+    auto &cost = action.cost;
     if (!cost.canApply(*this)) {
-      return object<T>::name.display() + " can't use " + skill + " right now";
+      return object<T>::name.display() + " not enough resources";
     }
 
     objects<T> source, target;
@@ -138,7 +153,7 @@ template <typename T = long> class character : public object<T> {
 
     cost.apply(*this);
 
-    return act->second(source, target);
+    return action(source, target);
   }
 
   /**\brief List of equipped items

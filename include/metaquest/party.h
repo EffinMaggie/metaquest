@@ -64,7 +64,7 @@ class party : public std::vector<character<typename C::base>> {
 
     for (unsigned int i = 0; i < members; i++) {
       base cpoints = points;
-      if (points > 0) {
+      if ((points > 0) && (i < (members - 1))) {
         cpoints = rng() % points;
         points -= cpoints;
       }

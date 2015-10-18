@@ -205,11 +205,7 @@ template <typename T> class action : public object<T> {
     }
 
     auto potentialTargets = game.resolve(character, scope, filter, false);
-    if (potentialTargets.nothing) {
-      return false;
-    }
-
-    if (potentialTargets.just.size() == 0) {
+    if (potentialTargets.size() == 0) {
       return false;
     }
 
