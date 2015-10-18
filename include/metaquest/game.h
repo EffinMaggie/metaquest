@@ -138,7 +138,10 @@ template <typename ch, typename inter> class base {
 
   virtual std::string doCombat(void) { return doMenuAction(true); }
 
-  virtual std::string doTurn(void) { return "Next turn"; }
+  virtual std::string doTurn(void) {
+    turn += 1;
+    return "Next turn";
+  }
 
   virtual std::string doVictory(void) {
     currentTurnOrder.clear();
@@ -568,9 +571,10 @@ template <typename ch, typename inter> class base {
   }
 
  protected:
+  std::mt19937 rng;
   std::vector<character *> currentTurnOrder;
   num nParties;
-  std::mt19937 rng;
+  num turn;
 
   bool willExit;
 };
