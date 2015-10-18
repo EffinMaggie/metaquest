@@ -173,7 +173,7 @@ class game : public metaquest::game::base<character, inter> {
   }
 
   std::string fight(bool &retry, const typename parent::character &) {
-    nParties = 2;
+    parent::nParties = 2;
     parent::generateParties();
     return "OFF WITH THEIR HEADS!";
   }
@@ -199,8 +199,35 @@ class game : public metaquest::game::base<character, inter> {
     return actions;
   }
 
- protected:
-  using parent::nParties;
+  virtual std::string doVictory(void) {
+    if (parent::parties.size() > 1) {
+      auto &p = parent::parties[0];
+      auto &d = parent::parties[1];
+
+      p.inventory
+          .insert(p.inventory.end(), d.inventory.begin(), d.inventory.end());
+
+      long xp = 0;
+      for (auto &c : d) {
+        p.inventory
+            .insert(p.inventory.end(), c.equipment.begin(), c.equipment.end());
+        xp += c["Experience"];
+      }
+
+      xp /= p.size();
+      if (xp == 0) {
+        xp = 1;
+      }
+
+      std::cerr << "gained " << xp << " XP\n";
+
+      for (auto &c : p) {
+        c.add("Experience", xp);
+      }
+    }
+
+    return parent::doVictory();
+  }
 };
 }
 }

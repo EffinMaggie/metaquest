@@ -44,7 +44,7 @@ template <typename inter> class random {
                     std::size_t indent = 4, std::string carry = "") {
     std::string r;
     do {
-      carry + list[(rng() % list.size())];
+      r = carry + list[(rng() % list.size())];
     } while (r == "Pass");
     return r;
   }
