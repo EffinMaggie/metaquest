@@ -152,6 +152,8 @@ class character : public metaquest::character<long> {
     attribute["HP/Current"] = (*this)["HP/Total"];
     attribute["MP/Current"] = (*this)["MP/Total"];
 
+    attribute.erase("Points/Creation");
+
     bind("Attack", true, attack, action::enemy, action::onlyUndefeated);
     bind("Skill/Heal", true, heal, action::ally, action::onlyUnhealthy, {
       resource::cost<long>(2, "MP")
