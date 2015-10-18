@@ -107,7 +107,7 @@ template <typename T = long, typename C = char> class object {
     if (std::regex_match(s, matches, resource)) {
       std::string resource = matches[1];
       if (matches[2] == "Current") {
-        T m = attribute[resource + "/Total"];
+        T m = (*this)[resource + "/Total"];
         if ((m != 0) && (n > m)) {
           n = m;
         }

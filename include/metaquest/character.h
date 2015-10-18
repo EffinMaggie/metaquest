@@ -175,7 +175,19 @@ template <typename T = long> class character : public object<T> {
     std::vector<std::string> actions;
 
     for (auto a : action) {
-      if (a.second.visible) {
+      if (a.second.visible && a.second.usable(*this)) {
+        actions.push_back(a.first);
+      }
+    }
+
+    return actions;
+  }
+
+  template <typename G> std::vector<std::string> visibleActions(G &game) {
+    std::vector<std::string> actions;
+
+    for (auto a : action) {
+      if (a.second.visible && a.second.usable(game, *this)) {
         actions.push_back(a.first);
       }
     }

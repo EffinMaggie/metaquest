@@ -149,7 +149,7 @@ template <typename ch, typename inter> class base {
     std::string res;
 
     if (allowCharacterActions) {
-      labels = target.visibleActions();
+      labels = target.visibleActions(*this);
     }
 
     for (const auto &a : actions) {
@@ -425,7 +425,7 @@ template <typename ch, typename inter> class base {
 
   efgy::maybe<std::vector<character *> > resolve(
       const character &c, const enum action::scope scope,
-      const enum action::filter filter) {
+      const enum action::filter filter, bool query = true) {
     size_t p = partyOf(c);
     size_t m = positionOf(c);
 
@@ -507,6 +507,10 @@ template <typename ch, typename inter> class base {
       return efgy::maybe<std::vector<character *> >();
     }
 
+    if (!query) {
+      return filteredCandidates;
+    }
+
     switch (scope) {
       case action::self:
       case action::party:
@@ -521,12 +525,16 @@ template <typename ch, typename inter> class base {
     }
   }
 
+  virtual std::string generateParty(void) {
+    parties.push_back(metaquest::party<ch>::generate(4));
+    return "a new party appeared!\n";
+  }
+
   virtual std::string generateParties(void) {
     std::string out = "";
 
     while (parties.size() < nParties) {
-      parties.push_back(metaquest::party<ch>::generate(4));
-      out += "a new party appeared!\n";
+      out += generateParty();
     }
 
     return out;

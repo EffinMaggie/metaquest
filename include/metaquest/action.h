@@ -145,7 +145,7 @@ template <typename T> class total : public std::vector<cost<T> > {
 
 template <typename T> class action : public object<T> {
  public:
-  typedef metaquest::object<T> parent;
+  using parent = metaquest::object<T>;
 
   enum scope {
     self,
@@ -184,6 +184,36 @@ template <typename T> class action : public object<T> {
     }
 
     return "";
+  }
+
+  template <typename C> bool usable(const C &character) const {
+    if (character.defeated()) {
+      return false;
+    }
+
+    if (!cost.canApply(character)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  template <typename G, typename C>
+  bool usable(G &game, const C &character) const {
+    if (!usable(character)) {
+      return false;
+    }
+
+    auto potentialTargets = game.resolve(character, scope, filter, false);
+    if (potentialTargets.nothing) {
+      return false;
+    }
+
+    if (potentialTargets.just.size() == 0) {
+      return false;
+    }
+
+    return true;
   }
 
   bool visible;

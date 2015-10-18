@@ -199,6 +199,19 @@ class game : public metaquest::game::base<character, inter> {
     return actions;
   }
 
+  virtual std::string generateParty(void) {
+    if (parent::parties.size() == 0) {
+      parent::parties.push_back(metaquest::party<character>::generate(4));
+    } else {
+      long xp = 0;
+      for (auto &c : parent::parties[0]) {
+        xp += c["Experience"];
+      }
+      parent::parties.push_back(metaquest::party<character>::generate(3, xp));
+    }
+    return "a new party appeared!\n";
+  }
+
   virtual std::string doVictory(void) {
     if (parent::parties.size() > 1) {
       auto &p = parent::parties[0];
@@ -218,8 +231,6 @@ class game : public metaquest::game::base<character, inter> {
       if (xp == 0) {
         xp = 1;
       }
-
-      std::cerr << "gained " << xp << " XP\n";
 
       for (auto &c : p) {
         c.add("Experience", xp);

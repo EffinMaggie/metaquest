@@ -58,11 +58,17 @@ class party : public std::vector<character<typename C::base>> {
    *
    * \returns The generated party.
    */
-  static party generate(unsigned int members) {
+  static party generate(unsigned int members, base points = 0) {
+    static std::mt19937 rng = std::mt19937(std::random_device()());
     party p;
 
     for (unsigned int i = 0; i < members; i++) {
-      p.push_back(C());
+      base cpoints = points;
+      if (points > 0) {
+        cpoints = rng() % points;
+        points -= cpoints;
+      }
+      p.push_back(C(cpoints));
     }
 
     return p;
