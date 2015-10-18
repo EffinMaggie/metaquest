@@ -50,6 +50,14 @@ static long getLevel(const object<long> &t) {
   return std::floor(1 + std::log(x * x));
 }
 
+static long getAttack(const object<long> &t) {
+  return std::floor(10.0 + t["Level"] * (double(t["Endurance"]) / 10.0));
+}
+
+static long getDefence(const object<long> &t) {
+  return std::floor(5.0 + t["Level"] * (double(t["Endurance"]) / 10.0));
+}
+
 static long getHPTotal(const object<long> &t) {
   return std::floor(70.0 + t["Level"] * (double(t["Endurance"]) / 10.0));
 }
@@ -142,12 +150,12 @@ class character : public metaquest::character<long> {
     attribute["Endurance"] = 1 + rng() % 100;
     attribute["Magic"] = 100 - attribute["Endurance"];
 
-    attribute["Attack"] = 6;
-    attribute["Defence"] = 3;
-
     function["Level"] = getLevel;
     function["HP/Total"] = getHPTotal;
     function["MP/Total"] = getMPTotal;
+
+    function["Attack"] = getAttack;
+    function["Defence"] = getDefence;
 
     attribute["HP/Current"] = (*this)["HP/Total"];
     attribute["MP/Current"] = (*this)["MP/Total"];

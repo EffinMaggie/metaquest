@@ -51,7 +51,6 @@ using namespace efgy;
  * \returns 0 on success, something else otherwise.
  */
 int main(int, const char **) {
-  std::string log;
   efgy::json::value<> json;
 
   {
@@ -61,12 +60,9 @@ int main(int, const char **) {
 
     game.run();
 
-    json = game.game.json();
-
-    log = game.interact.logbook.str();
+    json = game.json();
   }
 
-  std::cout << log;
   std::cout << efgy::json::tag() << json;
   std::cout << "\n";
 
