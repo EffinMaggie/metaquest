@@ -17,3 +17,5 @@ documentation
 doxyfile
 .third-party
 *.dSYM
+arenad
+include/asio*
