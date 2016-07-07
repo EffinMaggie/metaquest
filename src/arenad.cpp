@@ -19,27 +19,43 @@
  */
 
 #define ASIO_DISABLE_THREADS
+#include <sstream>
+
+#include <metaquest/terminal.h>
+#include <metaquest/party.h>
+#include <metaquest/rules-simple.h>
+#include <metaquest/flow-generic.h>
+
+#include <ef.gy/stream-json.h>
 #include <ef.gy/httpd.h>
 
 using namespace efgy;
 
-template <class transport>
-static bool hello(typename net::http::server<transport>::session &session,
-                  std::smatch &) {
-  session.reply(200, "Hello World!");
+static const char *arenaRx = "/arena";
 
+template <class transport>
+static bool arena(typename net::http::server<transport>::session &session,
+                  std::smatch &) {
+  efgy::json::value<> json;
+  std::ostringstream oss("");
+
+  // do game things here
+
+  oss << efgy::json::tag() << json;
+
+  session.reply(200, oss.str());
   return true;
 }
 
 namespace tcp {
 using asio::ip::tcp;
-static httpd::servlet<tcp> hello("/", ::hello<tcp>);
-static httpd::servlet<tcp> quit("/quit", httpd::quit<tcp>);
+static httpd::servlet<tcp> arenad(::arenaRx, ::arena<tcp>);
 }
 
 namespace unix {
 using asio::local::stream_protocol;
-static httpd::servlet<stream_protocol> hello("/", ::hello<stream_protocol>);
+static httpd::servlet<stream_protocol> arenad(::arenaRx,
+                                              ::arena<stream_protocol>);
 static httpd::servlet<stream_protocol> quit("/quit",
                                             httpd::quit<stream_protocol>);
 }
