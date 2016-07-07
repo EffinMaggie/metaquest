@@ -51,6 +51,10 @@ class generic {
     return true;
   }
 
+  virtual bool load(const efgy::json::value<L> &json) {
+    return true;
+  }
+
   virtual efgy::json::value<L> json(void) const {
     efgy::json::value<L> rv;
 

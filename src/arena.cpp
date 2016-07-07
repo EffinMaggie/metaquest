@@ -18,13 +18,20 @@
  * \see Licence Terms: https://github.com/jyujin/metaquest/COPYING
  */
 
+#include <fstream>
+#include <sstream>
+
 #include <metaquest/terminal.h>
 #include <metaquest/party.h>
 #include <metaquest/rules-simple.h>
 #include <metaquest/flow-generic.h>
 #include <ef.gy/stream-json.h>
+#include <ef.gy/cli.h>
 
 using namespace efgy;
+
+static cli::flag<std::string> saveFile(
+  "save-file", "where to store/load game data to/from");
 
 /**\brief Metaquest: Arena main function
  *
@@ -33,7 +40,10 @@ using namespace efgy;
  *
  * \returns 0 on success, something else otherwise.
  */
-int main(int, const char **) {
+int main(int argc, char **argv) {
+  int rv = cli::options<>::common().apply(argc, argv);
+
+  const std::string file = saveFile;
   efgy::json::value<> json;
 
   {
@@ -41,13 +51,28 @@ int main(int, const char **) {
                              metaquest::rules::simple::game<
                                  metaquest::interact::terminal::base<> > > game;
 
+    if (file != "") {
+      std::ifstream save(file);
+      std::istreambuf_iterator<char> eos;
+      std::string s(std::istreambuf_iterator<char>(save), eos);
+
+      s >> json;
+
+      game.load(json);
+    }
+
     game.run();
 
     json = game.json();
   }
 
-  std::cout << efgy::json::tag() << json;
-  std::cout << "\n";
+  if (file != "") {
+    std::ofstream save(file);
+    std::ostringstream oss("");
+
+    oss << efgy::json::tag() << json;
+    save << oss.str();
+  }
 
   return 0;
 }
