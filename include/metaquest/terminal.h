@@ -731,6 +731,10 @@ class base {
     return targets;
   }
 
+  virtual bool load(efgy::json::value<L> json) {
+    return true;
+  }
+
   virtual efgy::json::value<L> json(void) const {
     efgy::json::value<L> rv;
 

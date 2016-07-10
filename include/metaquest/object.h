@@ -39,7 +39,7 @@ template <typename T> using slots = std::map<std::string, T>;
  * \tparam T Base type for attributes. Integers are probably a good choice,
  *           at least for J-RPGs and tabletops.
  */
-template <typename T = long, typename C = char, typename L = long double>
+template <typename T = long, typename C = char>
 class object {
  public:
   using base = T;
@@ -147,17 +147,24 @@ class object {
 
   virtual const slots<T> freeSlots(void) const { return allSlots(); }
 
-  virtual efgy::json::value<L> json(void) const {
-    efgy::json::value<L> rv;
+  virtual bool load(efgy::json::json json) {
+    name.load(json("name"));
 
-    auto &na = rv("name");
-    for (auto &n : name) {
-      na.push(n.value);
+    for (const auto data : json("attributes").asObject()) {
+      attribute[data.first] = data.second.asNumber();
     }
+
+    return true;
+  }
+
+  virtual efgy::json::json json(void) const {
+    efgy::json::json rv;
+
+    rv("name") = name.json();
 
     auto &at = rv("attributes");
     for (auto &attrib : attribute) {
-      at(attrib.first) = efgy::json::value<L>(L(attrib.second));
+      at(attrib.first) = efgy::json::json::numeric(attrib.second);
     }
 
     return rv;

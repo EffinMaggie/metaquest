@@ -555,6 +555,28 @@ template <typename ch, typename inter, typename L = long double> class base {
     return out;
   }
 
+  virtual bool load(efgy::json::value<L> json) {
+    auto num = json("number-parties").asNumber();
+
+    if (num > 0) {
+      nParties = num;
+    }
+
+    turn = json("turn").asNumber();
+
+    auto &pa = json("parties");
+
+    parties.clear();
+
+    for (const auto p : pa.asArray()) {
+      parties.push_back(metaquest::party<ch>::load(p));
+    }
+
+    generateParties();
+
+    return true;
+  }
+
   virtual efgy::json::value<> json(void) const {
     efgy::json::value<L> rv;
 

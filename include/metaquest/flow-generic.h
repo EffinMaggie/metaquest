@@ -51,7 +51,9 @@ class generic {
     return true;
   }
 
-  virtual bool load(const efgy::json::value<L> &json) {
+  virtual bool load(efgy::json::value<L> json) {
+    game.load(json("game"));
+    interact.load(json("interaction"));
     return true;
   }
 

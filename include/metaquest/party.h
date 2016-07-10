@@ -77,6 +77,20 @@ class party : public std::vector<character<typename C::base>> {
     return ret;
   }
 
+  static party load(efgy::json::value<L> json) {
+    party p;
+
+    for (const auto o : json("member").asArray()) {
+      C c;
+
+      if (c.load(o)) {
+        p.push_back(c);
+      }
+    }
+
+    return p;
+  }
+
   virtual efgy::json::value<L> json(void) const {
     efgy::json::value<L> rv;
 

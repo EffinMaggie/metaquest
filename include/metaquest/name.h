@@ -17,6 +17,7 @@
 #define METAQUEST_NAME_H
 
 #include <ef.gy/markov.h>
+#include <ef.gy/json.h>
 
 #include <data/female.first.h>
 #include <data/male.first.h>
@@ -94,6 +95,13 @@ class name {
   name(const std::basic_string<T> &pValue, const enum type &pType = otherName)
       : value(pValue), type(pType) {}
 
+  name(efgy::json::json json) {
+    if (json.isObject()) {
+      value = json("name").asString();
+      type = (enum type)json("type").asNumber();
+    }
+  }
+
   /**\brief The actual name
    *
    * The tectual representation of the name, either generated or
@@ -107,6 +115,16 @@ class name {
    * upon initialising a new instance of the class.
    */
   enum type type;
+
+  efgy::json::json json(void) const {
+    efgy::json::json rv;
+    
+    rv.toObject();
+    rv("name") = value;
+    rv("type") = efgy::json::json::numeric(type);
+
+    return rv;
+  }
 };
 
 /**\brief A proper name
@@ -163,6 +181,27 @@ class proper : public std::vector<name<T, generator> > {
     }
 
     return full();
+  }
+
+  bool load(efgy::json::json json) {
+    this->clear();
+
+    for (const auto n : json.asArray()) {
+      this->push_back(name<T, generator>(n));
+    }
+
+    return true;
+  }
+
+  efgy::json::json json(void) const {
+    efgy::json::json rv;
+    
+    rv.toArray();
+    for (auto &n : *this) {
+      rv.push(n.json());
+    }
+
+    return rv;
   }
 };
 
