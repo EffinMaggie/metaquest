@@ -17,7 +17,7 @@
 
 namespace metaquest {
 namespace flow {
-template <typename interaction, typename logic, typename L = long double>
+template <typename interaction, typename logic>
 class generic {
  public:
   generic(void) : interact(), game(interact) { interact.clear(); }
@@ -51,14 +51,14 @@ class generic {
     return true;
   }
 
-  virtual bool load(efgy::json::value<L> json) {
+  virtual bool load(efgy::json::json json) {
     game.load(json("game"));
     interact.load(json("interaction"));
     return true;
   }
 
-  virtual efgy::json::value<L> json(void) const {
-    efgy::json::value<L> rv;
+  virtual efgy::json::json json(void) const {
+    efgy::json::json rv;
 
     rv("game") = game.json();
     rv("interaction") = interact.json();

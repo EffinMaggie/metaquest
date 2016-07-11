@@ -249,7 +249,7 @@ template <typename term, typename clock> class text : public base<term, clock> {
 
 template <typename term = efgy::terminal::vt100<>,
           template <typename> class AI = ai::random,
-          typename clock = std::chrono::system_clock, typename L = long double>
+          typename clock = std::chrono::system_clock>
 class base;
 
 template <typename term, template <typename> class AI, typename clock>
@@ -338,8 +338,7 @@ class refresher {
   base<term, AI, clock> &base;
 };
 
-template <typename term, template <typename> class AI, typename clock,
-          typename L>
+template <typename term, template <typename> class AI, typename clock>
 class base {
  public:
   using selector = animator::selector<term, clock>;
@@ -731,12 +730,12 @@ class base {
     return targets;
   }
 
-  virtual bool load(efgy::json::value<L> json) {
+  virtual bool load(efgy::json::json json) {
     return true;
   }
 
-  virtual efgy::json::value<L> json(void) const {
-    efgy::json::value<L> rv;
+  virtual efgy::json::json json(void) const {
+    efgy::json::json rv;
 
     rv("log") = logbook.str();
 

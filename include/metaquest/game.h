@@ -21,7 +21,7 @@
 
 namespace metaquest {
 namespace game {
-template <typename ch, typename inter, typename L = long double> class base {
+template <typename ch, typename inter> class base {
  public:
   using num = typename ch::base;
   using object = object<num>;
@@ -555,13 +555,7 @@ template <typename ch, typename inter, typename L = long double> class base {
     return out;
   }
 
-  virtual bool load(efgy::json::value<L> json) {
-    auto num = json("number-parties").asNumber();
-
-    if (num > 0) {
-      nParties = num;
-    }
-
+  virtual bool load(efgy::json::json json) {
     turn = json("turn").asNumber();
 
     auto &pa = json("parties");
@@ -572,21 +566,22 @@ template <typename ch, typename inter, typename L = long double> class base {
       parties.push_back(metaquest::party<ch>::load(p));
     }
 
+    nParties = parties.size();
+
     generateParties();
 
     return true;
   }
 
-  virtual efgy::json::value<> json(void) const {
-    efgy::json::value<L> rv;
+  virtual efgy::json::json json(void) const {
+    efgy::json::json rv;
 
     auto &pa = rv("parties");
     for (auto &party : parties) {
       pa.push(party.json());
     }
 
-    rv("number-parties") = efgy::json::value<L>(L(nParties));
-    rv("turn") = efgy::json::value<L>(L(turn));
+    rv("turn") = efgy::json::json::numeric(turn);
 
     return rv;
   }
