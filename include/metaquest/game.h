@@ -581,7 +581,21 @@ template <typename ch, typename inter> class base {
       pa.push(party.json());
     }
 
+    auto &ta = rv("turn-order");
+    for (auto &to : currentTurnOrder) {
+      ta.push(json(*to));
+    }
+
     rv("turn") = efgy::json::json::numeric(turn);
+
+    return rv;
+  }
+
+  virtual efgy::json::json json(const character &c) const {
+    efgy::json::json rv;
+
+    rv.push(efgy::json::json::numeric(partyOf(c)));
+    rv.push(efgy::json::json::numeric(positionOf(c)));
 
     return rv;
   }
