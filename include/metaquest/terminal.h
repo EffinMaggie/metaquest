@@ -350,15 +350,16 @@ class base {
   base()
       : io(),
         out(io),
-        rng(std::random_device()()),
         ai(*this),
-        logbook(""),
         alive(true),
         refresherThread(refresher<term, AI, clock>::run, std::ref(*this)) {
+    logbook.toArray();
     io.resize(io.getOSDimensions());
+    clear();
   }
 
   ~base(void) {
+    clear();
     alive = false;
     refresherThread.join();
     for (auto &a : active) {
@@ -369,7 +370,7 @@ class base {
   term io;
   efgy::terminal::writer<> out;
   AI<base<term, AI> > ai;
-  std::stringstream logbook;
+  efgy::json::json logbook;
   std::thread refresherThread;
   volatile bool alive;
   std::list<animator::base<term, clock> *> active;
@@ -383,7 +384,30 @@ class base {
 
   void clear(void) { out.to(0, 0).clear(); }
 
-  void log(std::string log) { logbook << log << "\n"; }
+  template <typename G>
+  bool log(
+      const G &game, const std::string &description,
+      const metaquest::character<typename G::num> &source,
+      const std::vector<metaquest::character<typename G::num> *> &targets) {
+    efgy::json::json r;
+
+    r.toObject();
+    r("action") = description;
+    r("source") = game.json(source);
+
+    auto &ts = r("target").toArray();
+    for (const auto &t : targets) {
+      ts.push_back(game.json(*t));
+    }
+
+    logbook.push(r);
+
+    return true;
+  }
+
+  void log(std::string log) {
+    logbook.push(log);
+  }
 
   template <typename T, typename G>
   std::size_t getLine(const G &game, const metaquest::character<T> &character) {
@@ -409,7 +433,7 @@ class base {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    return true;
+    return log(game, description, source, targets);
   }
 
   template <typename G> void drawUI(G &game) {
@@ -731,19 +755,19 @@ class base {
   }
 
   virtual bool load(efgy::json::json json) {
+    if (json("log").isArray()) {
+      logbook = json("log");
+    }
     return true;
   }
 
   virtual efgy::json::json json(void) const {
     efgy::json::json rv;
 
-    rv("log") = logbook.str();
+    rv("log") = logbook;
 
     return rv;
   }
-
- protected:
-  std::mt19937 rng;
 };
 }
 }

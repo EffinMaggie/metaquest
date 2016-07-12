@@ -20,26 +20,24 @@ namespace flow {
 template <typename interaction, typename logic>
 class generic {
  public:
-  generic(void) : interact(), game(interact) { interact.clear(); }
+  generic(void) : interact(), game(interact) {}
 
-  ~generic(void) { interact.clear(); }
-
-  virtual bool run(void) {
+  bool run(void) {
     while (true) {
       interact.drawUI(game);
 
       switch (game.state()) {
         case logic::menu:
-          interact.log(log = game.doMenu());
+          interact.log(game.doMenu());
           break;
         case logic::combat:
-          interact.log(log = game.doCombat());
+          interact.log(game.doCombat());
           break;
         case logic::victory:
-          interact.log(log = game.doVictory());
+          interact.log(game.doVictory());
           break;
         case logic::defeat:
-          interact.log(log = game.doDefeat());
+          interact.log(game.doDefeat());
           return true;
         case logic::exit:
           return true;
@@ -51,13 +49,13 @@ class generic {
     return true;
   }
 
-  virtual bool load(efgy::json::json json) {
+  bool load(efgy::json::json json) {
     game.load(json("game"));
     interact.load(json("interaction"));
     return true;
   }
 
-  virtual efgy::json::json json(void) const {
+  efgy::json::json json(void) const {
     efgy::json::json rv;
 
     rv("game") = game.json();
@@ -68,7 +66,6 @@ class generic {
 
   interaction interact;
   logic game;
-  std::string log;
 };
 }
 }
