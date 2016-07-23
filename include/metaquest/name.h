@@ -65,7 +65,7 @@ public:
     givenName,  /**< A given name, e.g. a first or middle name. */
     familyName, /**< A family name, e.g. a last name. */
     nickName,   /**< A nickname, e.g. a shortened form of a
-                   shortened form of a last name. */
+                 shortened form of a last name. */
     callSign, /**< A nickname which is not necessarily used in
                    a colloquial setting. */
     otherName /**< Used with things like items, etc. */

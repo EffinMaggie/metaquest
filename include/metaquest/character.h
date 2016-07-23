@@ -90,35 +90,6 @@ public:
    */
   virtual bool operator()(const std::string &skill) { return false; }
 
-  /**\brief Use targeted skill
-   *
-   * Uses a skill that targets one or more other characters.
-   *
-   * \param[in] action The skill to use.
-   * \param[in] target The skill's target.
-   *
-   * \returns 'True' if the skill was used successfully, 'false' if it
-   *          failed.
-   */
-  virtual std::string operator()(action<T> &action,
-                                 std::vector<character *> &pTarget) {
-    auto &cost = action.cost;
-    if (!cost.canApply(*this)) {
-      return object<T>::name.display() + " not enough resources";
-    }
-
-    objects<T> source, target;
-    source.push_back(this);
-
-    for (auto &t : pTarget) {
-      target.push_back(t);
-    }
-
-    cost.apply(*this);
-
-    return action(source, target);
-  }
-
   /**\brief List of equipped items
    *
    * The list of items that a character currently has equipped.

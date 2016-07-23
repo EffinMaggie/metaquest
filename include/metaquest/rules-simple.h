@@ -23,7 +23,7 @@
 namespace metaquest {
 namespace rules {
 namespace simple {
-static long solveDamage(double a, double b, double c) {
+static long solve(double a, double b, double c) {
   static std::mt19937 rng = std::mt19937(std::random_device()());
   return 5 * std::sqrt(a * b / c) * (0.95 + (rng() % 100) / 1000.0);
 }
@@ -33,20 +33,24 @@ static long getLevel(const object<long> &t) {
   return std::floor(1 + std::log(x * x));
 }
 
+static long calculate(double b, const std::string &a, const object<long> &t) {
+  return std::floor(b + t["Level"] * (double(t[a]) / 10.0));
+}
+
 static long getAttack(const object<long> &t) {
-  return std::floor(10.0 + t["Level"] * (double(t["Endurance"]) / 10.0));
+  return calculate(10.0, "Endurance", t);
 }
 
 static long getDefence(const object<long> &t) {
-  return std::floor(5.0 + t["Level"] * (double(t["Endurance"]) / 10.0));
+  return calculate(5.0, "Endurance", t);
 }
 
 static long getHPTotal(const object<long> &t) {
-  return std::floor(70.0 + t["Level"] * (double(t["Endurance"]) / 10.0));
+  return calculate(70.0, "Endurance", t);
 }
 
 static long getMPTotal(const object<long> &t) {
-  return std::floor(40.0 + t["Level"] * (double(t["Magic"]) / 10.0));
+  return calculate(40.0, "Magic", t);
 }
 
 static std::string attack(objects<long> &source, objects<long> &target) {
@@ -56,7 +60,7 @@ static std::string attack(objects<long> &source, objects<long> &target) {
     for (auto &tp : target) {
       auto &t = *tp;
 
-      long admg = solveDamage(s["Attack"], s["Damage"], t["Defence"]);
+      long admg = solve(s["Attack"], s["Damage"], t["Defence"]);
 
       os << s.name.display() << " hits for " << admg << " points of damage";
 
@@ -73,7 +77,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
     for (auto &tp : target) {
       auto &t = *tp;
 
-      long amt = solveDamage(s["Magic"], t["Endurance"], 1);
+      long amt = solve(s["Magic"], t["Endurance"], 1);
 
       os << s.name.display() << " heals " << amt << " points of damage";
 

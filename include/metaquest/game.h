@@ -25,6 +25,7 @@ template <typename ch, typename inter> class base {
 public:
   using num = typename ch::base;
   using object = object<num>;
+  using objects = objects<num>;
   using character = character<num>;
   using action = action<num>;
 
@@ -184,7 +185,7 @@ public:
 
     interact.action(*this, s, target, targets);
 
-    return (*this)(s, target, targets);
+    return call(s, target, targets);
   }
 
   virtual actionMap actions(character &c) {
@@ -581,14 +582,33 @@ public:
     return rv;
   }
 
-  virtual std::string operator()(const std::string &skill, character &c,
-                                 std::vector<character *> &pTarget) {
+  virtual std::string call(const std::string &skill, character &c,
+                           std::vector<character *> &pTarget) {
     auto act = characterAction.find(skill);
     if (act == characterAction.end()) {
       return c.name.display() + " looks bewildered";
     }
 
-    return c(act->second, pTarget);
+    return call(act->second, c, pTarget);
+  }
+
+  virtual std::string call(action &action, character &c,
+                           std::vector<character *> &pTarget) {
+    auto &cost = action.cost;
+    if (!cost.canApply(c)) {
+      return c.name.display() + " not enough resources";
+    }
+
+    objects source, target;
+    source.push_back(&c);
+
+    for (auto &t : pTarget) {
+      target.push_back(t);
+    }
+
+    cost.apply(c);
+
+    return action(source, target);
   }
 
   virtual efgy::json::json json(const character &c) const {
@@ -636,7 +656,7 @@ bool willExit;
 
 action &
 bind(const std::string &name, bool isVisible,
-     std::function<std::string(objects<num> &, std::vector<object *> &)> pApply,
+     std::function<std::string(objects &, std::vector<object *> &)> pApply,
      const enum action::scope &pScope = action::enemy,
      const enum action::filter &pFilter = action::none,
      const resource::total<num> pCost = {}) {
