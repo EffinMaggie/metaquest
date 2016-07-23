@@ -26,8 +26,8 @@ namespace metaquest {
  * contexts (menu, etc.) the order might actually be relevant.
  */
 template <typename C>
-class party : public std::vector<character<typename C::base>> {
- public:
+class party : public std::vector<character<typename C::base> > {
+public:
   using base = typename C::base;
 
   /**\brief Generate a party.
@@ -110,8 +110,8 @@ class party : public std::vector<character<typename C::base>> {
 
   items<base> inventory;
 
- protected:
-  using std::vector<character<typename C::base>>::vector;
+protected:
+  using std::vector<character<typename C::base> >::vector;
 };
 }
 

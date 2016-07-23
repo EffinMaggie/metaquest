@@ -30,8 +30,8 @@
 
 using namespace efgy;
 
-static cli::flag<std::string> saveFile(
-  "save-file", "where to store/load game data to/from");
+static cli::flag<std::string> saveFile("save-file",
+                                       "where to store/load game data to/from");
 
 /**\brief Metaquest: Arena main function
  *

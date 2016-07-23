@@ -21,7 +21,7 @@
 namespace metaquest {
 namespace resource {
 template <typename T> class cost {
- public:
+public:
   enum operation {
     subtract,
     add
@@ -29,9 +29,7 @@ template <typename T> class cost {
 
   cost(T pValue, const std::string &pResource,
        enum operation pOperation = subtract, bool pVisible = true)
-      : operation(pOperation),
-        value(pValue),
-        resource(pResource),
+      : operation(pOperation), value(pValue), resource(pResource),
         visible(pVisible) {}
 
   std::string resource;
@@ -90,7 +88,7 @@ template <typename T> class cost {
 };
 
 template <typename T> class total : public std::vector<cost<T> > {
- public:
+public:
   using std::vector<cost<T> >::vector;
 
   virtual std::string label(const object<T> &c) const {
@@ -127,7 +125,7 @@ template <typename T> class total : public std::vector<cost<T> > {
 }
 
 template <typename T> class action : public object<T> {
- public:
+public:
   using parent = metaquest::object<T>;
 
   enum scope {
@@ -152,14 +150,9 @@ template <typename T> class action : public object<T> {
          std::function<std::string(objects<T> &source, objects<T> &target)>
              pApply = nullptr,
          const enum scope &pScope = self, const enum filter &pFilter = none,
-         const resource::total<T> pCost = {
-  })
-      : parent(),
-        visible(pVisible),
-        apply(pApply),
-        scope(pScope),
-        filter(pFilter),
-        cost(pCost) {}
+         const resource::total<T> pCost = {})
+      : parent(), visible(pVisible), apply(pApply), scope(pScope),
+        filter(pFilter), cost(pCost) {}
 
   std::string operator()(objects<T> &source, objects<T> &target) {
     if (apply != nullptr) {

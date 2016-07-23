@@ -39,9 +39,8 @@ template <typename T> using slots = std::map<std::string, T>;
  * \tparam T Base type for attributes. Integers are probably a good choice,
  *           at least for J-RPGs and tabletops.
  */
-template <typename T = long, typename C = char>
-class object {
- public:
+template <typename T = long, typename C = char> class object {
+public:
   using base = T;
 
   virtual ~object(void) {}
@@ -179,7 +178,7 @@ class object {
     return rv;
   }
 
- protected:
+protected:
   slots<T> slots;
 
   /**\brief Attribute generation functions

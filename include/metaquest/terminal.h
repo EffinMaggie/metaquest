@@ -37,14 +37,13 @@ namespace interact {
 namespace terminal {
 namespace animator {
 template <typename term, typename clock> class base {
- public:
+public:
   base(const typename clock::duration &pSleepTime)
       : sleepTime(pSleepTime), validSince(clock::now()), validUntil() {}
 
   base(const typename clock::duration &pSleepTime,
        const std::chrono::milliseconds &ttl)
-      : sleepTime(pSleepTime),
-        validSince(clock::now()),
+      : sleepTime(pSleepTime), validSince(clock::now()),
         validUntil(validSince + ttl) {}
 
   virtual ~base(void) {}
@@ -55,7 +54,7 @@ template <typename term, typename clock> class base {
   }
 
   bool valid(void) {
-    return (bool) validUntil ? clock::now() < validUntil.just : true;
+    return (bool)validUntil ? clock::now() < validUntil.just : true;
   }
 
   double progress(typename clock::duration until) {
@@ -64,7 +63,7 @@ template <typename term, typename clock> class base {
     const auto ts =
         std::chrono::duration_cast<std::chrono::milliseconds>(until).count();
 
-    return std::min((double) el / (double) ts, 1.0);
+    return std::min((double)el / (double)ts, 1.0);
   }
 
   double progress(typename clock::time_point until) {
@@ -73,11 +72,11 @@ template <typename term, typename clock> class base {
     const auto ts = std::chrono::duration_cast<std::chrono::milliseconds>(
         until - validSince).count();
 
-    return std::min((double) el / (double) ts, 1.0);
+    return std::min((double)el / (double)ts, 1.0);
   }
 
   double progress(void) {
-    if (!(bool) validUntil) {
+    if (!(bool)validUntil) {
       return .0;
     }
 
@@ -91,20 +90,17 @@ template <typename term, typename clock> class base {
 
   const typename clock::duration sleepTime;
 
- protected:
+protected:
   typename clock::time_point validSince;
   efgy::maybe<typename clock::time_point> validUntil;
 };
 
 template <typename term, typename clock>
 class highlight : public base<term, clock> {
- public:
+public:
   highlight(const std::size_t pColumn, const std::size_t pLine,
             const std::size_t pWidth, const std::size_t pHeight)
-      : column(pColumn),
-        line(pLine),
-        width(pWidth),
-        height(pHeight),
+      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
         base<term, clock>(std::chrono::milliseconds(50)) {}
 
   virtual bool draw(typename term::base &) { return false; }
@@ -129,7 +125,7 @@ class highlight : public base<term, clock> {
 
 template <typename term, typename clock>
 class selector : public highlight<term, clock> {
- public:
+public:
   using highlight<term, clock>::highlight;
   using highlight<term, clock>::line;
   using highlight<term, clock>::column;
@@ -145,13 +141,10 @@ class selector : public highlight<term, clock> {
 };
 
 template <typename term, typename clock> class glow : public base<term, clock> {
- public:
+public:
   glow(const std::size_t pColumn, const std::size_t pLine,
        const std::size_t pWidth, const std::size_t pHeight)
-      : column(pColumn),
-        line(pLine),
-        width(pWidth),
-        height(pHeight),
+      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
         base<term, clock>(std::chrono::milliseconds(5),
                           std::chrono::seconds(1)) {}
 
@@ -180,13 +173,10 @@ template <typename term, typename clock> class glow : public base<term, clock> {
 
 template <typename term, typename clock>
 class flash : public base<term, clock> {
- public:
+public:
   flash(const std::size_t pColumn, const std::size_t pLine,
         const std::size_t pWidth, const std::size_t pHeight)
-      : column(pColumn),
-        line(pLine),
-        width(pWidth),
-        height(pHeight),
+      : column(pColumn), line(pLine), width(pWidth), height(pHeight),
         base<term, clock>(std::chrono::milliseconds(15),
                           std::chrono::milliseconds(600)) {}
 
@@ -215,10 +205,9 @@ class flash : public base<term, clock> {
 };
 
 template <typename term, typename clock> class text : public base<term, clock> {
- public:
+public:
   text(const std::size_t pLine, const std::string &pMessage)
-      : line(pLine),
-        message(pMessage),
+      : line(pLine), message(pMessage),
         base<term, clock>(std::chrono::milliseconds(50),
                           std::chrono::milliseconds(1500)) {}
 
@@ -227,7 +216,7 @@ template <typename term, typename clock> class text : public base<term, clock> {
   virtual bool postProcess(const typename term::base &terminal,
                            const std::size_t &l, const std::size_t &c,
                            typename term::cell &cell) {
-    const ssize_t p = (ssize_t) c - 2;
+    const ssize_t p = (ssize_t)c - 2;
 
     if (l == line) {
       std::swap(cell.foregroundColour, cell.backgroundColour);
@@ -254,7 +243,7 @@ class base;
 
 template <typename term, template <typename> class AI, typename clock>
 class refresher {
- public:
+public:
   refresher(base<term, AI> &pBase) : base(pBase) {}
 
   bool refresh() {
@@ -288,7 +277,7 @@ class refresher {
 
     for (const auto &a : base.active) {
       if (a->valid()) {
-        (void) a->postProcess(terminal, l, c, cell);
+        (void)a->postProcess(terminal, l, c, cell);
       }
     }
 
@@ -334,13 +323,13 @@ class refresher {
     self.flush();
   }
 
- protected:
+protected:
   base<term, AI, clock> &base;
 };
 
 template <typename term, template <typename> class AI, typename clock>
 class base {
- public:
+public:
   using selector = animator::selector<term, clock>;
   using highlight = animator::highlight<term, clock>;
   using glow = animator::glow<term, clock>;
@@ -348,10 +337,7 @@ class base {
   using flash = animator::flash<term, clock>;
 
   base()
-      : io(),
-        out(io),
-        ai(*this),
-        alive(true),
+      : io(), out(io), ai(*this), alive(true),
         refresherThread(refresher<term, AI, clock>::run, std::ref(*this)) {
     logbook.toArray();
     io.resize(io.getOSDimensions());
@@ -385,8 +371,8 @@ class base {
   void clear(void) { out.to(0, 0).clear(); }
 
   template <typename G>
-  bool log(
-      const G &game, const std::string &description,
+  bool
+  log(const G &game, const std::string &description,
       const metaquest::character<typename G::num> &source,
       const std::vector<metaquest::character<typename G::num> *> &targets) {
     efgy::json::json r;
@@ -405,9 +391,7 @@ class base {
     return true;
   }
 
-  void log(std::string log) {
-    logbook.push(log);
-  }
+  void log(std::string log) { logbook.push(log); }
 
   template <typename T, typename G>
   std::size_t getLine(const G &game, const metaquest::character<T> &character) {
@@ -418,10 +402,10 @@ class base {
   }
 
   template <typename G>
-  bool action(
-      const G &game, const std::string &description,
-      const metaquest::character<typename G::num> &source,
-      const std::vector<metaquest::character<typename G::num> *> &targets) {
+  bool
+  action(const G &game, const std::string &description,
+         const metaquest::character<typename G::num> &source,
+         const std::vector<metaquest::character<typename G::num> *> &targets) {
     addAnimator(new flash(0, getLine(game, source), io.size()[0], 1));
     addAnimator(new text(8, source.name.display() + ": " + description));
 
@@ -458,8 +442,15 @@ class base {
         hp << p["HP/Current"];
         mp << p["MP/Current"];
 
-        out.to(0, i).clear(-1, 1).to(2, i).write(p.name.full(), 28).x(-60)
-            .write(hp.str(), 4, 1).x(-55).write(mp.str(), 4, 4).x(-50)
+        out.to(0, i)
+            .clear(-1, 1)
+            .to(2, i)
+            .write(p.name.full(), 28)
+            .x(-60)
+            .write(hp.str(), 4, 1)
+            .x(-55)
+            .write(mp.str(), 4, 4)
+            .x(-50)
             .bar2c(p["HP/Current"], p["HP/Total"], p["MP/Current"],
                    p["MP/Total"], 50, 1, 4);
         i++;
@@ -511,17 +502,18 @@ class base {
     bool didSelect = false;
 
     do {
-      io.read([&didSelect, &didCancel](const typename term::command & c)->bool {
-        switch (c.code) {
-          case 'C':  // right: select
-            didSelect = true;
-            break;
-          case 'D':  // left: cancel
-            didCancel = true;
-            break;
-        }
-        return false;
-      },
+      io.read([&didSelect, &didCancel ](const typename term::command & c)
+                                           ->bool {
+                switch (c.code) {
+                case 'C': // right: select
+                  didSelect = true;
+                  break;
+                case 'D': // left: cancel
+                  didCancel = true;
+                  break;
+                }
+                return false;
+              },
               [&didSelect](const long & l)->bool {
         if (l == '\n') {
           didSelect = true;
@@ -570,7 +562,7 @@ class base {
 
     for (const auto &la : list) {
       width = la.size() + 5 > width ? la.size() + 5 : width;
-      std::string label = source.getResourceLabel(carry + la);
+      std::string label = game.getResourceLabel(carry + la, source);
       llen = label.size() > llen ? label.size() : llen;
     }
 
@@ -587,7 +579,7 @@ class base {
     for (std::size_t i = 0; i < list.size(); i++) {
       out.to(left + 1, top + 1 + i).write("  " + list[i], width - 2);
 
-      std::string label = source.getResourceLabel(carry + list[i]);
+      std::string label = game.getResourceLabel(carry + list[i], source);
       if (label.size() > 0) {
         out.to(left + width - llen - 2, top + 1 + i).write(label, llen);
       }
@@ -607,34 +599,35 @@ class base {
       sel->line = top + 1 + selection;
 
       io.read(
-          [&selection, &didSelect, &didCancel](const typename term::command & c)
-              ->bool {
-        switch (c.code) {
-          case 'A':  // up
-            selection--;
-            break;
-          case 'B':  // down
-            selection++;
-            break;
-          case 'C':  // right: select
-            didSelect = true;
-            break;
-          case 'D':  // left: cancel
-            didCancel = true;
-            break;
-        }
-        return false;
-      },
+          [&selection, &didSelect, &didCancel ](const typename term::command &
+                                                c)
+                                                   ->bool {
+            switch (c.code) {
+            case 'A': // up
+              selection--;
+              break;
+            case 'B': // down
+              selection++;
+              break;
+            case 'C': // right: select
+              didSelect = true;
+              break;
+            case 'D': // left: cancel
+              didCancel = true;
+              break;
+            }
+            return false;
+          },
           [&didSelect](const T & l)->bool {
-        if (l == '\n') {
-          didSelect = true;
-        }
-        return false;
-      });
+            if (l == '\n') {
+              didSelect = true;
+            }
+            return false;
+          });
 
       didSelect |= didCancel;
 
-      if (selection >= (long) list.size()) {
+      if (selection >= (long)list.size()) {
         selection = list.size() - 1;
       }
 
@@ -669,10 +662,10 @@ class base {
   }
 
   template <typename T, typename G>
-  efgy::maybe<std::vector<metaquest::character<T> *> > query(
-      G &game, const metaquest::character<T> &source,
-      std::vector<metaquest::character<T> *> &candidates,
-      std::size_t indent = 4) {
+  efgy::maybe<std::vector<metaquest::character<T> *> >
+  query(G &game, const metaquest::character<T> &source,
+        std::vector<metaquest::character<T> *> &candidates,
+        std::size_t indent = 4) {
     std::size_t party = game.partyOf(source);
 
     if (game.useAI(source)) {
@@ -687,10 +680,10 @@ class base {
 
     std::sort(
         candidates.begin(), candidates.end(),
-        [&game, this](metaquest::character<T> * a, metaquest::character<T> * b)
-            ->bool {
-      return getLine(game, *a) < getLine(game, *b);
-    });
+        [&game, this ](metaquest::character<T> * a, metaquest::character<T> * b)
+                          ->bool {
+          return getLine(game, *a) < getLine(game, *b);
+        });
 
     std::vector<metaquest::character<T> *> targets;
     long selection = 0;
@@ -708,34 +701,35 @@ class base {
       sel->line = getLine(game, c);
 
       io.read(
-          [&selection, &didSelect, &didCancel](const typename term::command & c)
-              ->bool {
-        switch (c.code) {
-          case 'A':  // up
-            selection--;
-            break;
-          case 'B':  // down
-            selection++;
-            break;
-          case 'C':  // right: select
-            didSelect = true;
-            break;
-          case 'D':  // left: cancel
-            didCancel = true;
-            break;
-        }
-        return false;
-      },
+          [&selection, &didSelect, &didCancel ](const typename term::command &
+                                                c)
+                                                   ->bool {
+            switch (c.code) {
+            case 'A': // up
+              selection--;
+              break;
+            case 'B': // down
+              selection++;
+              break;
+            case 'C': // right: select
+              didSelect = true;
+              break;
+            case 'D': // left: cancel
+              didCancel = true;
+              break;
+            }
+            return false;
+          },
           [&didSelect](const T & l)->bool {
-        if (l == '\n') {
-          didSelect = true;
-        }
-        return false;
-      });
+            if (l == '\n') {
+              didSelect = true;
+            }
+            return false;
+          });
 
       didSelect |= didCancel;
 
-      if (selection >= (long) candidates.size()) {
+      if (selection >= (long)candidates.size()) {
         selection = candidates.size() - 1;
       }
 

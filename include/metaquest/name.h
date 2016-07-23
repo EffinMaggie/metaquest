@@ -53,7 +53,7 @@ static const unsigned long seed = std::random_device()();
  */
 template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
 class name {
- public:
+public:
   /**\brief Name type
    *
    * Names generally fall into different categories, depending on
@@ -64,11 +64,11 @@ class name {
   enum type {
     givenName,  /**< A given name, e.g. a first or middle name. */
     familyName, /**< A family name, e.g. a last name. */
-    nickName, /**< A nickname, e.g. a shortened form of a
+    nickName,   /**< A nickname, e.g. a shortened form of a
                    shortened form of a last name. */
     callSign, /**< A nickname which is not necessarily used in
                    a colloquial setting. */
-    otherName   /**< Used with things like items, etc. */
+    otherName /**< Used with things like items, etc. */
   };
 
   /**\brief Construct with generator and type
@@ -118,7 +118,7 @@ class name {
 
   efgy::json::json json(void) const {
     efgy::json::json rv;
-    
+
     rv.toObject();
     rv("name") = value;
     rv("type") = efgy::json::json::numeric(type);
@@ -139,7 +139,7 @@ class name {
  */
 template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
 class proper : public std::vector<name<T, generator> > {
- public:
+public:
   /**\brief Query the full name
    *
    * This function provides access to a "full" name string, with
@@ -171,12 +171,12 @@ class proper : public std::vector<name<T, generator> > {
   std::basic_string<T> display(void) const {
     for (const name<T, generator> &n : *this) {
       switch (n.type) {
-        case name<T, generator>::givenName:
-          return n.value;
-        case name<T, generator>::callSign:
-          return n.value;
-        default:
-          break;
+      case name<T, generator>::givenName:
+        return n.value;
+      case name<T, generator>::callSign:
+        return n.value;
+      default:
+        break;
       }
     }
 
@@ -195,7 +195,7 @@ class proper : public std::vector<name<T, generator> > {
 
   efgy::json::json json(void) const {
     efgy::json::json rv;
-    
+
     rv.toArray();
     for (auto &n : *this) {
       rv.push(n.json());
@@ -207,7 +207,7 @@ class proper : public std::vector<name<T, generator> > {
 
 template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
 class simple : public proper<T, generator> {
- public:
+public:
   typedef proper<T, generator> parent;
 
   simple(const std::string &pName) : parent() { parent::push_back(pName); }
@@ -230,7 +230,7 @@ namespace american {
  */
 template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
 class given : public name<T, generator> {
- public:
+public:
   /**\brief Base name type
    *
    * This is a rather convenient typedef so we don't have to
@@ -263,17 +263,15 @@ class given : public name<T, generator> {
 
     while ((value.size() == 0) || (value.size() > length)) {
       switch (PRNG() % 10) {
-        case 0:
-          (female ? maleFirstNames : femaleFirstNames) >> value;
-        default:
-          (female ? femaleFirstNames : maleFirstNames) >> value;
+      case 0:
+        (female ? maleFirstNames : femaleFirstNames) >> value;
+      default:
+        (female ? femaleFirstNames : maleFirstNames) >> value;
       }
     }
 
     std::transform(value.begin() + 1, value.end(), value.begin() + 1,
-                   [](char a)->char {
-      return std::tolower(a);
-    });
+                   [](char a)->char { return std::tolower(a); });
   }
 };
 
@@ -288,7 +286,7 @@ class given : public name<T, generator> {
  */
 template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
 class family : public name<T, generator> {
- public:
+public:
   /**\copydoc given::name */
   typedef name<T, generator> parent;
 
@@ -314,9 +312,7 @@ class family : public name<T, generator> {
     }
 
     std::transform(value.begin() + 1, value.end(), value.begin() + 1,
-                   [](char a)->char {
-      return std::tolower(a);
-    });
+                   [](char a)->char { return std::tolower(a); });
   }
 };
 
@@ -331,7 +327,7 @@ class family : public name<T, generator> {
  */
 template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
 class proper : public metaquest::name::proper<T, generator> {
- public:
+public:
   /**\copydoc given::name */
   typedef metaquest::name::proper<T, generator> parent;
 

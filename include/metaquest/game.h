@@ -22,19 +22,15 @@
 namespace metaquest {
 namespace game {
 template <typename ch, typename inter> class base {
- public:
+public:
   using num = typename ch::base;
   using object = object<num>;
   using character = character<num>;
   using action = action<num>;
 
   base(inter &pInteract, num pParties = 1)
-      : interact(pInteract),
-        rng(std::random_device()()),
-        willExit(false),
-        nParties(pParties),
-        currentTurnOrder(),
-        turn(0) {
+      : interact(pInteract), rng(std::random_device()()), willExit(false),
+        nParties(pParties), currentTurnOrder(), turn(0) {
     generateParties();
   }
 
@@ -62,10 +58,10 @@ template <typename ch, typename inter> class base {
 
       if (p.defeated()) {
         switch (parties.size() - pi - 1) {
-          case 0:
-            return victory;
-          default:
-            return defeat;
+        case 0:
+          return victory;
+        default:
+          return defeat;
         }
       }
     }
@@ -86,9 +82,7 @@ template <typename ch, typename inter> class base {
 
     std::copy_if(candidates.begin(), candidates.end(),
                  std::back_inserter(filteredCandidates),
-                 [](character * cha)->bool {
-      return cha->able();
-    });
+                 [](character * cha)->bool { return cha->able(); });
 
     std::random_shuffle(filteredCandidates.begin(), filteredCandidates.end());
 
@@ -142,7 +136,7 @@ template <typename ch, typename inter> class base {
 
   typedef std::map<std::string,
                    std::function<std::string(bool &, const character &)> >
-      actionMap;
+  actionMap;
 
   std::string resolve(character &target, actionMap &actions,
                       bool allowCharacterActions = true) {
@@ -190,7 +184,7 @@ template <typename ch, typename inter> class base {
 
     interact.action(*this, s, target, targets);
 
-    return target(s, targets);
+    return (*this)(s, target, targets);
   }
 
   virtual actionMap actions(character &c) {
@@ -430,7 +424,7 @@ template <typename ch, typename inter> class base {
   }
 
   std::vector<character *> resolve(const character &c, const std::string &s) {
-    return resolve(c, c.scope(s), c.filter(s));
+    return resolve(c, scope(s), filter(s));
   }
 
   std::vector<character *> resolve(const character &c,
@@ -443,75 +437,69 @@ template <typename ch, typename inter> class base {
     std::vector<character *> candidates;
 
     switch (scope) {
-      case action::self:
-        candidates.push_back(&(parties[p][m]));
-        break;
-      case action::ally:
-      case action::party:
-        for (auto &h : parties[p]) {
-          candidates.push_back(&h);
-        }
-        break;
-      case action::enemy:
-      case action::enemies:
-        for (size_t pi = 0; pi < parties.size(); pi++) {
-          if (pi != p) {
-            for (auto &h : parties[pi]) {
-              candidates.push_back(&h);
-            }
-          }
-        }
-        break;
-      case action::everyone:
-        for (auto &pa : parties) {
-          for (auto &h : pa) {
+    case action::self:
+      candidates.push_back(&(parties[p][m]));
+      break;
+    case action::ally:
+    case action::party:
+      for (auto &h : parties[p]) {
+        candidates.push_back(&h);
+      }
+      break;
+    case action::enemy:
+    case action::enemies:
+      for (size_t pi = 0; pi < parties.size(); pi++) {
+        if (pi != p) {
+          for (auto &h : parties[pi]) {
             candidates.push_back(&h);
           }
         }
-        break;
+      }
+      break;
+    case action::everyone:
+      for (auto &pa : parties) {
+        for (auto &h : pa) {
+          candidates.push_back(&h);
+        }
+      }
+      break;
     }
 
     std::vector<character *> filteredCandidates;
 
     switch (filter) {
-      case action::none:
-        filteredCandidates = candidates;
-        break;
-      case action::onlyHealthy:
-        std::copy_if(candidates.begin(), candidates.end(),
-                     std::back_inserter(filteredCandidates),
-                     [](character * cha)->bool {
-          return (*cha)["HP/Current"] == (*cha)["HP/Total"];
-        });
-        break;
-      case action::onlyAlive:
-        std::copy_if(candidates.begin(), candidates.end(),
-                     std::back_inserter(filteredCandidates),
-                     [](character * cha)->bool {
-          return cha->alive();
-        });
-        break;
-      case action::onlyUnhealthy:
-        std::copy_if(candidates.begin(), candidates.end(),
-                     std::back_inserter(filteredCandidates),
-                     [](character * cha)->bool {
-          return cha->alive() && (*cha)["HP/Current"] < (*cha)["HP/Total"];
-        });
-        break;
-      case action::onlyDead:
-        std::copy_if(candidates.begin(), candidates.end(),
-                     std::back_inserter(filteredCandidates),
-                     [](character * cha)->bool {
-          return !cha->alive();
-        });
-        break;
-      case action::onlyUndefeated:
-        std::copy_if(candidates.begin(), candidates.end(),
-                     std::back_inserter(filteredCandidates),
-                     [](character * cha)->bool {
-          return !cha->defeated();
-        });
-        break;
+    case action::none:
+      filteredCandidates = candidates;
+      break;
+    case action::onlyHealthy:
+      std::copy_if(candidates.begin(), candidates.end(),
+                   std::back_inserter(filteredCandidates),
+                   [](character * cha)->bool {
+        return (*cha)["HP/Current"] == (*cha)["HP/Total"];
+      });
+      break;
+    case action::onlyAlive:
+      std::copy_if(candidates.begin(), candidates.end(),
+                   std::back_inserter(filteredCandidates),
+                   [](character * cha)->bool { return cha->alive(); });
+      break;
+    case action::onlyUnhealthy:
+      std::copy_if(candidates.begin(), candidates.end(),
+                   std::back_inserter(filteredCandidates),
+                   [](character * cha)->bool {
+        return cha->alive() && (*cha)["HP/Current"] < (*cha)["HP/Total"];
+      });
+      break;
+    case action::onlyDead:
+      std::copy_if(candidates.begin(), candidates.end(),
+                   std::back_inserter(filteredCandidates),
+                   [](character * cha)->bool { return !cha->alive(); });
+      break;
+    case action::onlyUndefeated:
+      std::copy_if(candidates.begin(), candidates.end(),
+                   std::back_inserter(filteredCandidates),
+                   [](character * cha)->bool { return !cha->defeated(); });
+      break;
     }
 
     if (filteredCandidates.size() == 0) {
@@ -523,20 +511,20 @@ template <typename ch, typename inter> class base {
     }
 
     switch (scope) {
-      case action::self:
-      case action::party:
-      case action::enemies:
-      case action::everyone:
-        return filteredCandidates;
-      case action::ally:
-      case action::enemy: {
-        auto q = interact.query(*this, c, filteredCandidates, 8);
-        if (q.nothing) {
-          return std::vector<character *>();
-        } else {
-          return q.just;
-        }
+    case action::self:
+    case action::party:
+    case action::enemies:
+    case action::everyone:
+      return filteredCandidates;
+    case action::ally:
+    case action::enemy: {
+      auto q = interact.query(*this, c, filteredCandidates, 8);
+      if (q.nothing) {
+        return std::vector<character *>();
+      } else {
+        return q.just;
       }
+    }
     }
   }
 
@@ -593,6 +581,16 @@ template <typename ch, typename inter> class base {
     return rv;
   }
 
+  virtual std::string operator()(const std::string &skill, character &c,
+                                 std::vector<character *> &pTarget) {
+    auto act = characterAction.find(skill);
+    if (act == characterAction.end()) {
+      return c.name.display() + " looks bewildered";
+    }
+
+    return c(act->second, pTarget);
+  }
+
   virtual efgy::json::json json(const character &c) const {
     efgy::json::json rv;
 
@@ -602,13 +600,51 @@ template <typename ch, typename inter> class base {
     return rv;
   }
 
- protected:
-  std::mt19937 rng;
-  std::vector<character *> currentTurnOrder;
-  num nParties;
-  num turn;
+  std::map<std::string, action> characterAction;
 
-  bool willExit;
+  const enum action::scope scope(const std::string &act) const {
+    const auto it = characterAction.find(act);
+    if (it == characterAction.end()) { return action::self; }
+  else {
+    return it->second.scope;
+  }
+} const enum action::filter filter(const std::string &act) const {
+  const auto it = characterAction.find(act);
+  if (it == characterAction.end()) { return action::none; }
+else {
+  return it->second.filter;
+}
+}
+
+virtual std::string getResourceLabel(const std::string &act,
+                                     const character &c) const {
+  const auto it = characterAction.find(act);
+  if (it == characterAction.end()) {
+    return "";
+  } else {
+    return it->second.cost.label(c);
+  }
+}
+
+protected:
+std::mt19937 rng;
+std::vector<character *> currentTurnOrder;
+num nParties;
+num turn;
+
+bool willExit;
+
+action &
+bind(const std::string &name, bool isVisible,
+     std::function<std::string(objects<num> &, std::vector<object *> &)> pApply,
+     const enum action::scope &pScope = action::enemy,
+     const enum action::filter &pFilter = action::none,
+     const resource::total<num> pCost = {}) {
+  action act(isVisible, pApply, pScope, pFilter, pCost);
+  act.name = metaquest::name::simple<>(name);
+  characterAction[name] = act;
+  return characterAction[name];
+}
 };
 }
 }

@@ -88,11 +88,10 @@ static std::string pass(objects<long> &source, objects<long> &target) {
 }
 
 class weapon : public metaquest::item<long> {
- public:
+public:
   using parent = metaquest::item<long>;
 
-  weapon(const std::string &name)
-      : parent(){
+  weapon(const std::string &name) : parent() {
     static std::mt19937 rng = std::mt19937(std::random_device()());
 
     targetSlots["Weapon"] = 1;
@@ -104,7 +103,7 @@ class weapon : public metaquest::item<long> {
 };
 
 class character : public metaquest::character<long> {
- public:
+public:
   using parent = metaquest::character<long>;
   using action = metaquest::action<long>;
 
@@ -135,24 +134,21 @@ class character : public metaquest::character<long> {
 
     attribute.erase("Points/Creation");
 
-    bind("Attack", true, attack, action::enemy, action::onlyUndefeated);
-    bind("Skill/Heal", true, heal, action::ally, action::onlyUnhealthy, {
-      resource::cost<long>(2, "MP")
-    });
-    bind("Pass", true, pass, action::self);
+    parent::actions = { "Attack", "Skill/Heal", "Pass" };
   }
 };
 
 template <typename inter>
 class game : public metaquest::game::base<character, inter> {
- public:
+public:
   using parent = metaquest::game::base<character, inter>;
+  using action = metaquest::action<long>;
 
   game(inter &pInteract) : parent(pInteract) {
-    if (parent::parties.size() > 0) {
-      auto &p = parent::parties[0];
-      p.inventory.push_back(weapon("Dagger"));
-    }
+    parent::bind("Attack", true, attack, action::enemy, action::onlyUndefeated);
+    parent::bind("Skill/Heal", true, heal, action::ally, action::onlyUnhealthy,
+                 { resource::cost<long>(2, "MP") });
+    parent::bind("Pass", true, pass, action::self);
   }
 
   std::string fight(bool &retry, const typename parent::character &) {
@@ -168,12 +164,12 @@ class game : public metaquest::game::base<character, inter> {
     auto actions = parent::actions(c);
 
     switch (parent::state()) {
-      case parent::menu:
-        actions["Fight"] = std::bind(&game::fight, this, _1, _2);
-        actions["Equipment"] = std::bind(&game::equipItem, this, _1, _2);
-        break;
-      default:
-        break;
+    case parent::menu:
+      actions["Fight"] = std::bind(&game::fight, this, _1, _2);
+      actions["Equipment"] = std::bind(&game::equipItem, this, _1, _2);
+      break;
+    default:
+      break;
     }
 
     if (!parent::useAI(c)) {
@@ -201,13 +197,13 @@ class game : public metaquest::game::base<character, inter> {
       auto &p = parent::parties[0];
       auto &d = parent::parties[1];
 
-      p.inventory
-          .insert(p.inventory.end(), d.inventory.begin(), d.inventory.end());
+      p.inventory.insert(p.inventory.end(), d.inventory.begin(),
+                         d.inventory.end());
 
       long xp = 0;
       for (auto &c : d) {
-        p.inventory
-            .insert(p.inventory.end(), c.equipment.begin(), c.equipment.end());
+        p.inventory.insert(p.inventory.end(), c.equipment.begin(),
+                           c.equipment.end());
         xp += c["Experience"];
       }
 

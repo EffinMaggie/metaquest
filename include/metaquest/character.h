@@ -30,7 +30,7 @@ namespace metaquest {
  *           at least for J-RPGs and tabletops.
  */
 template <typename T = long> class character : public object<T> {
- public:
+public:
   typedef object<T> parent;
 
   using parent::attribute;
@@ -94,26 +94,6 @@ template <typename T = long> class character : public object<T> {
    *
    * Uses a skill that targets one or more other characters.
    *
-   * \param[in] skill  The skill to use.
-   * \param[in] target The skill's target.
-   *
-   * \returns 'True' if the skill was used successfully, 'false' if it
-   *          failed.
-   */
-  virtual std::string operator()(const std::string &skill,
-                                 std::vector<character *> &pTarget) {
-    auto act = action.find(skill);
-    if (act == action.end()) {
-      return object<T>::name.display() + " looks bewildered";
-    }
-
-    return (*this)(act->second, pTarget);
-  }
-
-  /**\brief Use targeted skill
-   *
-   * Uses a skill that targets one or more other characters.
-   *
    * \param[in] action The skill to use.
    * \param[in] target The skill's target.
    *
@@ -153,71 +133,22 @@ template <typename T = long> class character : public object<T> {
    */
   items<T> inventory;
 
-  metaquest::action<T> &bind(
-      const std::string &name, bool isVisible,
-      std::function<std::string(objects<T> &, std::vector<object<T> *> &)>
-          pApply,
-      const enum metaquest::action<T>::scope &pScope =
-          metaquest::action<T>::enemy,
-      const enum metaquest::action<T>::filter &pFilter =
-          metaquest::action<T>::none,
-      const resource::total<T> pCost = {
-  }) {
-    metaquest::action<T> act(isVisible, pApply, pScope, pFilter, pCost);
-    act.name = metaquest::name::simple<>(name);
-    action[name] = act;
-    return action[name];
-  }
-
-  std::vector<std::string> visibleActions(void) {
-    std::vector<std::string> actions;
-
-    for (auto a : action) {
-      if (a.second.visible && a.second.usable(*this)) {
-        actions.push_back(a.first);
-      }
-    }
-
-    return actions;
-  }
+  std::vector<std::string> visibleActions(void) { return actions; }
 
   template <typename G> std::vector<std::string> visibleActions(G &game) {
     std::vector<std::string> actions;
 
-    for (auto a : action) {
-      if (a.second.visible && a.second.usable(game, *this)) {
-        actions.push_back(a.first);
+    for (auto a : visibleActions()) {
+      const auto it = game.characterAction.find(a);
+      if (it == game.characterAction.end()) {
+        continue;
+      }
+      if (it->second.visible && it->second.usable(game, *this)) {
+        actions.push_back(a);
       }
     }
 
     return actions;
-  }
-
-  const enum metaquest::action<T>::scope scope(const std::string &act) const {
-    const auto it = action.find(act);
-    if (it == action.end()) {
-      return metaquest::action<T>::self;
-    } else {
-      return it->second.scope;
-    }
-  }
-
-  const enum metaquest::action<T>::filter filter(const std::string &act) const {
-    const auto it = action.find(act);
-    if (it == action.end()) {
-      return metaquest::action<T>::none;
-    } else {
-      return it->second.filter;
-    }
-  }
-
-  virtual std::string getResourceLabel(const std::string &act) const {
-    const auto it = action.find(act);
-    if (it == action.end()) {
-      return "";
-    } else {
-      return it->second.cost.label(*this);
-    }
   }
 
   virtual std::set<std::string> attributes(void) const {
@@ -283,8 +214,8 @@ template <typename T = long> class character : public object<T> {
     return rv;
   }
 
- protected:
-  std::map<std::string, action<T> > action;
+protected:
+  std::vector<std::string> actions;
 };
 }
 

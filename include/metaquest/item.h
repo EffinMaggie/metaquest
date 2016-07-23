@@ -28,7 +28,7 @@ namespace metaquest {
  *           at least for J-RPGs and tabletops.
  */
 template <typename T = long> class item : public object<T> {
- public:
+public:
   using parent = metaquest::object<T>;
 
   std::string effect;
@@ -60,13 +60,13 @@ template <typename T = long> class item : public object<T> {
     return rv;
   }
 
- protected:
+protected:
   slots<T> targetSlots;
 };
 
-template <typename T> class items : public std::vector<item<T>> {
- public:
-  using std::vector<item<T>>::vector;
+template <typename T> class items : public std::vector<item<T> > {
+public:
+  using std::vector<item<T> >::vector;
 
   virtual bool load(efgy::json::json json) {
     this->clear();
