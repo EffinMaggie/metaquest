@@ -56,8 +56,6 @@ static std::string attack(objects<long> &source, objects<long> &target) {
     for (auto &tp : target) {
       auto &t = *tp;
 
-      os << s.name.display() << " attacks " << t.name.display() << "\n";
-
       long admg = solveDamage(s["Attack"], s["Damage"], t["Defence"]);
 
       os << s.name.display() << " hits for " << admg << " points of damage";
@@ -75,8 +73,6 @@ static std::string heal(objects<long> &source, objects<long> &target) {
     for (auto &tp : target) {
       auto &t = *tp;
 
-      os << s.name.display() << " heals " << t.name.display() << "\n";
-
       long amt = solveDamage(s["Magic"], t["Endurance"], 1);
 
       os << s.name.display() << " heals " << amt << " points of damage";
@@ -88,12 +84,7 @@ static std::string heal(objects<long> &source, objects<long> &target) {
 }
 
 static std::string pass(objects<long> &source, objects<long> &target) {
-  std::stringstream os("");
-  for (auto &sp : source) {
-    auto &s = *sp;
-    os << s.name.display() << " would rather be reading a book.";
-  }
-  return os.str();
+  return "";
 }
 
 class weapon : public metaquest::item<long> {
@@ -101,11 +92,10 @@ class weapon : public metaquest::item<long> {
   using parent = metaquest::item<long>;
 
   weapon(const std::string &name)
-      : parent({
-    { "Weapon", 1 }
-  }) {
+      : parent(){
     static std::mt19937 rng = std::mt19937(std::random_device()());
 
+    targetSlots["Weapon"] = 1;
     attribute["Damage"] = 5 + rng() % 10;
 
     parent::name = name::simple<>(name);

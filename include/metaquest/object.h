@@ -154,6 +154,10 @@ class object {
       attribute[data.first] = data.second.asNumber();
     }
 
+    for (const auto data : json("slots").asObject()) {
+      slots[data.first] = data.second.asNumber();
+    }
+
     return true;
   }
 
@@ -165,6 +169,11 @@ class object {
     auto &at = rv("attributes");
     for (auto &attrib : attribute) {
       at(attrib.first) = efgy::json::json::numeric(attrib.second);
+    }
+
+    auto &sl = rv("slots");
+    for (auto &slot : slots) {
+      sl(slot.first) = efgy::json::json::numeric(slot.second);
     }
 
     return rv;

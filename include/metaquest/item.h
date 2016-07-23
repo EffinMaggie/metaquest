@@ -31,19 +31,34 @@ template <typename T = long> class item : public object<T> {
  public:
   using parent = metaquest::object<T>;
 
-  item(const action<T> &pApply, const slots<T> &pUsedSlots)
-      : parent(), apply(pApply), targetSlots(pUsedSlots) {}
-
-  item(const action<T> &pApply) : parent(), apply(pApply), targetSlots() {}
-
-  item(const slots<T> &pUsedSlots)
-      : parent(), apply(), targetSlots(pUsedSlots) {}
-
-  item(void) : parent(), apply(), targetSlots() {}
-
-  action<T> apply;
+  std::string effect;
 
   virtual const slots<T> usedSlots(void) const { return targetSlots; }
+
+  virtual bool load(efgy::json::json json) {
+    parent::load(json);
+
+    for (const auto data : json("target-slots").asObject()) {
+      targetSlots[data.first] = data.second.asNumber();
+    }
+
+    effect = json("effect").asString();
+
+    return true;
+  }
+
+  virtual efgy::json::json json(void) const {
+    efgy::json::json rv = parent::json();
+
+    auto &sl = rv("target-slots");
+    for (auto &slot : targetSlots) {
+      sl(slot.first) = efgy::json::json::numeric(slot.second);
+    }
+
+    rv("effect") = effect;
+
+    return rv;
+  }
 
  protected:
   slots<T> targetSlots;
@@ -52,6 +67,29 @@ template <typename T = long> class item : public object<T> {
 template <typename T> class items : public std::vector<item<T>> {
  public:
   using std::vector<item<T>>::vector;
+
+  virtual bool load(efgy::json::json json) {
+    this->clear();
+
+    for (const auto data : json.asArray()) {
+      item<T> it;
+      it.load(data);
+      this->push_back(it);
+    }
+
+    return true;
+  }
+
+  virtual efgy::json::json json(void) const {
+    efgy::json::json rv;
+    rv.toArray();
+
+    for (auto &it : *this) {
+      rv.push(it.json());
+    }
+
+    return rv;
+  }
 };
 }
 

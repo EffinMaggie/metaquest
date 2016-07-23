@@ -151,7 +151,7 @@ template <typename T = long> class character : public object<T> {
    * inventory. These items are not equipped and should not have any
    * effect on the character's stats.
    */
-  std::vector<item<T> > inventory;
+  items<T> inventory;
 
   metaquest::action<T> &bind(
       const std::string &name, bool isVisible,
@@ -263,6 +263,24 @@ template <typename T = long> class character : public object<T> {
       s[sl.first] -= sl.second;
     }
     return s;
+  }
+
+  virtual bool load(efgy::json::json json) {
+    parent::load(json);
+
+    equipment.load(json("equipment"));
+    inventory.load(json("inventory"));
+
+    return true;
+  }
+
+  virtual efgy::json::json json(void) const {
+    efgy::json::json rv = parent::json();
+
+    rv("equipment") = equipment.json();
+    rv("inventory") = inventory.json();
+
+    return rv;
   }
 
  protected:

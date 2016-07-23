@@ -88,6 +88,10 @@ class party : public std::vector<character<typename C::base>> {
       }
     }
 
+    if (json("inventory").asArray().size() > 0) {
+      p.inventory.load(json("inventory"));
+    }
+
     return p;
   }
 
@@ -98,6 +102,8 @@ class party : public std::vector<character<typename C::base>> {
     for (auto &ch : *this) {
       me.push(ch.json());
     }
+
+    rv("inventory") = inventory.json();
 
     return rv;
   }

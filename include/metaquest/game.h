@@ -566,7 +566,9 @@ template <typename ch, typename inter> class base {
       parties.push_back(metaquest::party<ch>::load(p));
     }
 
-    nParties = parties.size();
+    if (parties.size() > 0) {
+      nParties = parties.size();
+    }
 
     generateParties();
 
