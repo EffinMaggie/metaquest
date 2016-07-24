@@ -25,37 +25,10 @@ namespace metaquest {
  * type is based on std::vector as opposed to std::set because in some
  * contexts (menu, etc.) the order might actually be relevant.
  */
-template <typename C>
-class party : public std::vector<character<typename C::base> > {
+template <typename T> class party : public std::vector<character<T>> {
 public:
-  using base = typename C::base;
-
-  /**\brief Generate a party.
-   *
-   * Given the number of members you want the party to consist of, this will
-   * randomly generate a party of that size.
-   *
-   * Actual character generation needs to be handled by the character class.
-   *
-   * \param[in] members The number of members the new party should have.
-   *
-   * \returns The generated party.
-   */
-  static party generate(unsigned int members, base points = 0) {
-    static std::mt19937 rng = std::mt19937(std::random_device()());
-    party p;
-
-    for (unsigned int i = 0; i < members; i++) {
-      base cpoints = points;
-      if ((points > 0) && (i < (members - 1))) {
-        cpoints = rng() % points;
-        points -= cpoints;
-      }
-      p.push_back(C(cpoints));
-    }
-
-    return p;
-  }
+  using base = T;
+  using character = character<T>;
 
   /**\brief Is the party defeated?
    *
@@ -77,11 +50,11 @@ public:
     return ret;
   }
 
-  static party load(efgy::json::json json) {
+  template <typename G> static party load(G &game, efgy::json::json json) {
     party p;
 
     for (const auto o : json("member").asArray()) {
-      C c;
+      character c = game.generateCharacter();
 
       if (c.load(o)) {
         p.push_back(c);
@@ -111,7 +84,7 @@ public:
   items<base> inventory;
 
 protected:
-  using std::vector<character<typename C::base> >::vector;
+  using std::vector<character>::vector;
 };
 }
 

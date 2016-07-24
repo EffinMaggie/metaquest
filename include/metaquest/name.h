@@ -51,7 +51,7 @@ static const unsigned long seed = std::random_device()();
  * \tparam generator A class that can generate random names, e.g. a
  *                   variant of efgy::markov::chain.
  */
-template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
+template <typename T = char, typename generator = efgy::markov::chain<T, 3>>
 class name {
 public:
   /**\brief Name type
@@ -65,10 +65,10 @@ public:
     givenName,  /**< A given name, e.g. a first or middle name. */
     familyName, /**< A family name, e.g. a last name. */
     nickName,   /**< A nickname, e.g. a shortened form of a
-                 shortened form of a last name. */
-    callSign, /**< A nickname which is not necessarily used in
-                   a colloquial setting. */
-    otherName /**< Used with things like items, etc. */
+               shortened form of a last name. */
+    callSign,   /**< A nickname which is not necessarily used in
+                     a colloquial setting. */
+    otherName   /**< Used with things like items, etc. */
   };
 
   /**\brief Construct with generator and type
@@ -137,8 +137,8 @@ public:
  * \tparam generator A class that can generate random names, e.g. a
  *                   variant of efgy::markov::chain.
  */
-template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
-class proper : public std::vector<name<T, generator> > {
+template <typename T = char, typename generator = efgy::markov::chain<T, 3>>
+class proper : public std::vector<name<T, generator>> {
 public:
   /**\brief Query the full name
    *
@@ -205,7 +205,7 @@ public:
   }
 };
 
-template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
+template <typename T = char, typename generator = efgy::markov::chain<T, 3>>
 class simple : public proper<T, generator> {
 public:
   typedef proper<T, generator> parent;
@@ -228,7 +228,7 @@ namespace american {
  * \tparam generator A class that can generate random names, e.g. a
  *                   variant of efgy::markov::chain.
  */
-template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
+template <typename T = char, typename generator = efgy::markov::chain<T, 3>>
 class given : public name<T, generator> {
 public:
   /**\brief Base name type
@@ -271,7 +271,7 @@ public:
     }
 
     std::transform(value.begin() + 1, value.end(), value.begin() + 1,
-                   [](char a)->char { return std::tolower(a); });
+                   [](char a) -> char { return std::tolower(a); });
   }
 };
 
@@ -284,7 +284,7 @@ public:
  * \tparam generator A class that can generate random names, e.g. a
  *                   variant of efgy::markov::chain.
  */
-template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
+template <typename T = char, typename generator = efgy::markov::chain<T, 3>>
 class family : public name<T, generator> {
 public:
   /**\copydoc given::name */
@@ -312,7 +312,7 @@ public:
     }
 
     std::transform(value.begin() + 1, value.end(), value.begin() + 1,
-                   [](char a)->char { return std::tolower(a); });
+                   [](char a) -> char { return std::tolower(a); });
   }
 };
 
@@ -325,7 +325,7 @@ public:
  * \tparam generator A class that can generate random names, e.g. a
  *                   variant of efgy::markov::chain.
  */
-template <typename T = char, typename generator = efgy::markov::chain<T, 3> >
+template <typename T = char, typename generator = efgy::markov::chain<T, 3>>
 class proper : public metaquest::name::proper<T, generator> {
 public:
   /**\copydoc given::name */

@@ -59,7 +59,7 @@ public:
 
   double progress(typename clock::duration until) {
     const auto el = std::chrono::duration_cast<std::chrono::milliseconds>(
-        clock::now() - validSince).count();
+                        clock::now() - validSince).count();
     const auto ts =
         std::chrono::duration_cast<std::chrono::milliseconds>(until).count();
 
@@ -68,9 +68,9 @@ public:
 
   double progress(typename clock::time_point until) {
     const auto el = std::chrono::duration_cast<std::chrono::milliseconds>(
-        clock::now() - validSince).count();
+                        clock::now() - validSince).count();
     const auto ts = std::chrono::duration_cast<std::chrono::milliseconds>(
-        until - validSince).count();
+                        until - validSince).count();
 
     return std::min((double)el / (double)ts, 1.0);
   }
@@ -287,9 +287,9 @@ public:
   void flush(void) {
     std::lock_guard<std::mutex> lock(base.activeMutex);
 
-    while (base.io.flush([this](const typename term::base & terminal,
-                                const std::size_t & l, const std::size_t & c)
-                             ->typename term::cell {
+    while (base.io.flush([this](const typename term::base &terminal,
+                                const std::size_t &l,
+                                const std::size_t &c) -> typename term::cell {
       return postProcess(terminal, l, c);
     }))
       ;
@@ -355,7 +355,7 @@ public:
 
   term io;
   efgy::terminal::writer<> out;
-  AI<base<term, AI> > ai;
+  AI<base<term, AI>> ai;
   efgy::json::json logbook;
   std::thread refresherThread;
   volatile bool alive;
@@ -502,24 +502,24 @@ public:
     bool didSelect = false;
 
     do {
-      io.read([&didSelect, &didCancel ](const typename term::command & c)
-                                           ->bool {
-                switch (c.code) {
-                case 'C': // right: select
-                  didSelect = true;
-                  break;
-                case 'D': // left: cancel
-                  didCancel = true;
-                  break;
-                }
-                return false;
-              },
-              [&didSelect](const long & l)->bool {
-        if (l == '\n') {
-          didSelect = true;
-        }
-        return false;
-      });
+      io.read(
+          [&didSelect, &didCancel](const typename term::command &c) -> bool {
+            switch (c.code) {
+            case 'C': // right: select
+              didSelect = true;
+              break;
+            case 'D': // left: cancel
+              didCancel = true;
+              break;
+            }
+            return false;
+          },
+          [&didSelect](const long &l) -> bool {
+            if (l == '\n') {
+              didSelect = true;
+            }
+            return false;
+          });
 
       didSelect |= didCancel;
     } while (!didSelect);
@@ -541,7 +541,7 @@ public:
     }
 
     std::vector<std::string> list;
-    std::map<std::string, std::vector<std::string> > map;
+    std::map<std::string, std::vector<std::string>> map;
 
     for (const auto &la : pList) {
       std::string l = la;
@@ -598,32 +598,30 @@ public:
     do {
       sel->line = top + 1 + selection;
 
-      io.read(
-          [&selection, &didSelect, &didCancel ](const typename term::command &
-                                                c)
-                                                   ->bool {
-            switch (c.code) {
-            case 'A': // up
-              selection--;
-              break;
-            case 'B': // down
-              selection++;
-              break;
-            case 'C': // right: select
-              didSelect = true;
-              break;
-            case 'D': // left: cancel
-              didCancel = true;
-              break;
-            }
-            return false;
-          },
-          [&didSelect](const T & l)->bool {
-            if (l == '\n') {
-              didSelect = true;
-            }
-            return false;
-          });
+      io.read([&selection, &didSelect, &didCancel](
+                  const typename term::command &c) -> bool {
+                switch (c.code) {
+                case 'A': // up
+                  selection--;
+                  break;
+                case 'B': // down
+                  selection++;
+                  break;
+                case 'C': // right: select
+                  didSelect = true;
+                  break;
+                case 'D': // left: cancel
+                  didCancel = true;
+                  break;
+                }
+                return false;
+              },
+              [&didSelect](const T &l) -> bool {
+                if (l == '\n') {
+                  didSelect = true;
+                }
+                return false;
+              });
 
       didSelect |= didCancel;
 
@@ -662,7 +660,7 @@ public:
   }
 
   template <typename T, typename G>
-  efgy::maybe<std::vector<metaquest::character<T> *> >
+  efgy::maybe<std::vector<metaquest::character<T> *>>
   query(G &game, const metaquest::character<T> &source,
         std::vector<metaquest::character<T> *> &candidates,
         std::size_t indent = 4) {
@@ -680,10 +678,8 @@ public:
 
     std::sort(
         candidates.begin(), candidates.end(),
-        [&game, this ](metaquest::character<T> * a, metaquest::character<T> * b)
-                          ->bool {
-          return getLine(game, *a) < getLine(game, *b);
-        });
+        [&game, this](metaquest::character<T> *a, metaquest::character<T> *b)
+            -> bool { return getLine(game, *a) < getLine(game, *b); });
 
     std::vector<metaquest::character<T> *> targets;
     long selection = 0;
@@ -700,32 +696,30 @@ public:
 
       sel->line = getLine(game, c);
 
-      io.read(
-          [&selection, &didSelect, &didCancel ](const typename term::command &
-                                                c)
-                                                   ->bool {
-            switch (c.code) {
-            case 'A': // up
-              selection--;
-              break;
-            case 'B': // down
-              selection++;
-              break;
-            case 'C': // right: select
-              didSelect = true;
-              break;
-            case 'D': // left: cancel
-              didCancel = true;
-              break;
-            }
-            return false;
-          },
-          [&didSelect](const T & l)->bool {
-            if (l == '\n') {
-              didSelect = true;
-            }
-            return false;
-          });
+      io.read([&selection, &didSelect, &didCancel](
+                  const typename term::command &c) -> bool {
+                switch (c.code) {
+                case 'A': // up
+                  selection--;
+                  break;
+                case 'B': // down
+                  selection++;
+                  break;
+                case 'C': // right: select
+                  didSelect = true;
+                  break;
+                case 'D': // left: cancel
+                  didCancel = true;
+                  break;
+                }
+                return false;
+              },
+              [&didSelect](const T &l) -> bool {
+                if (l == '\n') {
+                  didSelect = true;
+                }
+                return false;
+              });
 
       didSelect |= didCancel;
 
@@ -741,7 +735,7 @@ public:
     sel->expire();
 
     if (didCancel) {
-      return efgy::maybe<std::vector<metaquest::character<T> *> >();
+      return efgy::maybe<std::vector<metaquest::character<T> *>>();
     }
 
     targets.push_back(candidates[selection]);

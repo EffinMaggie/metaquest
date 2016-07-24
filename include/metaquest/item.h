@@ -32,14 +32,13 @@ public:
   using parent = metaquest::object<T>;
 
   std::string effect;
-
-  virtual const slots<T> usedSlots(void) const { return targetSlots; }
+  slots<T> usedSlots;
 
   virtual bool load(efgy::json::json json) {
     parent::load(json);
 
     for (const auto data : json("target-slots").asObject()) {
-      targetSlots[data.first] = data.second.asNumber();
+      usedSlots[data.first] = data.second.asNumber();
     }
 
     effect = json("effect").asString();
@@ -51,7 +50,7 @@ public:
     efgy::json::json rv = parent::json();
 
     auto &sl = rv("target-slots");
-    for (auto &slot : targetSlots) {
+    for (auto &slot : usedSlots) {
       sl(slot.first) = efgy::json::json::numeric(slot.second);
     }
 
@@ -59,14 +58,11 @@ public:
 
     return rv;
   }
-
-protected:
-  slots<T> targetSlots;
 };
 
-template <typename T> class items : public std::vector<item<T> > {
+template <typename T> class items : public std::vector<item<T>> {
 public:
-  using std::vector<item<T> >::vector;
+  using std::vector<item<T>>::vector;
 
   virtual bool load(efgy::json::json json) {
     this->clear();

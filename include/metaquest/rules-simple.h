@@ -91,68 +91,93 @@ static std::string pass(objects<long> &source, objects<long> &target) {
   return "";
 }
 
-class weapon : public metaquest::item<long> {
-public:
-  using parent = metaquest::item<long>;
+using action = metaquest::action<long>;
 
-  weapon(const std::string &name) : parent() {
-    static std::mt19937 rng = std::mt19937(std::random_device()());
+static metaquest::item<long> weapon(const std::string &name) {
+  static std::mt19937 rng = std::mt19937(std::random_device()());
+  metaquest::item<long> r;
 
-    targetSlots["Weapon"] = 1;
-    attribute["Damage"] = 5 + rng() % 10;
+  r.usedSlots["Weapon"] = 1;
+  r.attribute["Damage"] = 5 + rng() % 10;
 
-    parent::name = name::simple<>(name);
-    parent::name.push_back("+" + std::to_string(attribute["Damage"]));
-  }
-};
+  r.name = name::simple<>(name);
+  r.name.push_back("+" + std::to_string(r["Damage"]));
 
-class character : public metaquest::character<long> {
-public:
-  using parent = metaquest::character<long>;
-  using action = metaquest::action<long>;
+  return r;
+}
 
-  character(long points = 0) : parent(points) {
-    static std::mt19937 rng = std::mt19937(std::random_device()());
+static metaquest::character<long> character(long points = 0) {
+  static std::mt19937 rng = std::mt19937(std::random_device()());
+  metaquest::character<long> c;
 
-    metaquest::name::american::proper<> cname(rng() % 2);
-    parent::name = cname;
+  metaquest::name::american::proper<> cname(rng() % 2);
+  c.name = cname;
 
-    parent::equipment.push_back(weapon("Sword"));
+  c.slots = {{"Weapon", 1}, {"Trinket", 1}};
 
-    parent::slots = { { "Weapon", 1 }, { "Trinket", 1 } };
+  c.equipment.push_back(weapon("Sword"));
 
-    attribute["Experience"] = points;
+  c.attribute["Experience"] = points;
 
-    attribute["Endurance"] = 1 + rng() % 100;
-    attribute["Magic"] = 100 - attribute["Endurance"];
+  c.attribute["Endurance"] = 1 + rng() % 100;
+  c.attribute["Magic"] = 100 - c.attribute["Endurance"];
 
-    function["Level"] = getLevel;
-    function["HP/Total"] = getHPTotal;
-    function["MP/Total"] = getMPTotal;
+  c.function["Level"] = getLevel;
+  c.function["HP/Total"] = getHPTotal;
+  c.function["MP/Total"] = getMPTotal;
 
-    function["Attack"] = getAttack;
-    function["Defence"] = getDefence;
+  c.function["Attack"] = getAttack;
+  c.function["Defence"] = getDefence;
 
-    attribute["HP/Current"] = (*this)["HP/Total"];
-    attribute["MP/Current"] = (*this)["MP/Total"];
+  c.attribute["HP/Current"] = c["HP/Total"];
+  c.attribute["MP/Current"] = c["MP/Total"];
 
-    attribute.erase("Points/Creation");
+  c.actions = {"Attack", "Skill/Heal", "Pass"};
 
-    parent::actions = { "Attack", "Skill/Heal", "Pass" };
-  }
-};
+  return c;
+}
 
 template <typename inter>
-class game : public metaquest::game::base<character, inter> {
+class game : public metaquest::game::base<long, inter> {
 public:
-  using parent = metaquest::game::base<character, inter>;
+  using parent = metaquest::game::base<long, inter>;
   using action = metaquest::action<long>;
+  using party = typename parent::party;
+  using character = typename parent::character;
 
-  game(inter &pInteract) : parent(pInteract) {
+  game(inter &pInteract) : parent(pInteract, 1) {
     parent::bind("Attack", true, attack, action::enemy, action::onlyUndefeated);
     parent::bind("Skill/Heal", true, heal, action::ally, action::onlyUnhealthy,
-                 { resource::cost<long>(2, "MP") });
+                 {resource::cost<long>(2, "MP")});
     parent::bind("Pass", true, pass, action::self);
+
+    parent::generateParties();
+  }
+
+  virtual character generateCharacter(long points) {
+    return simple::character(points);
+  }
+
+  virtual party generateParty(long members, long points) {
+    static std::mt19937 rng = std::mt19937(std::random_device()());
+    party p;
+
+    if ((parent::parties.size() > 0) && (points == 0)) {
+      for (auto &c : parent::parties[0]) {
+        points += c["Experience"];
+      }
+    }
+
+    for (unsigned int i = 0; i < members; i++) {
+      long cpoints = points;
+      if ((points > 0) && (i < (members - 1))) {
+        cpoints = rng() % points;
+        points -= cpoints;
+      }
+      p.push_back(generateCharacter(cpoints));
+    }
+
+    return p;
   }
 
   std::string fight(bool &retry, const typename parent::character &) {
@@ -181,19 +206,6 @@ public:
     }
 
     return actions;
-  }
-
-  virtual std::string generateParty(void) {
-    if (parent::parties.size() == 0) {
-      parent::parties.push_back(metaquest::party<character>::generate(4));
-    } else {
-      long xp = 0;
-      for (auto &c : parent::parties[0]) {
-        xp += c["Experience"];
-      }
-      parent::parties.push_back(metaquest::party<character>::generate(3, xp));
-    }
-    return "a new party appeared!\n";
   }
 
   virtual std::string doVictory(void) {

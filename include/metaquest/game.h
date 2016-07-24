@@ -21,29 +21,22 @@
 
 namespace metaquest {
 namespace game {
-template <typename ch, typename inter> class base {
+template <typename T, typename inter> class base {
 public:
-  using num = typename ch::base;
+  using num = T;
   using object = object<num>;
   using objects = objects<num>;
   using character = character<num>;
   using action = action<num>;
+  using party = party<num>;
 
-  base(inter &pInteract, num pParties = 1)
+  base(inter &pInteract, num pParties = 0)
       : interact(pInteract), rng(std::random_device()()), willExit(false),
-        nParties(pParties), currentTurnOrder(), turn(0) {
-    generateParties();
-  }
+        nParties(pParties), currentTurnOrder(), turn(0) {}
 
-  std::vector<metaquest::party<ch> > parties;
+  std::vector<party> parties;
 
-  enum state {
-    menu,
-    combat,
-    victory,
-    defeat,
-    exit
-  };
+  enum state { menu, combat, victory, defeat, exit };
 
   virtual enum state state(void) const {
     if (willExit) {
@@ -83,7 +76,7 @@ public:
 
     std::copy_if(candidates.begin(), candidates.end(),
                  std::back_inserter(filteredCandidates),
-                 [](character * cha)->bool { return cha->able(); });
+                 [](character *cha) -> bool { return cha->able(); });
 
     std::random_shuffle(filteredCandidates.begin(), filteredCandidates.end());
 
@@ -136,8 +129,8 @@ public:
   }
 
   typedef std::map<std::string,
-                   std::function<std::string(bool &, const character &)> >
-  actionMap;
+                   std::function<std::string(bool &, const character &)>>
+      actionMap;
 
   std::string resolve(character &target, actionMap &actions,
                       bool allowCharacterActions = true) {
@@ -146,7 +139,7 @@ public:
     std::string res;
 
     if (allowCharacterActions) {
-      labels = target.visibleActions(*this);
+      labels = visibleActions(target);
     }
 
     for (const auto &a : actions) {
@@ -229,9 +222,9 @@ public:
 
     se.insert(i.name.display());
 
-    for (auto &slot : i.usedSlots()) {
+    for (auto &slot : i.usedSlots) {
       for (auto &item : p.inventory) {
-        auto slots = item.usedSlots();
+        auto slots = item.usedSlots;
         if (slots[slot.first] > 0) {
           se.insert(item.name.display());
         }
@@ -278,7 +271,7 @@ public:
     std::set<std::string> se;
 
     for (auto &item : p.inventory) {
-      auto slots = item.usedSlots();
+      auto slots = item.usedSlots;
       if (slots[s] > 0) {
         se.insert(item.name.display());
       }
@@ -311,7 +304,7 @@ public:
     std::vector<std::string> slots;
 
     for (const auto &item : o.equipment) {
-      for (const auto &slot : item.usedSlots()) {
+      for (const auto &slot : item.usedSlots) {
         slots.push_back(slot.first + ": " + item.name.display());
       }
     }
@@ -325,7 +318,7 @@ public:
     std::string sl = interact.query(*this, o, slots, 8);
 
     for (const auto &item : o.equipment) {
-      for (const auto &slot : item.usedSlots()) {
+      for (const auto &slot : item.usedSlots) {
         if ((slot.first + ": " + item.name.display()) == sl) {
           return equip(retry, o, item);
         }
@@ -365,7 +358,7 @@ public:
     }
 
     for (const auto &item : c.equipment) {
-      for (const auto &slot : item.usedSlots()) {
+      for (const auto &slot : item.usedSlots) {
         data[slot.first] +=
             (data[slot.first] != "" ? ", " : "") + item.name.display();
       }
@@ -475,31 +468,31 @@ public:
     case action::onlyHealthy:
       std::copy_if(candidates.begin(), candidates.end(),
                    std::back_inserter(filteredCandidates),
-                   [](character * cha)->bool {
+                   [](character *cha) -> bool {
         return (*cha)["HP/Current"] == (*cha)["HP/Total"];
       });
       break;
     case action::onlyAlive:
       std::copy_if(candidates.begin(), candidates.end(),
                    std::back_inserter(filteredCandidates),
-                   [](character * cha)->bool { return cha->alive(); });
+                   [](character *cha) -> bool { return cha->alive(); });
       break;
     case action::onlyUnhealthy:
       std::copy_if(candidates.begin(), candidates.end(),
                    std::back_inserter(filteredCandidates),
-                   [](character * cha)->bool {
+                   [](character *cha) -> bool {
         return cha->alive() && (*cha)["HP/Current"] < (*cha)["HP/Total"];
       });
       break;
     case action::onlyDead:
       std::copy_if(candidates.begin(), candidates.end(),
                    std::back_inserter(filteredCandidates),
-                   [](character * cha)->bool { return !cha->alive(); });
+                   [](character *cha) -> bool { return !cha->alive(); });
       break;
     case action::onlyUndefeated:
       std::copy_if(candidates.begin(), candidates.end(),
                    std::back_inserter(filteredCandidates),
-                   [](character * cha)->bool { return !cha->defeated(); });
+                   [](character *cha) -> bool { return !cha->defeated(); });
       break;
     }
 
@@ -529,16 +522,26 @@ public:
     }
   }
 
-  virtual std::string generateParty(void) {
-    parties.push_back(metaquest::party<ch>::generate(4));
-    return "a new party appeared!\n";
-  }
+  virtual character generateCharacter(long points = 0) = 0;
+
+  /**\brief Generate a party.
+   *
+   * Given the number of members you want the party to consist of, this will
+   * randomly generate a party of that size.
+   *
+   * Actual character generation needs to be handled by the character class.
+   *
+   * \param[in] members The number of members the new party should have.
+   *
+   * \returns The generated party.
+   */
+  virtual party generateParty(long members, long points) = 0;
 
   virtual std::string generateParties(void) {
     std::string out = "";
 
     while (parties.size() < nParties) {
-      out += generateParty();
+      parties.push_back(generateParty(4, 0));
     }
 
     return out;
@@ -552,7 +555,7 @@ public:
     parties.clear();
 
     for (const auto p : pa.asArray()) {
-      parties.push_back(metaquest::party<ch>::load(p));
+      parties.push_back(party::load(*this, p));
     }
 
     if (parties.size() > 0) {
@@ -620,51 +623,61 @@ public:
     return rv;
   }
 
-  std::map<std::string, action> characterAction;
+  virtual std::string getResourceLabel(const std::string &act,
+                                       const character &c) const {
+    const auto it = characterAction.find(act);
+    if (it == characterAction.end()) {
+      return "";
+    } else {
+      return it->second.cost.label(c);
+    }
+  }
 
   const enum action::scope scope(const std::string &act) const {
     const auto it = characterAction.find(act);
-    if (it == characterAction.end()) { return action::self; }
-  else {
-    return it->second.scope;
+    return it == characterAction.end() ? action::self : it -> second.scope;
   }
-} const enum action::filter filter(const std::string &act) const {
-  const auto it = characterAction.find(act);
-  if (it == characterAction.end()) { return action::none; }
-else {
-  return it->second.filter;
-}
-}
+  const enum action::filter filter(const std::string &act) const {
+    const auto it = characterAction.find(act);
+    return it == characterAction.end() ? action::none : it -> second.filter;
+  }
 
-virtual std::string getResourceLabel(const std::string &act,
-                                     const character &c) const {
-  const auto it = characterAction.find(act);
-  if (it == characterAction.end()) {
-    return "";
-  } else {
-    return it->second.cost.label(c);
+  std::vector<std::string> visibleActions(character &c) {
+    std::vector<std::string> actions;
+
+    for (auto a : c.visibleActions()) {
+      const auto it = characterAction.find(a);
+      if (it == characterAction.end()) {
+        continue;
+      }
+      if (it->second.visible && it->second.usable(*this, c)) {
+        actions.push_back(a);
+      }
+    }
+
+    return actions;
   }
-}
 
 protected:
-std::mt19937 rng;
-std::vector<character *> currentTurnOrder;
-num nParties;
-num turn;
+  std::mt19937 rng;
+  std::vector<character *> currentTurnOrder;
+  num nParties;
+  num turn;
+  std::map<std::string, action> characterAction;
 
-bool willExit;
+  bool willExit;
 
-action &
-bind(const std::string &name, bool isVisible,
-     std::function<std::string(objects &, std::vector<object *> &)> pApply,
-     const enum action::scope &pScope = action::enemy,
-     const enum action::filter &pFilter = action::none,
-     const resource::total<num> pCost = {}) {
-  action act(isVisible, pApply, pScope, pFilter, pCost);
-  act.name = metaquest::name::simple<>(name);
-  characterAction[name] = act;
-  return characterAction[name];
-}
+  action &
+  bind(const std::string &name, bool isVisible,
+       std::function<std::string(objects &, std::vector<object *> &)> pApply,
+       const enum action::scope &pScope = action::enemy,
+       const enum action::filter &pFilter = action::none,
+       const resource::total<num> pCost = {}) {
+    action act(isVisible, pApply, pScope, pFilter, pCost);
+    act.name = metaquest::name::simple<>(name);
+    characterAction[name] = act;
+    return characterAction[name];
+  }
 };
 }
 }

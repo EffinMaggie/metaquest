@@ -35,10 +35,6 @@ public:
 
   using parent::attribute;
 
-  character(const T points = 1) : parent() {
-    attribute["Points/Creation"] = points;
-  }
-
   /**\brief Is the character alive?
    *
    * Characters are either alive or not. This function tells you which it is.
@@ -104,23 +100,7 @@ public:
    */
   items<T> inventory;
 
-  std::vector<std::string> visibleActions(void) { return actions; }
-
-  template <typename G> std::vector<std::string> visibleActions(G &game) {
-    std::vector<std::string> actions;
-
-    for (auto a : visibleActions()) {
-      const auto it = game.characterAction.find(a);
-      if (it == game.characterAction.end()) {
-        continue;
-      }
-      if (it->second.visible && it->second.usable(game, *this)) {
-        actions.push_back(a);
-      }
-    }
-
-    return actions;
-  }
+  std::vector<std::string> visibleActions(void) const { return actions; }
 
   virtual std::set<std::string> attributes(void) const {
     auto rv = parent::attributes();
@@ -152,7 +132,7 @@ public:
   virtual const slots<T> usedSlots(void) const {
     slots<T> s = {};
     for (auto &item : equipment) {
-      for (auto &sl : item.usedSlots()) {
+      for (auto &sl : item.usedSlots) {
         s[sl.first] += sl.second;
       }
     }
@@ -185,7 +165,6 @@ public:
     return rv;
   }
 
-protected:
   std::vector<std::string> actions;
 };
 }

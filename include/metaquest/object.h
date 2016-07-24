@@ -140,9 +140,7 @@ public:
 
   virtual const slots<T> allSlots(void) const { return slots; }
 
-  virtual const slots<T> usedSlots(void) const {
-    return {};
-  }
+  virtual const slots<T> usedSlots(void) const { return {}; }
 
   virtual const slots<T> freeSlots(void) const { return allSlots(); }
 
@@ -178,7 +176,6 @@ public:
     return rv;
   }
 
-protected:
   slots<T> slots;
 
   /**\brief Attribute generation functions
@@ -186,7 +183,7 @@ protected:
    * Maps attribute names to thunks which can generate an attribute on
    * the fly, e.g. for derived attributes in RPGs.
    */
-  std::map<std::string, std::function<T(const object &)> > function;
+  std::map<std::string, std::function<T(const object &)>> function;
 
   /**\brief Basic attributes
    *

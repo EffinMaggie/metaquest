@@ -22,10 +22,7 @@ namespace metaquest {
 namespace resource {
 template <typename T> class cost {
 public:
-  enum operation {
-    subtract,
-    add
-  } operation;
+  enum operation { subtract, add } operation;
 
   cost(T pValue, const std::string &pResource,
        enum operation pOperation = subtract, bool pVisible = true)
@@ -87,9 +84,9 @@ public:
   }
 };
 
-template <typename T> class total : public std::vector<cost<T> > {
+template <typename T> class total : public std::vector<cost<T>> {
 public:
-  using std::vector<cost<T> >::vector;
+  using std::vector<cost<T>>::vector;
 
   virtual std::string label(const object<T> &c) const {
     std::string res = "";
@@ -128,14 +125,7 @@ template <typename T> class action : public object<T> {
 public:
   using parent = metaquest::object<T>;
 
-  enum scope {
-    self,
-    ally,
-    enemy,
-    party,
-    enemies,
-    everyone
-  } scope;
+  enum scope { self, ally, enemy, party, enemies, everyone } scope;
 
   enum filter {
     none,

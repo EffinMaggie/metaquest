@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   {
     metaquest::flow::generic<metaquest::interact::terminal::base<>,
                              metaquest::rules::simple::game<
-                                 metaquest::interact::terminal::base<> > > game;
+                                 metaquest::interact::terminal::base<>>> game;
 
     if (file != "") {
       std::ifstream save(file);
