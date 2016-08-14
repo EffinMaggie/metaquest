@@ -15,7 +15,5 @@ include/ef.gy
 dependencies.mk
 documentation
 doxyfile
-.third-party
 *.dSYM
 arenad
-include/asio*

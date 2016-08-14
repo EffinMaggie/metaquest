@@ -17,8 +17,8 @@
 
 #include <iostream>
 
-#include <ef.gy/vt100.h>
-#include <ef.gy/terminal-writer.h>
+#include <terminalxx/vt100.h>
+#include <terminalxx/terminal-writer.h>
 #include <ef.gy/maybe.h>
 #include <metaquest/game.h>
 #include <metaquest/ai.h>
@@ -236,7 +236,7 @@ public:
 };
 }
 
-template <typename term = efgy::terminal::vt100<>,
+template <typename term = terminalxx::vt100<>,
           template <typename> class AI = ai::random,
           typename clock = std::chrono::system_clock>
 class base;
@@ -354,7 +354,7 @@ public:
   }
 
   term io;
-  efgy::terminal::writer<> out;
+  terminalxx::writer<> out;
   AI<base<term, AI>> ai;
   efgy::json::json logbook;
   std::thread refresherThread;

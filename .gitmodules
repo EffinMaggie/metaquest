@@ -1,0 +1,9 @@
+[submodule "dependencies/terminalxx"]
+	path = dependencies/terminalxx
+	url = https://github.com/ef-gy/terminalxx.git
+[submodule "dependencies/libefgy"]
+	path = dependencies/libefgy
+	url = https://github.com/ef-gy/libefgy.git
+[submodule "dependencies/asio"]
+	path = dependencies/asio
+	url = https://github.com/chriskohlhoff/asio.git
