@@ -19,9 +19,9 @@
 
 #include <terminalxx/vt100.h>
 #include <terminalxx/terminal-writer.h>
-#include <ef.gy/maybe.h>
 #include <metaquest/game.h>
 #include <metaquest/ai.h>
+#include <optional>
 #include <random>
 #include <sstream>
 #include <chrono>
@@ -54,7 +54,7 @@ public:
   }
 
   bool valid(void) {
-    return (bool)validUntil ? clock::now() < validUntil.just : true;
+    return validUntil ? clock::now() < *validUntil : true;
   }
 
   double progress(typename clock::duration until) {
@@ -76,11 +76,11 @@ public:
   }
 
   double progress(void) {
-    if (!(bool)validUntil) {
+    if (!validUntil) {
       return .0;
     }
 
-    return progress(validUntil.just);
+    return progress(*validUntil);
   }
 
   virtual bool draw(typename term::base &terminal) = 0;
@@ -92,7 +92,7 @@ public:
 
 protected:
   typename clock::time_point validSince;
-  efgy::maybe<typename clock::time_point> validUntil;
+  std::optional<typename clock::time_point> validUntil;
 };
 
 template <typename term, typename clock>
@@ -660,7 +660,7 @@ public:
   }
 
   template <typename T, typename G>
-  efgy::maybe<std::vector<metaquest::character<T> *>>
+  std::optional<std::vector<metaquest::character<T> *>>
   query(G &game, const metaquest::character<T> &source,
         std::vector<metaquest::character<T> *> &candidates,
         std::size_t indent = 4) {
@@ -735,7 +735,7 @@ public:
     sel->expire();
 
     if (didCancel) {
-      return efgy::maybe<std::vector<metaquest::character<T> *>>();
+      return std::optional<std::vector<metaquest::character<T> *>>();
     }
 
     targets.push_back(candidates[selection]);

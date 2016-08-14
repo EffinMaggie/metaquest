@@ -17,3 +17,4 @@ documentation
 doxyfile
 *.dSYM
 arenad
+include/optional

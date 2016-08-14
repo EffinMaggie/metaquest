@@ -16,11 +16,11 @@
 #if !defined(METAQUEST_OBJECT_H)
 #define METAQUEST_OBJECT_H
 
-#include <ef.gy/maybe.h>
 #include <ef.gy/json.h>
 
 #include <metaquest/name.h>
 
+#include <optional>
 #include <string>
 #include <map>
 #include <functional>

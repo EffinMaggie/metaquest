@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <iterator>
 #include <functional>
+#include <optional>
 
 namespace metaquest {
 namespace game {
@@ -157,10 +158,10 @@ public:
         res = actions[s](retry, target);
       } else {
         auto resolution = apply(target, s);
-        if (resolution.nothing) {
+        if (!resolution) {
           retry = true;
         } else {
-          return resolution.just;
+          return *resolution;
         }
       }
     } while (retry);
@@ -168,12 +169,12 @@ public:
     return res;
   }
 
-  virtual efgy::maybe<std::string> apply(character &target,
+  virtual std::optional<std::string> apply(character &target,
                                          const std::string &s) {
     auto targets = resolve(target, s);
 
     if (targets.size() == 0) {
-      return efgy::maybe<std::string>();
+      return std::optional<std::string>();
     }
 
     interact.action(*this, s, target, targets);
@@ -337,11 +338,11 @@ public:
     }
 
     auto cs = interact.query(*this, o, cr);
-    if (cs.nothing || (cs.just.size() == 0)) {
+    if (!cs || (cs->size() == 0)) {
       return "Maybe not?";
     }
 
-    auto &c = *(cs.just[0]);
+    auto &c = *((*cs)[0]);
     std::map<std::string, std::string> data;
     for (const auto &attr : c.attributes()) {
       std::ostringstream os("");
@@ -513,10 +514,10 @@ public:
     case action::ally:
     case action::enemy: {
       auto q = interact.query(*this, c, filteredCandidates, 8);
-      if (q.nothing) {
+      if (!q) {
         return std::vector<character *>();
       } else {
-        return q.just;
+        return *q;
       }
     }
     }
